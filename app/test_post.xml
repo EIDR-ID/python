@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Request xmlns="http://www.eidr.org/schema"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <Operation>
+        <Query>
+            <Expression>(/FullMetadata/BaseObjectData/ResourceName "II") AND
+            /FullMetadata/BaseObjectData/ReferentType "movie"</Expression>
+            <PageNumber>1</PageNumber>
+            <PageSize>20</PageSize>
+        </Query>
+    </Operation>
+</Request>
