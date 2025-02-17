@@ -3,7 +3,8 @@ import base64
 import hashlib
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Dict
+from typing import Dict, Optional
+
 os.environ['default_proxy_port'] = "80"
 
 import requests
@@ -14,11 +15,11 @@ default_proxy_port = 80
 # This is a dataclass that represents the information needed for a connection to the EIDR API
 @dataclass
 class EIDR_Config:
-    url: str = None
-    party: str = None
-    user: str = None
-    password: str = None
-    hash: str = None
+    url: Optional[str] = None
+    party: Optional[str] = None
+    user: Optional[str] = None
+    password: Optional[str] = None
+    hash: Optional[str] = None
     multipart: bool = False
     boundary: str = "_EIDR MULTIPART_"
     pagesize: int = 1000
@@ -26,10 +27,10 @@ class EIDR_Config:
     report_scores: bool = False
     retry_count: int = 3
     use_gzip: bool = False
-    proxy_host: str = None
-    proxy_port: int = None
-    proxy_user: str = None
-    proxy_password: str = None
+    proxy_host: Optional[str] = None
+    proxy_port: Optional[int] = None
+    proxy_user: Optional[str] = None
+    proxy_password: Optional[str] = None
     headers: Dict[str, str] = field(default_factory=dict)
 
     """
