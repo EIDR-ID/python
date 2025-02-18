@@ -1,0 +1,54 @@
+from dataclasses import dataclass, field
+from typing import Optional
+
+from scheme.org.doi.pkg_2010.doischema_avs.creation_structural_type import (
+    CreationStructuralType,
+)
+from scheme.org.eidr.schema.asset_doitype import AssetDoitype
+from scheme.org.eidr.schema.referent_type import ReferentType
+from scheme.org.eidr.schema.relationship_type import RelationshipType
+
+__NAMESPACE__ = "http://www.eidr.org/schema"
+
+
+@dataclass
+class FindAncestorsType:
+    class Meta:
+        name = "findAncestorsType"
+
+    id: Optional[AssetDoitype] = field(
+        default=None,
+        metadata={
+            "name": "ID",
+            "type": "Element",
+            "namespace": "http://www.eidr.org/schema",
+            "required": True,
+        },
+    )
+    referent_type: list[ReferentType] = field(
+        default_factory=list,
+        metadata={
+            "name": "ReferentType",
+            "type": "Element",
+            "namespace": "http://www.eidr.org/schema",
+            "max_occurs": 8,
+        },
+    )
+    structural_type: list[CreationStructuralType] = field(
+        default_factory=list,
+        metadata={
+            "name": "StructuralType",
+            "type": "Element",
+            "namespace": "http://www.eidr.org/schema",
+            "max_occurs": 5,
+        },
+    )
+    relationship_type: list[RelationshipType] = field(
+        default_factory=list,
+        metadata={
+            "name": "RelationshipType",
+            "type": "Element",
+            "namespace": "http://www.eidr.org/schema",
+            "max_occurs": 12,
+        },
+    )
