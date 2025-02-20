@@ -1,19 +1,19 @@
-import os
 import base64
 import hashlib
+import os
 from dataclasses import dataclass, field
-from enum import Enum
 from typing import Dict, Optional
 
 from xsdata.formats.dataclass.serializers import XmlSerializer
 from xsdata.formats.dataclass.serializers.config import SerializerConfig
 
-from scheme.org.eidr.schema import request, operation_type, query_type, asset_doitype
+from services import Query, ServiceBase
 
 os.environ['default_proxy_port'] = "80"
 
 import requests
 from lxml import etree  # Suggested to use lxml for XML parsing, other option is xml.etree.ElementTree
+
 
 default_proxy_port = 80
 
@@ -95,25 +95,25 @@ class EIDR_Config:
 
 # We will need to create a class for each of the services we want to use
 # Below is an enum that maps from the service name to the service endpoint
-class Service(Enum):
-    QUERY = 'query'
-    MATCH = 'match'  # TODO: do this
-    GRAPH = 'object/graph'  # TODO: do this.
-    # http params: extendedFamily = False
-    # xml: FindAncestors, FindDescendants, GetDependents, GetSeriesAncestry, GetLightweightRelationships, GetRemotestAncestor, GetLeafDescendants, GetParent, GetChildren
-    SERVICE_QUERY = 'service/query'  # TODO: do this
-    # xml: FindServices, FindServicesByName, or FindServicesFromCatalog
-    SERVICE_REGISTER = 'service/create'  # TODO: do this
-    # xml: CreateService
-    SERVICE_MODIFY = 'service/modify'  # TODO: do this
-    # xml: Service
-    PARTY_QUERY = 'party/query?type={}'  # TODO: do this
-    # url params: type = [ID | full]
-    # xml: FindParties, FindPartiesByName, FindPartiesFromCatalog
-    PASSWORD = '/user/password/{}?password={}'  # TODO: do this
-    # url params: userdoi, new password
-    STATUS = 'status'  # TODO: do this. Known as Cancellation Service also
-    # xml: Refer to schema
+# class Service(Enum):
+#     QUERY = 'query'
+#     MATCH = 'match'  # TODO: do this
+#     GRAPH = 'object/graph'  # TODO: do this.
+#     # http params: extendedFamily = False
+#     # xml: FindAncestors, FindDescendants, GetDependents, GetSeriesAncestry, GetLightweightRelationships, GetRemotestAncestor, GetLeafDescendants, GetParent, GetChildren
+#     SERVICE_QUERY = 'service/query'  # TODO: do this
+#     # xml: FindServices, FindServicesByName, or FindServicesFromCatalog
+#     SERVICE_REGISTER = 'service/create'  # TODO: do this
+#     # xml: CreateService
+#     SERVICE_MODIFY = 'service/modify'  # TODO: do this
+#     # xml: Service
+#     PARTY_QUERY = 'party/query?type={}'  # TODO: do this
+#     # url params: type = [ID | full]
+#     # xml: FindParties, FindPartiesByName, FindPartiesFromCatalog
+#     PASSWORD = '/user/password/{}?password={}'  # TODO: do this
+#     # url params: userdoi, new password
+#     STATUS = 'status'  # TODO: do this. Known as Cancellation Service also
+#     # xml: Refer to schema
 
 
 # TODO: GET endpoints needed:
@@ -141,14 +141,15 @@ class API_Driver:
         print(resp.content)
         return resp.content
 
-    # def post(self, thing: xml_obj):
+    def post(self, service: ServiceBase):
+        return self.post_raw(service.xml, service.name)
 
-    def post_raw(self, xml: str, service: Service):
+    def post_raw(self, xml: str, endpoint: str):
         # multipart might be better off ignored here, assume it is always false for now
         data = xml if not self.config.multipart else (
             "{}\n{}\n{}\n{}\n{}".format(
                 self.config.boundary,
-                'Content-Disposition: form-data; name={}'.format(service.value),
+                'Content-Disposition: form-data; name={}'.format(endpoint),
                 'Content-Transfer-Encoding: binary',
                 xml,
                 self.config.boundary
@@ -156,7 +157,7 @@ class API_Driver:
         # print(self.config.headers)
         # print(data)
         resp = requests.post(
-            self.config.url + service.value + "/",
+            self.config.url + endpoint + "/",
             data=data,
             headers={**self.config.headers}
         )
@@ -167,32 +168,15 @@ class API_Driver:
 
         return resp
 
-    def query(self, doi: Optional[str] = None, expression: Optional[str] = None, page_num: Optional[int] = None,
-              page_size: Optional[int] = None, continuation_token: Optional[str] = None,
-              extended_family: Optional[bool] = None):
-        req = request.Request(operation=[operation_type.OperationType(
-            query=query_type.QueryType(
-                id=asset_doitype.AssetDoitype(value=doi) if doi else None,
-                expression=expression,
-                page_number=page_num,
-                page_size=page_size,
-            )
-        )])
-        xml = render_xml(req)
-        print(xml)
-        return self.post_raw(xml, Service.QUERY).content
 
-
-def test():
-    with open("config.xml", "r") as file:
-        config = EIDR_Config.from_xml(file.read())
-    driver = API_Driver(config)
-    res = driver.get_object("10.5240/0EF3-54F9-2642-0B49-6829-R")
-
-
+# def test():
+#     with open("config.xml", "r") as file:
+#         config = EIDR_Config.from_xml(file.read())
+#     driver = API_Driver(config)
+#     res = driver.get_object("10.5240/0EF3-54F9-2642-0B49-6829-R")
 # test()
 
-def test_post():
+def test_post_file():
     xml = ""
     with open("test_post.xml", "r") as file:
         xml = file.read()
@@ -200,16 +184,12 @@ def test_post():
         config = EIDR_Config.from_xml(file.read())
     driver = API_Driver(config)
 
-    driver.post_raw(xml, Service.QUERY)
+    driver.post_raw(xml, "query")
 
 
-# test_post()
-serializer = XmlSerializer(config=SerializerConfig(indent="    "))
-ns_map = {"": "http://www.eidr.org/schema"}
+# test_post_file()
 
 
-def render_xml(xml: str):
-    return serializer.render(xml, ns_map)
 def to_pretty_xml(s):
     root = etree.fromstring(s)
     return etree.tostring(root, pretty_print=True, xml_declaration=True, encoding='UTF-8').decode('utf-8')
@@ -217,12 +197,13 @@ def to_pretty_xml(s):
 
 def test_query():
     driver = API_Driver.from_default()
-    print(to_pretty_xml(driver.query(
-        expression="(/FullMetadata/BaseObjectData/ResourceName \"II\") AND /FullMetadata/BaseObjectData/ReferentType "
+    res = driver.post(Query(
+        expression="(/FullMetadata/BaseObjectData/ResourceName \"Avengers: Endgame\") AND /FullMetadata/BaseObjectData/ReferentType "
                    "\"movie\"",
         page_num=1,
-        page_size=20
-    )))
+        page_size=1
+    ))
+    print(to_pretty_xml(res.content))
 
 
 test_query()
