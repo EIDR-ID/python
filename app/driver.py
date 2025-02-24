@@ -4,10 +4,7 @@ import os
 from dataclasses import dataclass, field
 from typing import Dict, Optional
 
-from xsdata.formats.dataclass.serializers import XmlSerializer
-from xsdata.formats.dataclass.serializers.config import SerializerConfig
-
-from services import Query, ServiceBase
+from app.services import Query, ServiceBase
 
 os.environ['default_proxy_port'] = "80"
 
@@ -209,4 +206,4 @@ def test_query():
     return to_pretty_xml(res.content)
 
 
-#print(test_query())
+print(test_query())
