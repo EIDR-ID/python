@@ -1,0 +1,84 @@
+from dataclasses import dataclass, field
+from typing import Optional
+
+from  app.scheme.com.movielabs.schema.md.v2.pkg_8.md.digital_asset_audio_encoding_type import (
+    DigitalAssetAudioEncodingType,
+)
+from  app.scheme.com.movielabs.schema.md.v2.pkg_8.md.digital_asset_audio_language_type import (
+    DigitalAssetAudioLanguageType,
+)
+from  app.scheme.com.movielabs.schema.md.v2.pkg_8.md.private_data_type import (
+    PrivateDataType,
+)
+from  app.scheme.com.movielabs.schema.md.v2.pkg_8.md.string_audio_type import (
+    StringAudioType,
+)
+
+__NAMESPACE__ = "http://www.movielabs.com/schema/md/v2.8/md"
+
+
+@dataclass
+class DigitalAssetAudioDataType:
+    class Meta:
+        name = "DigitalAssetAudioData-type"
+
+    description: Optional[str] = field(
+        default=None,
+        metadata={
+            "name": "Description",
+            "type": "Element",
+            "namespace": "http://www.movielabs.com/schema/md/v2.8/md",
+            "max_length": 128,
+        },
+    )
+    type_value: Optional[StringAudioType] = field(
+        default=None,
+        metadata={
+            "name": "Type",
+            "type": "Element",
+            "namespace": "http://www.movielabs.com/schema/md/v2.8/md",
+        },
+    )
+    encoding: Optional[DigitalAssetAudioEncodingType] = field(
+        default=None,
+        metadata={
+            "name": "Encoding",
+            "type": "Element",
+            "namespace": "http://www.movielabs.com/schema/md/v2.8/md",
+        },
+    )
+    language: Optional[DigitalAssetAudioLanguageType] = field(
+        default=None,
+        metadata={
+            "name": "Language",
+            "type": "Element",
+            "namespace": "http://www.movielabs.com/schema/md/v2.8/md",
+            "required": True,
+        },
+    )
+    channels: Optional[str] = field(
+        default=None,
+        metadata={
+            "name": "Channels",
+            "type": "Element",
+            "namespace": "http://www.movielabs.com/schema/md/v2.8/md",
+            "pattern": r"[0-9][0-9]?(\.[0-9]([0-9]?))?",
+        },
+    )
+    track_reference: Optional[str] = field(
+        default=None,
+        metadata={
+            "name": "TrackReference",
+            "type": "Element",
+            "namespace": "http://www.movielabs.com/schema/md/v2.8/md",
+            "max_length": 128,
+        },
+    )
+    private: Optional[PrivateDataType] = field(
+        default=None,
+        metadata={
+            "name": "Private",
+            "type": "Element",
+            "namespace": "http://www.movielabs.com/schema/md/v2.8/md",
+        },
+    )
