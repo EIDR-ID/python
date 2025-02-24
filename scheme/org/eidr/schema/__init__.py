@@ -222,6 +222,7 @@ from scheme.org.eidr.schema.operation_status_type_type import (
     OperationStatusTypeType,
 )
 from scheme.org.eidr.schema.operation_type import OperationType
+
 from scheme.org.eidr.schema.packaging_class_type import PackagingClassType
 from scheme.org.eidr.schema.packaging_info_type import PackagingInfoType
 from scheme.org.eidr.schema.party import Party
