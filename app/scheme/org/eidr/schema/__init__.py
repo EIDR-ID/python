@@ -182,6 +182,130 @@ from .creation_type import CreationType
 from .uri import Uri
 from .response import Response
 
+from .report_creation_list_element_type import ReportCreationListElementType
+from .report_creation_type import ReportCreationType
+from .report_query_type import ReportQueryType
+from .report_results_type import ReportResultsType
+from .request import Request
+from .request_status_results_type import RequestStatusResultsType
+from .request_status_type import RequestStatusType
+from .request_type import RequestType
+
+from .resolution_set_type import ResolutionSetType
+from .resolution_type_type import ResolutionTypeType
+
+from .resolutions import Resolutions
+
+from .resolved_full_general import ResolvedFullGeneral
+
+from .resolved_inherited_general import ResolvedInheritedGeneral
+
+from .resolved_self_general import ResolvedSelfGeneral
+
+from .response_type import ResponseType
+
+from .season_class_type import SeasonClassType
+
+from .season_info_type import SeasonInfoType
+
+from .self_defined_base_object_info_type import SelfDefinedBaseObjectInfoType
+
+from .self_defined_metadata import SelfDefinedMetadata
+
+from .series_ancestry_type import SeriesAncestryType
+
+from .series_class_type import SeriesClassType
+
+from .series_info_type import SeriesInfoType
+
+from .service import Service
+
+from .service_alias_continuation import ServiceAliasContinuation
+
+from .service_alias_continuation_type import ServiceAliasContinuationType
+
+from .service_alternate_id_type import ServiceAlternateIdType
+
+from .service_creation_type import ServiceCreationType
+
+from .service_name_type import ServiceNameType
+
+from .service_query_results import ServiceQueryResults
+
+from .service_query_results_type import ServiceQueryResultsType
+
+from .service_query_type import ServiceQueryType
+
+from .service_resolution_type import ServiceResolutionType
+
+from .short_doi import ShortDoi
+
+from .simple_info import SimpleInfo
+
+from .simple_info_type import SimpleInfoType
+
+from .simple_info_with_provenance_info_type import SimpleInfoWithProvenanceInfoType
+from .simple_metadata import SimpleMetadata
+
+from .smpte_umid import SmpteUmid
+
+from .status_code_type import StatusCodeType
+
+from .status_details_type import StatusDetailsType
+
+from .status_list_element_type import StatusListElementType
+
+from .status_summary_type import StatusSummaryType
+from .status_type import StatusType
+
+from .status_type_type import StatusTypeType
+from .summary_report import SummaryReport
+
+from .supplemental_content_class_type import SupplementalContentClassType
+
+from .supplemental_content_info_type import SupplementalContentInfoType
+
+from .tape_tracks_type import TapeTracksType
+
+from .target_relationship_type import TargetRelationshipType
+
+from .time_zone_type import TimeZoneType
+
+from .title_class_type import TitleClassType
+
+from .title_type import TitleType
+
+from .token_cancellation_request_type import TokenCancellationRequestType
+
+from .token_cancellation_results_type import TokenCancellationResultsType
+
+from .trib import Trib
+
+from .tvg import Tvg
+
+from .upc import Upc
+
+from .urn import Urn
+
+from .usage_details_type import UsageDetailsType
+
+from .user import User
+
+from .user_creation_type import UserCreationType
+
+from .user_doilist_type import UserDoilistType
+
+from .user_idlist import UserIdlist
+
+from .user_resolution_type import UserResolutionType
+
+from .username import Username
+
+from .uuid import Uuid
+
+from .virtual_fields_type import VirtualFieldsType
+
+from .waiting_on_dependencies_type import WaitingOnDependenciesType
 __all__ = [
     "ActiveFilterType",
     "AdId",
@@ -433,127 +557,3 @@ __all__ = [
     "WaitingOnDependenciesType",
 ]
 
-from .report_creation_list_element_type import ReportCreationListElementType
-from .report_creation_type import ReportCreationType
-from .report_query_type import ReportQueryType
-from .report_results_type import ReportResultsType
-from .request import Request
-from .request_status_results_type import RequestStatusResultsType
-from .request_status_type import RequestStatusType
-from .request_type import RequestType
-
-from .resolution_set_type import ResolutionSetType
-from .resolution_type_type import ResolutionTypeType
-
-from .resolutions import Resolutions
-
-from .resolved_full_general import ResolvedFullGeneral
-
-from .resolved_inherited_general import ResolvedInheritedGeneral
-
-from .resolved_self_general import ResolvedSelfGeneral
-
-from .response_type import ResponseType
-
-from .season_class_type import SeasonClassType
-
-from .season_info_type import SeasonInfoType
-
-from .self_defined_base_object_info_type import SelfDefinedBaseObjectInfoType
-
-from .self_defined_metadata import SelfDefinedMetadata
-
-from .series_ancestry_type import SeriesAncestryType
-
-from .series_class_type import SeriesClassType
-
-from .series_info_type import SeriesInfoType
-
-from .service import Service
-
-from .service_alias_continuation import ServiceAliasContinuation
-
-from .service_alias_continuation_type import ServiceAliasContinuationType
-
-from .service_alternate_id_type import ServiceAlternateIdType
-
-from .service_creation_type import ServiceCreationType
-
-from .service_name_type import ServiceNameType
-
-from .service_query_results import ServiceQueryResults
-
-from .service_query_results_type import ServiceQueryResultsType
-
-from .service_query_type import ServiceQueryType
-
-from .service_resolution_type import ServiceResolutionType
-
-from .short_doi import ShortDoi
-
-from .simple_info import SimpleInfo
-
-from .simple_info_type import SimpleInfoType
-
-from .simple_info_with_provenance_info_type import SimpleInfoWithProvenanceInfoType
-from .simple_metadata import SimpleMetadata
-
-from .smpte_umid import SmpteUmid
-
-from .status_code_type import StatusCodeType
-
-from .status_details_type import StatusDetailsType
-
-from .status_list_element_type import StatusListElementType
-
-from .status_summary_type import StatusSummaryType
-from .status_type import StatusType
-
-from .status_type_type import StatusTypeType
-from .summary_report import SummaryReport
-
-from .supplemental_content_class_type import SupplementalContentClassType
-
-from .supplemental_content_info_type import SupplementalContentInfoType
-
-from .tape_tracks_type import TapeTracksType
-
-from .target_relationship_type import TargetRelationshipType
-
-from .time_zone_type import TimeZoneType
-
-from .title_class_type import TitleClassType
-
-from .title_type import TitleType
-
-from .token_cancellation_request_type import TokenCancellationRequestType
-
-from .token_cancellation_results_type import TokenCancellationResultsType
-
-from .trib import Trib
-
-from .tvg import Tvg
-
-from .upc import Upc
-
-from .urn import Urn
-
-from .usage_details_type import UsageDetailsType
-
-from .user import User
-
-from .user_creation_type import UserCreationType
-
-from .user_doilist_type import UserDoilistType
-
-from .user_idlist import UserIdlist
-
-from .user_resolution_type import UserResolutionType
-
-from .username import Username
-
-from .uuid import Uuid
-
-from .virtual_fields_type import VirtualFieldsType
-
-from .waiting_on_dependencies_type import WaitingOnDependenciesType
