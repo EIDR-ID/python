@@ -13,6 +13,7 @@ from org.eidr.schema.status_type_type import StatusTypeType
 
 class GraphTraversal(unittest.TestCase):
 
+
     def test_example_return(self):
         driver = API_Driver.from_default()
         ## Found sol no empty chars befrore this line -> <?xml version="1.0" encoding="UTF-8"?>
@@ -88,6 +89,8 @@ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 
     def test_find_ancestors_with_Dict(self):
         driver = API_Driver.from_default()
+
+
         traversal = graph.GraphTraversal()
         doi_endgame = "10.5240/C745-6B21-0FC0-70A0-9ECE-6"
         doi_infinity_war = "10.5240/ACF2-FF3C-9F47-02A0-EA40-H"

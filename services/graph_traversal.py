@@ -200,4 +200,5 @@ class GraphTraversal:
         Returns:
             str: The serialized XML representation of the request.
         """
+
         return self.serializer.render(req, self.ns_map)

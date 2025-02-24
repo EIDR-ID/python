@@ -13,6 +13,7 @@ __NAMESPACE__ = "http://www.eidr.org/schema"
 
 @dataclass
 class FindDescendantsType:
+
     class Meta:
         name = "findDescendantsType"
 

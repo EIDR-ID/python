@@ -11,6 +11,7 @@ class GetDependantsType:
     class Meta:
         name = "getDependantsType"
 
+
     id: Optional[AssetDoitype] = field(
         default=None,
         metadata={

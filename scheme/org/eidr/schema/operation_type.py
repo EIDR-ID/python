@@ -214,6 +214,7 @@ class OperationType:
             "type": "Attribute",
         },
     )
+
     override: Optional[bool] = field(
         default=None,
         metadata={
