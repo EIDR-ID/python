@@ -2,13 +2,12 @@ import unittest
 
 import services.graph_traversal as graph
 from services.res import Response
-from driver import API_Driver
-from driver import to_pretty_xml
-from org.eidr.schema.asset_doitype import AssetDoitype
-from org.eidr.schema.graph.find_descendants_type import FindDescendantsType
-from org.eidr.schema.graph.find_ancestors_type import FindAncestorsType
-from org.eidr.schema.response import ResponseType
-from org.eidr.schema.status_type_type import StatusTypeType
+from app.driver import API_Driver, to_pretty_xml
+from scheme.org.eidr.schema.graph.find_descendants_type import FindDescendantsType
+from scheme.org.eidr.schema.graph.find_ancestors_type import FindAncestorsType
+from scheme.org.eidr.schema.asset_doitype import AssetDoitype
+from scheme.org.eidr.schema.response import ResponseType
+from scheme.org.eidr.schema.status_type_type import StatusTypeType
 
 
 class GraphTraversal(unittest.TestCase):

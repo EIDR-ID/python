@@ -7,16 +7,13 @@ from xsdata.formats.dataclass.serializers.config import SerializerConfig
 from scheme.org.eidr.schema import ReferentType, RelationshipType
 from scheme.org.eidr.schema.operation_type import OperationType
 
-# from scheme.org.eidr.schema.find_descendants_type import FindDescendantsType
+# from scheme.org.eidr.schema.graph.find_descendants_type import FindDescendantsType
 ## this is the correct Import the one above is broken fix imports
-from org.eidr.schema.graph.find_descendants_type import FindDescendantsType
-from org.eidr.schema.graph.find_ancestors_type import FindAncestorsType
-from org.eidr.schema.graph.get_dependants_type import GetDependantsType
-from org.eidr.schema.asset_doitype import AssetDoitype
-from org.eidr.schema.request import Request
-from lxml import etree  # Suggested to use lxml for XML parsing, other option is xml.etree.ElementTree
-import org.eidr.schema.simple_metadata as simple_meta_data
-import scheme.org.eidr.schema.response as response
+from scheme.org.eidr.schema.graph.find_descendants_type import FindDescendantsType
+from scheme.org.eidr.schema.graph.find_ancestors_type import FindAncestorsType
+from scheme.org.eidr.schema.graph.get_dependants_type import GetDependantsType
+from scheme.org.eidr.schema.asset_doitype import AssetDoitype
+from scheme.org.eidr.schema.request import Request
 
 from scheme.org.doi.pkg_2010.doischema_avs.creation_structural_type import (
     CreationStructuralType,
