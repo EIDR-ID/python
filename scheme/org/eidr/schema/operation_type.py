@@ -6,21 +6,21 @@ from scheme.org.eidr.schema.alias_type import AliasType
 from scheme.org.eidr.schema.create_type import CreateType
 from scheme.org.eidr.schema.dedup_mode_type import DedupModeType
 from scheme.org.eidr.schema.delete_type import DeleteType
-from org.eidr.schema.graph.find_ancestors_type import FindAncestorsType
-from org.eidr.schema.graph.find_descendants_type import FindDescendantsType
-from org.eidr.schema.graph.get_children_type import GetChildrenType
-from org.eidr.schema.graph.get_dependants_type import GetDependantsType
-from org.eidr.schema.graph.get_leaf_descendants_type import (
+from scheme.org.eidr.schema.graph.find_ancestors_type import FindAncestorsType
+from scheme.org.eidr.schema.graph.find_descendants_type import FindDescendantsType
+from scheme.org.eidr.schema.graph.get_children_type import GetChildrenType
+from scheme.org.eidr.schema.graph.get_dependants_type import GetDependantsType
+from scheme.org.eidr.schema.graph.get_leaf_descendants_type import (
     GetLeafDescendantsType,
 )
-from org.eidr.schema.get_lightweight_relationships_type import (
-    GetLightweightRelationshipsType,
+from scheme.org.eidr.schema.get_lightweight_relationships_type import (
+    GetLightweightRelationshipsType
 )
-from org.eidr.schema.graph.get_parent_type import GetParentType
-from org.eidr.schema.graph.get_remotest_ancestor_type import (
+from scheme.org.eidr.schema.graph.get_parent_type import GetParentType
+from scheme.org.eidr.schema.graph.get_remotest_ancestor_type import (
     GetRemotestAncestorType,
 )
-from org.eidr.schema.graph.get_series_ancestry_type import (
+from scheme.org.eidr.schema.graph.get_series_ancestry_type import (
     GetSeriesAncestryType,
 )
 from scheme.org.eidr.schema.modify_type import ModifyType
