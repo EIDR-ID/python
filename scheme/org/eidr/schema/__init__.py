@@ -1,3 +1,11 @@
+from org.eidr.schema.get_lightweight_relationships_type import GetLightweightRelationshipsType
+from org.eidr.schema.graph.find_ancestors_type import FindAncestorsType
+from org.eidr.schema.graph.get_children_type import GetChildrenType
+from org.eidr.schema.graph.get_dependants_type import GetDependantsType
+from org.eidr.schema.graph.get_leaf_descendants_type import GetLeafDescendantsType
+from org.eidr.schema.graph.get_parent_type import GetParentType
+from org.eidr.schema.graph.get_remotest_ancestor_type import GetRemotestAncestorType
+from org.eidr.schema.graph.get_series_ancestry_type import GetSeriesAncestryType
 from scheme.org.eidr.schema.active_filter_type import ActiveFilterType
 from scheme.org.eidr.schema.ad_id import AdId
 from scheme.org.eidr.schema.add_relationship_type import AddRelationshipType
@@ -147,8 +155,7 @@ from scheme.org.eidr.schema.extra_object_metadata_type import (
 )
 from scheme.org.eidr.schema.failed_dependency_type import FailedDependencyType
 from scheme.org.eidr.schema.film_tracks_type import FilmTracksType
-from scheme.org.eidr.schema.find_ancestors_type import FindAncestorsType
-from scheme.org.eidr.schema.find_descendants_type import FindDescendantsType
+from org.eidr.schema.graph.find_descendants_type import FindDescendantsType
 from scheme.org.eidr.schema.find_parties import FindParties
 from scheme.org.eidr.schema.find_parties_by_name import FindPartiesByName
 from scheme.org.eidr.schema.find_parties_from_catalog import (
@@ -161,21 +168,6 @@ from scheme.org.eidr.schema.find_services_from_catalog import (
 )
 from scheme.org.eidr.schema.full_metadata import FullMetadata
 from scheme.org.eidr.schema.full_object_info_type import FullObjectInfoType
-from scheme.org.eidr.schema.get_children_type import GetChildrenType
-from scheme.org.eidr.schema.get_dependants_type import GetDependantsType
-from scheme.org.eidr.schema.get_leaf_descendants_type import (
-    GetLeafDescendantsType,
-)
-from scheme.org.eidr.schema.get_lightweight_relationships_type import (
-    GetLightweightRelationshipsType,
-)
-from scheme.org.eidr.schema.get_parent_type import GetParentType
-from scheme.org.eidr.schema.get_remotest_ancestor_type import (
-    GetRemotestAncestorType,
-)
-from scheme.org.eidr.schema.get_series_ancestry_type import (
-    GetSeriesAncestryType,
-)
 from scheme.org.eidr.schema.grid import Grid
 from scheme.org.eidr.schema.gtin import Gtin
 from scheme.org.eidr.schema.imdb import Imdb
