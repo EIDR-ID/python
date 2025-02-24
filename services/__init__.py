@@ -1,2 +1,2 @@
-from .Interface import ServiceBase
-from .Query import Query
+from .interface import ServiceBase
+from .query import Query

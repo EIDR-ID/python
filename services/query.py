@@ -1,6 +1,6 @@
 from typing import Optional
 
-from .Interface import ServiceBase
+from .interface import ServiceBase
 
 from scheme.org.eidr.schema import request, operation_type, query_type, asset_doitype
 

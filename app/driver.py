@@ -93,6 +93,9 @@ class EIDR_Config:
         return etree.tostring(root, pretty_print=True)
 
 
+# <!> The enum below has been swapped out with an interface/classes gimmick in the services module.
+#     I'm keeping this here just for the TODOs
+#
 # We will need to create a class for each of the services we want to use
 # Below is an enum that maps from the service name to the service endpoint
 # class Service(Enum):
@@ -169,12 +172,12 @@ class API_Driver:
         return resp
 
 
-# def test():
-#     with open("config.xml", "r") as file:
-#         config = EIDR_Config.from_xml(file.read())
-#     driver = API_Driver(config)
-#     res = driver.get_object("10.5240/0EF3-54F9-2642-0B49-6829-R")
-# test()
+def test_get():
+    with open("config.xml", "r") as file:
+        config = EIDR_Config.from_xml(file.read())
+    driver = API_Driver(config)
+    res = driver.get_object("10.5240/0EF3-54F9-2642-0B49-6829-R")
+# test_get()
 
 def test_post_file():
     xml = ""
@@ -203,7 +206,7 @@ def test_query():
         page_num=1,
         page_size=1
     ))
-    print(to_pretty_xml(res.content))
+    return to_pretty_xml(res.content)
 
 
-test_query()
+#print(test_query())
