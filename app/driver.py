@@ -206,4 +206,4 @@ def test_query():
     return to_pretty_xml(res.content)
 
 
-print(test_query())
+#print(test_query())
