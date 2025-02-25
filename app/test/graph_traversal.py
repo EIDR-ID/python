@@ -1,17 +1,18 @@
 import unittest
 
 import app.services.graph_traversal as graph
-from app.services.res import Response
+from app.scheme.org.eidr.schema import simple_info_type
+from app.services.res import ResponseReader as Response
 from app.driver import API_Driver, to_pretty_xml
-from    app.scheme.org.eidr.schema.graph.find_descendants_type import FindDescendantsType
-from    app.scheme.org.eidr.schema.graph.find_ancestors_type import FindAncestorsType
-from    app.scheme.org.eidr.schema.asset_doitype import AssetDoitype
-from    app.scheme.org.eidr.schema.response import ResponseType
-from    app.scheme.org.eidr.schema.status_type_type import StatusTypeType
+from app.scheme.org.eidr.schema.graph.find_descendants_type import FindDescendantsType
+from app.scheme.org.eidr.schema.graph.find_ancestors_type import FindAncestorsType
+from app.scheme.org.eidr.schema.asset_doitype import AssetDoitype
+from app.scheme.org.eidr.schema.response import ResponseType
+from app.scheme.org.eidr.schema.status_type_type import StatusTypeType
+from app.scheme.org.eidr.schema.simple_info_type import SimpleInfoType
 
 
 class GraphTraversal(unittest.TestCase):
-
 
     def test_example_return(self):
         driver = API_Driver.from_default()
@@ -79,7 +80,7 @@ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
         req = traversal.find_ancestors(doi)
         res = driver.post_raw(
             req,
-            "object/graph"
+            "objects/graph"
         )
         xml = to_pretty_xml(res.content)
         response: ResponseType = Response.from_xml(xml)
@@ -88,7 +89,6 @@ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 
     def test_find_ancestors_with_Dict(self):
         driver = API_Driver.from_default()
-
 
         traversal = graph.GraphTraversal()
         doi_endgame = "10.5240/C745-6B21-0FC0-70A0-9ECE-6"
@@ -115,20 +115,23 @@ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     def test_get_dependants(self):
         driver = API_Driver.from_default()
         traversal = graph.GraphTraversal()
-        bleach_186= "10.5240/CED5-C017-98C4-95D0-89B7-G"
-        bleach_series= "	10.5240/4911-14D5-3C9F-7BE1-AF9D-X"
-        doi = AssetDoitype(bleach_series)
-        req = traversal.get_dependants(doi)
-        print(req)
-        res = driver.post_raw(
-            req,
-            "object/graph"
-        )
+
+        """ DOI the id of a EIDR record  """
+        doi_THEGODFATHER = "10.5240/4911-14D5-3C9F-7BE1-AF9D-X"
+
+        """ Request Object For Communicating with Eidr API   """
+        req = traversal.get_dependants(doi_THEGODFATHER)
+        res = driver.post_raw(req, "object/graph")
+
         xml = to_pretty_xml(res.content)
         print(xml)
-        response: ResponseType = Response.from_xml(xml)
+
+        """ Reponse Containing SimpleMetaData  """
+        response: Response = Response.from_xml(xml)
+        response: SimpleInfoType = response.obj
+
+        """ Validating The Success Of the Request  """
         self.assertEqual(StatusTypeType.SUCCESS.value, response.status.type_value.value, "Unsuccessful Request")
-        print(response)
 
 
 if __name__ == '__main__':
