@@ -49,3 +49,85 @@ class Query(ServiceBase):
                 extended_family=extended_family
             )
         )])
+# def test_query():
+#     driver = API_Driver.from_default()
+#     res = driver.post(Query(
+#         expression="(/FullMetadata/BaseObjectData/ResourceName \"Avengers: Endgame\") AND /FullMetadata/BaseObjectData/ReferentType "
+#                    "\"movie\"",
+#         page_num=1,
+#         page_size=1
+#     ))
+#     return to_pretty_xml(res.content)
+#
+
+    @classmethod
+    def base_obj_expression(cls,
+                            structural_type: str | None = None,
+                            mode: str | None = None,
+                            referent_type: str | None = None,
+                            resource_name: str | None = None,
+                            alternate_resource_name: str | None = None,
+                            original_language: str | None = None,
+                            dubbed_language: str | None = None,
+                            associated_org: str | None = None,
+                            release_date: str | None = None,
+                            country_of_origin: str | None = None,
+                            status: str | None = None,
+                            approximate_length: str | None = None,
+                            alternate_id: str | None = None,
+                            display_name: str | None = None,
+                            credits: str | None = None,
+                            registrant_extra: str | None = None,
+                            description: str | None = None,
+                            ):
+        if structural_type and structural_type not in ["Abstraction", "Performance", "Digital", "Physical"]:
+            raise ValueError("structural_type must be one of 'Abstraction', 'Performance', 'Digital', or 'Physical'")
+        if mode and mode not in ["Visual", "AudioVisual", "Audio", "Other"]:
+            raise ValueError("mode must be one of 'Visual', 'AudioVisual', 'Audio', or 'Other'")
+
+        base = ""
+        name_map = {}
+        if mode:
+            name_map["Mode"] = mode
+        if referent_type:
+            name_map["ReferentType"] = referent_type
+        if resource_name:
+            name_map["ResourceName"] = resource_name
+        if alternate_resource_name:
+            name_map["AlternateResourceName"] = alternate_resource_name
+        if original_language:
+            name_map["OriginalLanguage"] = original_language
+        if dubbed_language:
+            name_map["DubbedLanguage"] = dubbed_language
+        if associated_org:
+            name_map["AssociatedOrg"] = associated_org
+        if release_date:
+            name_map["ReleaseDate"] = release_date
+        if country_of_origin:
+            name_map["CountryOfOrigin"] = country_of_origin
+        if status:
+            name_map["Status"] = status
+        if approximate_length:
+            name_map["ApproximateLength"] = approximate_length
+        if alternate_id:
+            name_map["AlternateID"] = alternate_id
+        if display_name:
+            name_map["DisplayName"] = display_name
+        if credits:
+            name_map["Credits"] = credits
+        if registrant_extra:
+            name_map["RegistrantExtra"] = registrant_extra
+        if description:
+            name_map["Description"] = description
+
+        for name,val in name_map.items():
+            if not base:
+                base = "(/FullMetadata/BaseObjectData/{} \"{}\")".format(name, val)
+            else:
+                base += " AND (/FullMetadata/BaseObjectData/{} \"{}\")".format(name, val)
+
+        return base
+
+
+
+
