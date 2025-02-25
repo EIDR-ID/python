@@ -197,6 +197,8 @@ def to_pretty_xml(s):
 
 def test_query():
     driver = API_Driver.from_default()
+    exp = Query.base_obj_expression(resource_name="Avengers: Endgame", referent_type="movie")
+    #print(exp)
     res = driver.post(Query(
         expression="(/FullMetadata/BaseObjectData/ResourceName \"Avengers: Endgame\") AND /FullMetadata/BaseObjectData/ReferentType "
                    "\"movie\"",
@@ -206,4 +208,5 @@ def test_query():
     return to_pretty_xml(res.content)
 
 
-#print(test_query())
+print(test_query())
+
