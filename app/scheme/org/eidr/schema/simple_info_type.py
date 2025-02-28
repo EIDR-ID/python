@@ -6,6 +6,7 @@ from xsdata.models.datatype import XmlDate, XmlPeriod
 from app.scheme.org.doi.pkg_2010.doischema_avs.creation_structural_type import (
     CreationStructuralType,
 )
+from . import GetDependantsType, OperationType
 from    .asset_doitype import AssetDoitype
 from    .language_type import LanguageType
 from    .referent_type import ReferentType
@@ -17,7 +18,7 @@ __NAMESPACE__ = "http://www.eidr.org/schema"
 
 
 @dataclass
-class SimpleInfoType:
+class SimpleInfoType():
     class Meta:
         name = "simpleInfoType"
 
