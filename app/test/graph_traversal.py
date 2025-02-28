@@ -10,6 +10,8 @@ from app.scheme.org.eidr.schema.asset_doitype import AssetDoitype
 from app.scheme.org.eidr.schema.response import ResponseType
 from app.scheme.org.eidr.schema.status_type_type import StatusTypeType
 from app.scheme.org.eidr.schema.simple_info_type import SimpleInfoType
+from app.scheme.org.eidr.schema.registrations_type import RegistrationsType
+from app.scheme.org.eidr.schema.create_basic_data_type import CreateBasicDataType, CreationFullInfo
 
 
 class GraphTraversal(unittest.TestCase):
@@ -45,7 +47,8 @@ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
             "object/graph"
         )
         xml = to_pretty_xml(res.content)
-        response: ResponseType = Response.from_xml(xml)
+        response: Response = Response.from_xml(xml)
+        response: SimpleInfoType = response.obj
         self.assertEqual(StatusTypeType.SUCCESS.value, response.status.type_value.value, "Unsuccessful Request")
         print(response)
 
@@ -67,7 +70,8 @@ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
             "object/graph"
         )
         xml = to_pretty_xml(res.content)
-        response: ResponseType = Response.from_xml(xml)
+        response: Response = Response.from_xml(xml)
+        response: SimpleInfoType = response.obj
         self.assertEqual(StatusTypeType.SUCCESS.value, response.status.type_value.value, "Unsuccessful Request")
         print(response)
 
@@ -80,10 +84,12 @@ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
         req = traversal.find_ancestors(doi)
         res = driver.post_raw(
             req,
-            "objects/graph"
+            "object/graph"
         )
+        print("\n",req)
         xml = to_pretty_xml(res.content)
-        response: ResponseType = Response.from_xml(xml)
+        response: Response = Response.from_xml(xml)
+        response: SimpleInfoType = response.obj
         self.assertEqual(StatusTypeType.SUCCESS.value, response.status.type_value.value, "Unsuccessful Request")
         print(response)
 
@@ -108,7 +114,8 @@ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 
         )
         xml = to_pretty_xml(res.content)
-        response: ResponseType = Response.from_xml(xml)
+        response: Response = Response.from_xml(xml)
+        response: SimpleInfoType = response.obj
         self.assertEqual(StatusTypeType.SUCCESS.value, response.status.type_value.value, "Unsuccessful Request")
         print(response)
 
@@ -124,15 +131,14 @@ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
         res = driver.post_raw(req, "object/graph")
 
         xml = to_pretty_xml(res.content)
-        print(xml)
-
-
+        print(xml,"hgkhgkgkhk")
 
         """ Reponse Containing SimpleMetaData  """
         response: Response = Response.from_xml(xml)
         response: SimpleInfoType = response.obj
 
         """ Validating The Success Of the Request  """
+
         self.assertEqual(StatusTypeType.SUCCESS.value, response.status.type_value.value, "Unsuccessful Request")
 
 
