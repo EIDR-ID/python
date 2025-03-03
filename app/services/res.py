@@ -21,8 +21,10 @@ class ResponseReader:
 
     def __init__(self, res_str):
         self.obj = parser.from_string(res_str, Response, ns)
-        self.token = self.obj.request_status.token
-        self.status = self.obj.status.code.value(), self.obj.status.type_value.value()
+
+        if self.obj.request_status:
+            self.token = self.obj.request_status.token
+        self.status = self.obj.status.code.value, self.obj.status.type_value.value
 
 
 
@@ -50,14 +52,14 @@ class ResponseReader:
 
 
 def test():
-    r = test_query()
-    res = ResponseReader.from_xml(test_query())
-    res, err = res.get_fields(
+    r = ResponseReader.from_xml(test_query())
+    res, err = r.get_fields(
         "query_results",
         "status",
         "version"
     ), None
     print(res)
+    print("SHITNING", r.status)
 
 
 test()
