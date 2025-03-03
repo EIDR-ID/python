@@ -1,10 +1,12 @@
+from typing import Tuple
+
 from xsdata.formats.dataclass.context import XmlContext
 from xsdata.formats.dataclass.parsers import XmlParser
 from xsdata.formats.dataclass.parsers.config import ParserConfig
-from app.scheme.org.eidr.schema import response, response_type
+from app.scheme.org.eidr.schema.response import Response
 from app.driver import test_query
 
-from util import attempt
+from app.util import attempt
 
 config = ParserConfig()
 context = XmlContext()
@@ -13,10 +15,16 @@ ns = {"": "http://www.eidr.org/schema"}
 
 
 class ResponseReader:
-    obj = None
+    obj: Response = None
+    token: str | None = None
+    status: Tuple[int, str] = None
 
     def __init__(self, res_str):
-        self.obj = parser.from_string(res_str, response.Response, ns)
+        self.obj = parser.from_string(res_str, Response, ns)
+        self.token = self.obj.request_status.token
+        self.status = self.obj.status.code.value(), self.obj.status.type_value.value()
+
+
 
     @classmethod
     def from_xml(cls, xml: str):
