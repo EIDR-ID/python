@@ -4,8 +4,11 @@ import os
 from dataclasses import dataclass, field
 from typing import Dict, Optional
 
-from app.services import Query, ServiceBase
+from app.scheme.org.eidr.schema import Request
+from app.scheme.org.eidr.schema.request import RequestType
 
+
+from app.services import Query, ServiceBase, RegistryRequest, Delete
 os.environ['default_proxy_port'] = "80"
 
 import requests
@@ -141,7 +144,7 @@ class API_Driver:
         print(resp.content)
         return resp.content
 
-    def post(self, service: ServiceBase):
+    def post(self, service: RegistryRequest):
         return self.post_raw(service.xml, service.name)
 
     def post_raw(self, xml: str, endpoint: str):
@@ -167,6 +170,7 @@ class API_Driver:
             ...  # print(resp.content)
 
         return resp
+
 
 
 def test_get():
@@ -201,13 +205,27 @@ def test_query():
         release_date="2005"
     )
     #print(exp)
-    res = driver.post(Query(
+    q=Query(
         expression=exp,
         page_num=1,
         page_size=1
+    )
+
+    res = driver.post(RegistryRequest(
+        operations=[q]
     ))
+
     return to_pretty_xml(res.content)
+def test_delete():
+    driver = API_Driver.from_default()
+    d = Delete(
+        id="10.5240/55C4-C624-362D-B110-0F9D-J"
+    )
+    req = RegistryRequest(
+        operations=[d]
+    )
+    print(req.xml)
+    res = driver.post(req)
 
-
-print(test_query())
-
+    return to_pretty_xml(res.content)
+print(test_delete())

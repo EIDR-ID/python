@@ -1,12 +1,23 @@
 from typing import Optional
 
-from .interface import ServiceBase
+from app.services.interface import ServiceBase
 
 from app.scheme.org.eidr.schema  import request, operation_type, query_type, asset_doitype
 
 
+
 class Query(ServiceBase):
     name = "query"
+
+    def __init__(self, doi: Optional[str] = None, expression: Optional[str] = None, page_num: Optional[int] = None, page_size: Optional[int] = None, continuation_token: Optional[str] = None, extended_family: Optional[bool] = None):
+        super().__init__(
+            doi=doi,
+            expression=expression,
+            page_num=page_num,
+            page_size=page_size,
+            continuation_token=continuation_token,
+            extended_family=extended_family
+        )
 
     def validate(self) -> bool:
         expected = {
@@ -39,7 +50,7 @@ class Query(ServiceBase):
         page_size: Optional[int] = self.args.get("page_size", None)
         continuation_token: Optional[str] = self.args.get("continuation_token", None)
         extended_family: Optional[bool] = self.args.get("extended_family", None)
-        self.obj = request.Request(operation=[operation_type.OperationType(
+        self.obj = operation_type.OperationType(
             query=query_type.QueryType(
                 id=asset_doitype.AssetDoitype(value=doi) if doi else None,
                 expression=expression,
@@ -48,7 +59,7 @@ class Query(ServiceBase):
                 continuation_token=continuation_token,
                 extended_family=extended_family
             )
-        )])
+        )
 # def test_query():
 #     driver = API_Driver.from_default()
 #     res = driver.post(Query(
@@ -127,7 +138,3 @@ class Query(ServiceBase):
                 base += " AND (/FullMetadata/BaseObjectData/{} \"{}\")".format(name, val)
 
         return base
-
-
-
-
