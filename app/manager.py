@@ -45,34 +45,38 @@ class SessionManager:
             "details": (op_res.status.details_code, op_res.status.details)
         } for op_res in status_res.operation_status] if status_res else []
 
-        return res.obj
+        return operation_stats, status_res.continuation_token
 
 def test_ses_q():
     driver = API_Driver.from_default()
     ses = SessionManager(driver)
     exp = Query.base_obj_expression(
-        release_date="2005"
+        release_date="2017"
     )
     ct = "AOIJAEIOJIEAWIOEJAO"
     q=RegistryRequest(
         operations=[Query(
             expression=exp,
             page_num=1,
-            page_size=1,
+            page_size=15,
             continuation_token=ct
         )]
     )
     res, continuation = ses.query(q)
-    print(res)
-    s = RegistryRequest(
-        operations=[StatusRequest(
-            continuation_token=ct,
-            user_id="10.5238/cramos",
-            page_number=1,
-            page_size=1
+    for r in res:
+        print("\t", r.as_dict(), "\n")
+
+    q2 = RegistryRequest(
+        operations=[Query(
+            page_num=2,
+            page_size=15,
+            continuation_token=continuation
         )]
     )
-    res = ses.status(s)
+    res, continuation = ses.query(q2)
+    print("!!!!")
+    for r in res:
+        print("\t", r.as_dict(), "\n")
     return res
 
 def test_ses_d():
@@ -80,27 +84,28 @@ def test_ses_d():
     ses = SessionManager(driver)
     d=RegistryRequest(
         operations=[Delete(
-            id="10.5240/55C4-C624-362D-B110-0F9D-J"
+            id="10.5240/BA24-7B2E-6DBB-D3BC-1721-2"
         )]
     )
     res = ses.post(d)
-    print(res, ses.tokens[-1])
+    print(res.obj, "\nADADDDA\n", ses.tokens[-1])
     return res
 
 def test_status():
-    token = "1741046926917003482"
+    token = "1741054324732003662"
     driver = API_Driver.from_default()
     ses = SessionManager(driver)
     s=RegistryRequest(
         operations=[StatusRequest(
-            token=token,
+            user_id="10.5238/cramos",
             page_number=1,
             page_size=10
         )]
     )
-    res = ses.status(s)
-    print(res)
+    res, _ = ses.status(s)
+    for r in res:
+        print("\t", r, "\n")
 
 
 test_ses_q()
-# #test_status()
+#test_status()
