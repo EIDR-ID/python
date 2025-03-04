@@ -8,6 +8,8 @@ import app.driver as d
 
 from app.scheme.org.eidr.schema.response import Response
 from app.services import Query, RegistryRequest
+from app.services.simple_metadata import SimpleMetadata
+from app.scheme.org.eidr.schema.simple_info import SimpleInfo
 
 from app.util import attempt
 
@@ -50,6 +52,16 @@ class ResponseReader:
             f = self.get_field(key)
             out.append(f)
         return out
+
+
+    def get_simple_metaData(self)->list[SimpleMetadata]:
+        simple_metadata:list[SimpleInfo] = self.get_field("simple_metadata")
+        simpleInfo:list[SimpleMetadata] = []
+        for i in simple_metadata:
+            simpleInfo.append(SimpleMetadata(i))
+        return simpleInfo
+
+
 
 def test_query():
     driver = d.API_Driver.from_default()
