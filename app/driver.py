@@ -228,4 +228,4 @@ def test_delete():
     res = driver.post(req)
 
     return to_pretty_xml(res.content)
-print(test_delete())
+#print(test_delete())

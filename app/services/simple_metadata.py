@@ -1,0 +1,34 @@
+from app.scheme.org.eidr.schema.simple_info import SimpleInfo
+
+class SimpleMetadata:
+    obj: SimpleInfo = None
+
+
+    def __init__(self, info: SimpleInfo):
+        obj = info
+        self.status = obj.status.value
+        self.structural_type = obj.structural_type.value
+        self.id = obj.id.value
+        self.referent_type = obj.referent_type.value
+        self.release_date = obj.release_date.year
+        self.original_language = [l.value for l in obj.original_language]
+        self.relationship = [{"type": r.type_value.value, "value": r.value} for r in obj.relationship]
+        self.resource_name = obj.resource_name.value
+        self.resource_name_lang = obj.resource_name.lang
+        self.version_language = [lang.value for lang in obj.version_language]
+
+    def as_dict(self):
+        return {
+            "status": self.status,
+            "structural_type": self.structural_type,
+            "id": self.id,
+            "referent_type": self.referent_type,
+            "release_date": self.release_date,
+            "original_language": self.original_language,
+            "relationship": self.relationship,
+            "resource_name": self.resource_name,
+            "resource_name_lang": self.resource_name_lang,
+            "version_language": self.version_language,
+        }
+
+

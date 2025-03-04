@@ -3,8 +3,11 @@ from typing import Tuple
 from xsdata.formats.dataclass.context import XmlContext
 from xsdata.formats.dataclass.parsers import XmlParser
 from xsdata.formats.dataclass.parsers.config import ParserConfig
+
+import app.driver as d
+
 from app.scheme.org.eidr.schema.response import Response
-from app.driver import test_query
+from app.services import Query, RegistryRequest
 
 from app.util import attempt
 
@@ -18,10 +21,10 @@ class ResponseReader:
     obj: Response = None
     token: str | None = None
     status: Tuple[int, str] = None
+    continuation_token: str | None = None
 
     def __init__(self, res_str):
         self.obj = parser.from_string(res_str, Response, ns)
-
         if self.obj.request_status:
             self.token = self.obj.request_status.token
         self.status = self.obj.status.code.value, self.obj.status.type_value.value
@@ -36,7 +39,6 @@ class ResponseReader:
         return self.get_field(key)
 
     def get_field(self, key: str):
-        print(self.obj)
         res, err = attempt(lambda: getattr(self.obj, key))
         if err is not None:
             raise err
@@ -49,7 +51,23 @@ class ResponseReader:
             out.append(f)
         return out
 
+def test_query():
+    driver = d.API_Driver.from_default()
+    exp = Query.base_obj_expression(
+        release_date="2005"
+    )
+    #print(exp)
+    q=Query(
+        expression=exp,
+        page_num=1,
+        page_size=1
+    )
 
+    res = driver.post(RegistryRequest(
+        operations=[q]
+    ))
+
+    return d.to_pretty_xml(res.content)
 
 def test():
     r = ResponseReader.from_xml(test_query())
@@ -60,6 +78,8 @@ def test():
     ), None
     print(res)
     print("SHITNING", r.status)
+
+
 
 
 test()
