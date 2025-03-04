@@ -28,7 +28,7 @@ class SessionManager:
             print(res.obj)
             raise RuntimeError("Got bad status {}".format(res.status))
         q_res = res.get_field("query_results")
-        matched = [SimpleMetadata(data) for data in q_res.simple_metadata]
+        matched = [SimpleMetadata(data,driver=self.driver) for data in q_res.simple_metadata]
         return matched, q_res.continuation_token
 
     def status(self, s: RegistryRequest):

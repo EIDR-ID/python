@@ -8,6 +8,8 @@ import app.driver as d
 
 from app.scheme.org.eidr.schema.response import Response
 from app.services import Query, RegistryRequest
+from app.services.simple_metadata import SimpleMetadata
+from app.scheme.org.eidr.schema.simple_info import SimpleInfo
 
 from app.util import attempt
 
@@ -23,13 +25,13 @@ class ResponseReader:
     status: Tuple[int, str] = None
     continuation_token: str | None = None
 
-    def __init__(self, res_str):
+    def __init__(self, res_str,driver: d.API_Driver=None):
+        self.__dir__()
         self.obj = parser.from_string(res_str, Response, ns)
+        self.driver =driver
         if self.obj.request_status:
             self.token = self.obj.request_status.token
         self.status = self.obj.status.code.value, self.obj.status.type_value.value
-
-
 
     @classmethod
     def from_xml(cls, xml: str):
@@ -51,13 +53,21 @@ class ResponseReader:
             out.append(f)
         return out
 
+    def get_simple_metaData(self, ) -> list[SimpleMetadata]:
+        simple_metadata: list[SimpleInfo] = self.get_field("simple_metadata")
+        simpleInfo: list[SimpleMetadata] = []
+        for i in simple_metadata:
+            simpleInfo.append(SimpleMetadata(i, self.driver))
+        return simpleInfo
+
+
 def test_query():
     driver = d.API_Driver.from_default()
     exp = Query.base_obj_expression(
         release_date="2005"
     )
-    #print(exp)
-    q=Query(
+    # print(exp)
+    q = Query(
         expression=exp,
         page_num=1,
         page_size=1
@@ -69,6 +79,7 @@ def test_query():
 
     return d.to_pretty_xml(res.content)
 
+
 def test():
     r = ResponseReader.from_xml(test_query())
     res, err = r.get_fields(
@@ -78,8 +89,6 @@ def test():
     ), None
     print(res)
     print("SHITNING", r.status)
-
-
 
 
 test()
