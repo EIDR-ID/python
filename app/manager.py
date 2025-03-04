@@ -1,4 +1,6 @@
-from typing import List
+import asyncio
+from asyncio import Future
+from typing import List, Tuple
 
 from app.scheme.org.eidr.schema import RegistrantType
 from app.services import RegistryRequest, ServiceBase, ResponseReader, Query, StatusRequest, Delete
@@ -31,7 +33,7 @@ class SessionManager:
         matched = [SimpleMetadata(data,driver=self.driver) for data in q_res.simple_metadata]
         return matched, q_res.continuation_token
 
-    def status(self, s: RegistryRequest):
+    def status(self, s: RegistryRequest) -> Tuple[List[dict], str]:
         if s.name != "status":
             raise ValueError("Must call status with status request")
         print(s.xml)
@@ -46,7 +48,33 @@ class SessionManager:
         } for op_res in status_res.operation_status] if status_res else []
 
         return operation_stats, status_res.continuation_token
+    def future_status(self, s: RegistryRequest, wait: float = 1, retries: int = 10) -> List[Future]:
+        if s.name != "status":
+            raise ValueError("Must call status with status request")
+        res = self.post(s)
+        status_res = res.get_field("request_status_results")
+        operation_stats = [{
+            "token": op_res.token,
+            "status": (op_res.status.code.value, op_res.status.type_value.value),
+            "details": (op_res.status.details_code, op_res.status.details)
+        } for op_res in status_res.operation_status] if status_res else []
+        futures = []
+        for op in operation_stats:
+            future = asyncio.create_task(self.poll_status(op["token"], wait, retries))
+            futures.append(future)
+        return futures
 
+    async def poll_status(self, token: str, wait: float, retries: int):
+        for i in range(retries):
+            s = StatusRequest(token=token)
+            req = RegistryRequest(operations=[s])
+            res, cont = self.status(req)
+            status, _ = res[0]["status"]
+            if status == 2:
+                return res[0]
+            await asyncio.sleep(wait)
+        print("Failed to get status")
+        return None
 def test_ses_q():
     driver = API_Driver.from_default()
     ses = SessionManager(driver)
