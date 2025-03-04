@@ -28,16 +28,23 @@ class SessionManager:
             print(res.obj)
             raise RuntimeError("Got bad status {}".format(res.status))
         q_res = res.get_field("query_results")
-        if q_res.continuation_token:
-            self.tokens.append(q_res.continuation_token)
-        matched = [SimpleMetadata(data).as_dict() for data in q_res.simple_metadata]
+        matched = [SimpleMetadata(data) for data in q_res.simple_metadata]
         return matched, q_res.continuation_token
 
     def status(self, s: RegistryRequest):
         if s.name != "status":
             raise ValueError("Must call status with status request")
+        print(s.xml)
         res = self.post(s)
-        print(res)
+        print(res.obj)
+        status_res = res.get_field("request_status_results")
+        print(status_res)
+        operation_stats = [{
+            "token": op_res.token,
+            "status": (op_res.status.code.value, op_res.status.type_value.value),
+            "details": (op_res.status.details_code, op_res.status.details)
+        } for op_res in status_res.operation_status] if status_res else []
+
         return res.obj
 
 def test_ses_q():
@@ -46,15 +53,26 @@ def test_ses_q():
     exp = Query.base_obj_expression(
         release_date="2005"
     )
+    ct = "AOIJAEIOJIEAWIOEJAO"
     q=RegistryRequest(
         operations=[Query(
             expression=exp,
             page_num=1,
-            page_size=10
+            page_size=1,
+            continuation_token=ct
         )]
     )
-    res, _ = ses.query(q)
+    res, continuation = ses.query(q)
     print(res)
+    s = RegistryRequest(
+        operations=[StatusRequest(
+            continuation_token=ct,
+            user_id="10.5238/cramos",
+            page_number=1,
+            page_size=1
+        )]
+    )
+    res = ses.status(s)
     return res
 
 def test_ses_d():
@@ -75,12 +93,14 @@ def test_status():
     ses = SessionManager(driver)
     s=RegistryRequest(
         operations=[StatusRequest(
-            token=token
+            token=token,
+            page_number=1,
+            page_size=10
         )]
     )
     res = ses.status(s)
     print(res)
 
 
-#test_ses_d()
-test_status()
+test_ses_q()
+# #test_status()
