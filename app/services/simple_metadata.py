@@ -14,6 +14,7 @@ class SimpleMetadata(GraphTraversal):
         self.status = obj.status.value
         self.structural_type = obj.structural_type.value
         self.id = obj.id.value
+        self.doi = self.id
         self.referent_type = obj.referent_type.value
         self.release_date = obj.release_date.year
         self.original_language = [l.value for l in obj.original_language]

@@ -53,16 +53,16 @@ class GraphTraversal:
     """
     A class to handle graph traversal operations for a given DOI.
     """
-    name = "object/graph"
-    serializer = XmlSerializer(config=SerializerConfig(indent="    "))
-    ns_map = {"": "http://www.eidr.org/schema"}
 
     def __init__(self, driver: Driver.API_Driver):
         self.driver = driver
+        self.doi = None
+        self.name = "object/graph"
+        self.serializer = XmlSerializer(config=SerializerConfig(indent="    "))
+        self.ns_map = {"": "http://www.eidr.org/schema"}
 
     def find_ancestors(
             self,
-            doi: Optional[Union[str, AssetDoitype]] = None,
             referent_type_filter: list[ReferentType] = None,
             relationship_type_filter: list[RelationshipType] = None,
             structural_type_filter: list[CreationStructuralType] = None,
@@ -82,7 +82,7 @@ class GraphTraversal:
             str: The serialized XML representation of the request.
         """
         if find_ancestors is None:
-            doi = self.validate_doi(doi)
+            doi = self.validate_doi(self.doi)
             find_ancestors = FindAncestorsType(
                 id=doi,
                 referent_type=referent_type_filter,

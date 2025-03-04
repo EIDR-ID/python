@@ -1,6 +1,13 @@
 from typing import Tuple, Any
 
-from app.manager import SessionManager, API_Driver,RegistryRequest,SimpleMetadata,ResponseReader,GraphTraversal
+from app.manager import (
+    SessionManager,
+    API_Driver,
+    RegistryRequest,
+    SimpleMetadata,
+    ResponseReader,
+    # GraphTraversal
+)
 from app.scheme.org.eidr.schema.referent_type import ReferentType
 from app.scheme.org.eidr.schema import StatusTypeType
 from app.services import Query
@@ -25,13 +32,10 @@ res =RegistryRequest(
 
 match,_ = session.query(res)
 
-graph = GraphTraversal(driver)
 
 for metadata in match:
     response: Tuple[ResponseReader, Any] = metadata.find_ancestors(
-        graph=graph,
         referent_type_filter=[ReferentType.SERIES,ReferentType.SEASON]
-
     )
     if response[1] is not None:
         print("Error finding ancestor", response[1])
