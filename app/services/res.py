@@ -25,10 +25,10 @@ class ResponseReader:
     status: Tuple[int, str] = None
     continuation_token: str | None = None
 
-    def __init__(self, res_str,driver: d.API_Driver=None):
+    def __init__(self, res_str, driver: d.API_Driver = None):
         self.__dir__()
         self.obj = parser.from_string(res_str, Response, ns)
-        self.driver =driver
+        self.driver = driver
         if self.obj.request_status:
             self.token = self.obj.request_status.token
         self.status = self.obj.status.code.value, self.obj.status.type_value.value
@@ -53,7 +53,7 @@ class ResponseReader:
             out.append(f)
         return out
 
-    def get_simple_metaData(self, ) -> list[SimpleMetadata]:
+    def get_simple_metaData(self) -> list[SimpleMetadata]:
         simple_metadata: list[SimpleInfo] = self.get_field("simple_metadata")
         simpleInfo: list[SimpleMetadata] = []
         for i in simple_metadata:

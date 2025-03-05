@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 from typing import Optional
 
-from    .asset_doitype import AssetDoitype
+from app.scheme.org.eidr.schema.asset_doitype import AssetDoitype
 
 __NAMESPACE__ = "http://www.eidr.org/schema"
 

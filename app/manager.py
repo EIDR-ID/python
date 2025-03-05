@@ -8,8 +8,8 @@ from app.services.simple_metadata import SimpleMetadata
 
 
 class SessionManager:
-    driver:API_Driver = None
-    tokens:List[str] = []
+    driver: API_Driver = None
+    tokens: List[str] = []
 
     def __init__(self, driver: API_Driver):
         self.driver = driver
@@ -28,7 +28,7 @@ class SessionManager:
             print(res.obj)
             raise RuntimeError("Got bad status {}".format(res.status))
         q_res = res.get_field("query_results")
-        matched = [SimpleMetadata(data,driver=self.driver) for data in q_res.simple_metadata]
+        matched = [SimpleMetadata(data, driver=self.driver) for data in q_res.simple_metadata]
         return matched, q_res.continuation_token
 
     def status(self, s: RegistryRequest):
@@ -47,6 +47,7 @@ class SessionManager:
 
         return res.obj
 
+
 def test_ses_q():
     driver = API_Driver.from_default()
     ses = SessionManager(driver)
@@ -54,7 +55,7 @@ def test_ses_q():
         release_date="2005"
     )
     ct = "AOIJAEIOJIEAWIOEJAO"
-    q=RegistryRequest(
+    q = RegistryRequest(
         operations=[Query(
             expression=exp,
             page_num=1,
@@ -75,10 +76,11 @@ def test_ses_q():
     res = ses.status(s)
     return res
 
+
 def test_ses_d():
     driver = API_Driver.from_default()
     ses = SessionManager(driver)
-    d=RegistryRequest(
+    d = RegistryRequest(
         operations=[Delete(
             id="10.5240/55C4-C624-362D-B110-0F9D-J"
         )]
@@ -87,11 +89,12 @@ def test_ses_d():
     print(res, ses.tokens[-1])
     return res
 
+
 def test_status():
     token = "1741046926917003482"
     driver = API_Driver.from_default()
     ses = SessionManager(driver)
-    s=RegistryRequest(
+    s = RegistryRequest(
         operations=[StatusRequest(
             token=token,
             page_number=1,
