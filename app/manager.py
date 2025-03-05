@@ -7,6 +7,8 @@ from app.services import RegistryRequest, ServiceBase, ResponseReader, Query, St
 from app.driver import API_Driver
 from app.services.res import test_query
 from app.services.simple_metadata import SimpleMetadata
+from app.test.demo import driver
+from app.scheme.org.eidr.schema.base_object_info_type import BaseObjectInfoType
 
 
 class SessionManager:
@@ -21,6 +23,9 @@ class SessionManager:
         if res.token:
             self.tokens.append(res.token)
         return res
+    def resolve(self, id: str):
+        res = self.driver.get_object(id)
+        print(res)
 
     def query(self, q: RegistryRequest):
         if q.name != "query":
@@ -134,6 +139,10 @@ def test_status():
     for r in res:
         print("\t", r, "\n")
 
-
-test_ses_q()
+def test_resolve():
+    driver = API_Driver.from_default()
+    ses = SessionManager(driver)
+    ses.resolve("10.5240/BA24-7B2E-6DBB-D3BC-1721-2")
+#test_ses_q()
 #test_status()
+test_resolve()
