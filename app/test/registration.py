@@ -1,10 +1,11 @@
 import unittest
 
-from app.driver import API_Driver, to_pretty_xml
 from app.services.res import ResponseReader
 from app.scheme.org.eidr.schema import CreateSeriesDataType
 from app.services.registration import Registration
 from app.services.meta_data_builders import BaseObjectDataBuilder, SeriesInfoBuilder
+import app.driver as Driver
+
 
 class RegistrationTest(unittest.TestCase):
     """
@@ -49,7 +50,7 @@ class RegistrationTest(unittest.TestCase):
 
     # currently returns a match because this record has been registered already
     def test_register_series(self):
-        driver = API_Driver.from_default()
+        driver = Driver.API_Driver.from_default()
 
         base_object_data = (
             BaseObjectDataBuilder
@@ -86,7 +87,7 @@ class RegistrationTest(unittest.TestCase):
         request = Registration(record=series_test)
         print(f"example request: \n {request.xml}")
         resp = driver.post(request)
-        print(to_pretty_xml(resp.content))
+        print(Driver.to_pretty_xml(resp.content))
 
         # test for successful interaction with EIDR API
         self.assertEqual(200, resp.status_code)
