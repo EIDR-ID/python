@@ -47,6 +47,7 @@ class RegistrationTest(unittest.TestCase):
         </Request>
     """
 
+    # currently returns a match because this record has been registered already
     def test_register_series(self):
         driver = API_Driver.from_default()
 
@@ -73,6 +74,7 @@ class RegistrationTest(unittest.TestCase):
             .set_date_required(False)
             .build()
         )
+
 
         series_test = CreateSeriesDataType(
             base_object_data=base_object_data,

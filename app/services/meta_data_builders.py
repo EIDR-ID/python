@@ -41,7 +41,7 @@ class BaseObjectDataBuilder:
     mode: Optional[ModeType] = None
     referent_type: Optional[ReferentType] = None
     resource_name: Optional[TitleType] = None
-    alternate_resource_name: list[TitleType]
+    alternate_resource_name: list[TitleType] = None
     original_language: list[LanguageType] = []
     version_language: list[LanguageType] = []
     associated_org: list[AssociatedOrgType] = []
