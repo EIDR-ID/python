@@ -84,6 +84,7 @@ class RegistrationTest(unittest.TestCase):
             )
         )
 
+
         request = Registration(record=series_test)
         print(f"example request: \n {request.xml}")
         resp = driver.post(request)
