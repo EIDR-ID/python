@@ -102,7 +102,7 @@ from .find_services_by_name import FindServicesByName
 from .find_services_from_catalog import FindServicesFromCatalog
 from .full_metadata import FullMetadata
 from .full_object_info_type import FullObjectInfoType
-from .get_lightweight_relationships_type import GetLightweightRelationshipsType
+from app.scheme.org.eidr.schema.graph.get_lightweight_relationships_type import GetLightweightRelationshipsType
 from .graph.find_ancestors_type import FindAncestorsType
 from .graph.find_descendants_type import FindDescendantsType
 from .graph.get_children_type import GetChildrenType
