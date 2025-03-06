@@ -1,7 +1,9 @@
+from typing import Union
+
 from app.services.interface import ServiceBase
 
 from app.scheme.org.eidr.schema.request import Request
-from app.scheme.org.eidr.schema import OperationType
+from app.scheme.org.eidr.schema import OperationType, CreateSeriesDataType, CreateType, CreationType
 
 """
 This service provides the following content operations:
@@ -16,10 +18,14 @@ This service provides the following content operations:
 """
 
 class Registration(ServiceBase):
-    name = 'registration'
+    name = 'register'
 
+    def __init(self, record: Union[CreateSeriesDataType]):
+        self.record = record
     def validate(self) -> bool:
-        pass
+        # TODO: add validation logic
+        return True
 
     def objectify(self):
-        self.obj = Request(operation=[OperationType()])
+        # TODO: implement logic to match record with asset type (switch case)
+        self.obj = Request(operation=[OperationType(create=CreateType(series=self.args.get('record'), type_value=CreationType.CREATE_SERIES))])
