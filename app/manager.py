@@ -2,10 +2,13 @@ import asyncio
 from asyncio import Future
 from typing import List, Tuple
 
+from xsdata.formats.dataclass.parsers.config import ParserConfig
+
 from app.scheme.org.eidr.schema import RegistrantType
 from app.services import RegistryRequest, ServiceBase, ResponseReader, Query, StatusRequest, Delete
 from app.driver import API_Driver
-from app.services.res import test_query
+from app.services.metadata import BaseObjectMeta, FullMeta
+from app.services.res import test_query, parser, config
 from app.services.simple_metadata import SimpleMetadata
 from app.test.demo import driver
 from app.scheme.org.eidr.schema.base_object_info_type import BaseObjectInfoType
@@ -18,6 +21,10 @@ class SessionManager:
     def __init__(self, driver: API_Driver):
         self.driver = driver
 
+    @classmethod
+    def from_default(cls):
+        return cls(API_Driver.from_default())
+
     def post(self, req: RegistryRequest):
         res = ResponseReader(self.driver.post_raw(req.xml, req.name).content.decode("utf-8"))
         if res.token:
@@ -25,7 +32,9 @@ class SessionManager:
         return res
     def resolve(self, id: str):
         res = self.driver.get_object(id)
-        print(res)
+        info = FullMeta.from_string(res.decode("utf-8"))
+        #print(info.base_meta.resource_name)
+        return info
 
     def query(self, q: RegistryRequest):
         if q.name != "query":
