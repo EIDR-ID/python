@@ -13,3 +13,4 @@ class OperationStatusTypeType(Enum):
     VALIDATION_ERROR = "validation error"
     OTHER_ERROR = "other error"
     REJECTED = "rejected"
+

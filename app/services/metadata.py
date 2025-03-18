@@ -4,6 +4,11 @@ from xsdata.formats.dataclass.context import XmlContext
 from xsdata.formats.dataclass.parsers import XmlParser
 from xsdata.formats.dataclass.parsers.config import ParserConfig
 
+config = ParserConfig()
+context = XmlContext()
+parser = XmlParser(context=context, config=config)
+ns = {"": "http://www.eidr.org/schema"}
+
 from app.scheme.org.eidr.schema import FullObjectInfoType
 from app.scheme.org.eidr.schema.base_object_info_type import BaseObjectInfoType, AssociatedOrgType, CreationStructuralType, ModeType, ReferentType, StatusType, TitleType
 
@@ -29,10 +34,7 @@ class AdministratorsDict(TypedDict):
     metadata_authority: List[str]
 
 
-config = ParserConfig()
-context = XmlContext()
-parser = XmlParser(context=context, config=config)
-ns = {"": "http://www.eidr.org/schema"}
+
 
 class BaseObjectMeta:
     obj: BaseObjectInfoType | None = None

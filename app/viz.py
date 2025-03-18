@@ -84,8 +84,9 @@ class DictEditor:
                 # self.entries[field_name] = {'preview': preview}
             else:
                 # Regular field
+                text_widget = tk.Text(self.root, height=1, width=30)
                 self.entries[field_name] = {
-                    'widget': ttk.Entry(self.root),
+                    'widget': text_widget,
                     'type': type(value) if value is not None else str,
                     'original': value
                 }
@@ -93,14 +94,14 @@ class DictEditor:
                 ttk.Label(self.root, text=f"{snake_to_title(field_name)}:").grid(
                     row=row, column=0, padx=5, pady=2, sticky="e")
 
-                self.entries[field_name]['widget'].insert(0, str(value))
+                self.entries[field_name]['widget'].insert("1.0", str(value))
                 self.entries[field_name]['widget'].grid(
                     row=row, column=1, padx=5, pady=2, sticky="w")
 
         # Submit button
         ttk.Button(
             self.root,
-            text="Save" if not self.parent else "Save & Close",
+            text="Done" if not self.parent else "Save",
             command=self.submit
         ).grid(row=len(self.data) + 2, columnspan=2, pady=10)
 
@@ -126,7 +127,8 @@ class DictEditor:
         for field_name, data in self.entries.items():
             if 'widget' in data:
                 try:
-                    got = data['widget'].get()
+                    got = data['widget'].get("1.0", "1.end").strip()
+                    print(got)
                     if got == "None":
                         self.data[field_name] = None
                     else:
@@ -229,6 +231,9 @@ def display_editable_dict(data_dict: dict, title: str = "Edit Fields", parent=No
     entries = {}
     submitted = False
 
+    # Add keyboard shortcuts
+    root.bind("<Return>", lambda e: submit())
+
     def create_entries():
         nonlocal entries
         entries.clear()
@@ -268,7 +273,7 @@ def display_editable_dict(data_dict: dict, title: str = "Edit Fields", parent=No
 
         # Submit button (root window only)
         if is_root:
-            ttk.Button(root, text="Save", command=submit).grid(
+            ttk.Button(root, text="Done", command=submit).grid(
                 row=len(data_dict) + 2, columnspan=2, pady=10)
 
     def edit_nested(field_name, nested_dict):
@@ -322,7 +327,7 @@ def alert_popup(title: str, message: str, label: str = "Alert"):
     ttk.Label(popup, text=label, wraplength=400).pack(padx=10, pady=10)
 
     # Add a selectable text widget
-    text_widget = tk.Text(popup, wrap=tk.WORD, height=5, width=50)
+    text_widget = tk.Text(popup, wrap=tk.WORD, height=1, width=50)
     text_widget.insert(tk.END, message)
     text_widget.config(state=tk.DISABLED)  # Make it read-only
     text_widget.pack(padx=10, pady=10, fill=tk.BOTH, expand=True)
@@ -426,6 +431,9 @@ class Vizualizer:
 
 v = Vizualizer(SessionManager.from_default())
 #v.show_expression_builder()
-#v.query()
+
+v.query()
+
 #v.resolve()
-v.display_menu()
+
+#v.display_menu()
