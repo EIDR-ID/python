@@ -20,7 +20,7 @@ class TestResolve(unittest.TestCase):
         self.assertNotEqual(ses.resolve("10.5240/90B8-5465-14DD-8FBC-8843-A").extra_meta.series_info, None) # series
         self.assertNotEqual(ses.resolve("10.5240/B3C3-5B2E-B3C4-E3AB-20DF-L").extra_meta.episode_info, None) # episode
         self.assertNotEqual(ses.resolve("10.5240/B514-FB14-DF6D-B857-BAAF-4").extra_meta.composite_info, None) # composite
-        self.assertNotEqual(ses.resolve("10.5240/BBA5-429A-BA1A-1BFE-5317-D").extra_meta.season_info, None) # season
+        self.assertNotEqual(ses.resolve("10.5240/D392-4917-BF66-F4CB-5D53-C").extra_meta.season_info, None) # season
         self.assertNotEqual(ses.resolve("10.5240/F183-7C2F-AABC-64A9-D4BE-Y").extra_meta.alternate_content_info, None) # alternate content
         self.assertNotEqual(ses.resolve("10.5240/DB80-AEE8-1CF5-03F3-7293-9").extra_meta.supplemental_content_info, None) # supplemental content
         self.assertNotEqual(ses.resolve("10.5240/CEFD-A579-C781-CC22-73F6-1").extra_meta.promotion_info, None) # promotion
