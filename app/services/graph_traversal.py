@@ -42,7 +42,7 @@ from app.scheme.org.doi.pkg_2010.doischema_avs.creation_structural_type import (
 
 
 # <?xml version="1.0" encoding="UTF-8"?>
-# <Response xmlns="http://www.eidr.org/schema" version="2.0.9">
+# <Response_Reader xmlns="http://www.eidr.org/schema" version="2.0.9">
 #     <Status><Code>0</Code><Type>success</Type></Status>
 #     <SimpleMetadata>
 #         <ID>10.5240/FB0D-0A93-CAD6-8E8D-80C2-4</ID>
@@ -55,8 +55,8 @@ from app.scheme.org.doi.pkg_2010.doischema_avs.creation_structural_type import (
 #         <Status>valid</Status>
 # </SimpleMetadata>
 # <GenerationsAbove>1</GenerationsAbove>
-# </Response>
-class GraphTraversal:
+# </Response_Reader>
+class GraphTraversal():
     """
     A class to handle graph traversal operations for a given DOI.
     """

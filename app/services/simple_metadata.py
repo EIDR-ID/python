@@ -10,20 +10,20 @@ from app.driver import API_Driver
 class SimpleMetadata(GraphTraversal):
     def __init__(self, info: SimpleInfo, driver: API_Driver):
         super().__init__(driver)
-        obj = info
-        self.status = obj.status.value
-        self.structural_type = obj.structural_type.value
-        self.id = obj.id.value
+        self.obj = info
+        self.status = self.obj.status.value
+        self.structural_type = self.obj.structural_type.value
+        self.id = self.obj.id.value
         self.doi = self.id
-        self.referent_type = obj.referent_type.value
-        self.release_date = obj.release_date.year
-        self.original_language = [l.value for l in obj.original_language]
-        self.relationship = [{"type": r.type_value.value, "value": r.value} for r in obj.relationship]
-        self.resource_name = obj.resource_name.value
-        self.resource_name_lang = obj.resource_name.lang
-        self.version_language = [lang.value for lang in obj.version_language]
+        self.referent_type = self.obj.referent_type.value
+        self.release_date = self.obj.release_date.year
+        self.original_language = [l.value for l in self.obj.original_language]
+        self.relationship = [{"type": r.type_value.value, "value": r.value} for r in self.obj.relationship]
+        self.resource_name = self.obj.resource_name.value
+        self.resource_name_lang = self.obj.resource_name.lang
+        self.version_language = [lang.value for lang in self.obj.version_language]
 
-    def as_dict(self):
+    def as_dict(self): # TODO: Remove this in favor for the pattern in metadata.py
         return {
             "status": self.status,
             "structural_type": self.structural_type,
@@ -36,6 +36,12 @@ class SimpleMetadata(GraphTraversal):
             "resource_name_lang": self.resource_name_lang,
             "version_language": self.version_language,
         }
+
+    def __repr__(self): # Aligning with metadata.py
+        dict = self.__dict__.copy()
+        del dict["obj"], dict["driver"], dict["name"], dict["serializer"], dict["ns_map"], dict["doi"]
+        return str(dict)
+
 
     def pull(self, driver: API_Driver) -> ResponseReader:
         from app.services.graph_traversal import GraphTraversal
