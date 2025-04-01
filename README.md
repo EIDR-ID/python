@@ -1,5 +1,5 @@
-# Entertainment Idenfication Registry Python SDK
-The Python EIDR API is a software library designed, developed and implemented to equip   developers with the necessary tooling to interact with the Entertainment Identifier Registry (EIDR) system, a global unique identifier system for movie and television assets.
+# Entertainment Identification Registry Python SDK
+The Python EIDR API is a software library designed, developed, and implemented to equip   developers with the necessary tooling to interact with the Entertainment Identifier Registry (EIDR) system, a global unique identifier system for movie and television assets.
 
 ## Prerequisites
 Ensure you have the following installed:
@@ -26,7 +26,7 @@ Ensure you have the following installed:
    ```
 3. **Install dependencies:**
    ```sh
-   pip install -r requiremnts.txt
+   pip install -r requirements.txt
 
    pip install .
    ```
