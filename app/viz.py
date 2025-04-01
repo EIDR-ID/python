@@ -8,7 +8,7 @@ from typing_extensions import TypedDict
 
 from app.manager import SessionManager
 from app.services.query import Query
-from app.services.res import RegistryRequest
+from app.services.response_reader import RegistryRequest
 from app.test.demo import driver
 
 

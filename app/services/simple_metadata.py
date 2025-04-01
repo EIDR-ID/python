@@ -1,14 +1,13 @@
-import app.services.res as ResponseReader
+import app.services.response_reader as ResponseReader
 from app.scheme.org.doi.pkg_2010.doischema_avs import CreationStructuralType
 from app.scheme.org.eidr.schema import ReferentType, RelationshipType
 from app.scheme.org.eidr.schema.simple_info import SimpleInfo
 
-from app.services.graph_traversal import GraphTraversal
-from app.driver import API_Driver
+from app.services.graph_traversal import GraphTraversal, Driver
 
 
 class SimpleMetadata(GraphTraversal):
-    def __init__(self, info: SimpleInfo, driver: API_Driver):
+    def __init__(self, info: SimpleInfo, driver: 'Driver.API_Driver'):
         super().__init__(driver)
         self.obj = info
         self.status = self.obj.status.value
@@ -43,7 +42,7 @@ class SimpleMetadata(GraphTraversal):
         return str(dict)
 
 
-    def pull(self, driver: API_Driver) -> ResponseReader:
+    def pull(self, driver: 'Driver.API_Driver') -> ResponseReader:
         from app.services.graph_traversal import GraphTraversal
         newGraph = GraphTraversal(driver)
         return newGraph.find_ancestors(self.id)

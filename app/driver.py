@@ -5,6 +5,9 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import Dict, Optional
 
+from requests import Response
+
+from app.scheme.org.eidr.schema.asset_doitype import AssetDoitype
 from app.scheme.org.eidr.schema import Request
 from app.scheme.org.eidr.schema.request import RequestType
 
@@ -171,6 +174,15 @@ class API_Driver:
             followAlias).lower()
         resp = requests.get(req, headers=self.config.headers)
         return resp.content.decode('utf-8')
+        # https://registry1.eidr.org/EIDR/service/resolve/{servicedoi}?type=[doi|full]&followAlias=[true|false]
+
+    def get_video_service_traversal(self, service_doi: AssetDoitype, service_endpoint:str, all_children: bool)-> Response:
+        service_url = "service/{}/{}".format(service_endpoint,service_doi.value)
+        if all_children:
+            service_url += "?allChildren=true"
+        req = self.config.url + service_url
+        resp = requests.get(req, headers=self.config.headers)
+        return resp
         # https://registry1.eidr.org/EIDR/service/resolve/{servicedoi}?type=[doi|full]&followAlias=[true|false]
 
     def get_party(self, party_id: str, party_doi: str | ResolveMode):
