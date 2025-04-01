@@ -11,10 +11,9 @@ from app.services import RegistryRequest, ServiceBase, ResponseReader, Query, St
 from app.driver import API_Driver, ResolveMode
 from app.services.metadata import BaseObjectMeta, FullMeta, ServiceMeta, PartyMeta
 from app.services.party_query import PartyQuery
-from app.services.res import test_query, parser, config
 from app.services.service_query import NoOperationRequest, ServiceQuery
 from app.services.simple_metadata import SimpleMetadata
-from app.services.res import ResponseType
+from app.services.response_reader import ResponseType
 from app.scheme.org.eidr.schema.base_object_info_type import BaseObjectInfoType
 
 

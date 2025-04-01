@@ -21,7 +21,7 @@ from app.scheme.org.eidr.schema.graph.get_leaf_descendants_type import GetLeafDe
 from app.scheme.org.eidr.schema.request import Request
 from app.scheme.org.eidr.schema.asset_doitype import AssetDoitype
 import app.driver as Driver
-import app.services.res as ResponseReader
+import app.services.response_reader as ResponseReader
 from requests import Response
 
 from typing import Tuple
@@ -61,7 +61,7 @@ class GraphTraversal():
     A class to handle graph traversal operations for a given DOI.
     """
 
-    def __init__(self, driver: Driver.API_Driver):
+    def __init__(self, driver: 'Driver.API_Driver'):
         self.driver = driver
         self.doi = None
         self.name = "object/graph"
