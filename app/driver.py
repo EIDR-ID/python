@@ -194,7 +194,7 @@ class API_Driver:
         extra = ""
         if params is not None:
             for key, value in params.items():
-                extra += "{}?={}".format(key, value)
+                extra += "?{}={}".format(key, value)
         resp = requests.post(
             self.config.url + endpoint + "/" + extra,
             data=data,

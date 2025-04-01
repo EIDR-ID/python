@@ -76,13 +76,13 @@ class BaseObjectMeta:
     resource_name: str = None  # Mandatory
     administrators: AdministratorsDict = None
     alternate_resource_name: List[TitleDict] | None = None
-    original_language: List[LanguageDict] = None
-    version_language: List[LanguageDict] = None
-    associated_org: List[str] = None
-    release_date: str = None  # Mandatory
+    original_language: List[LanguageDict] = []
+    version_language: List[LanguageDict] = []
+    associated_org: List[StringAssociatedOrgRole] = []
+    release_date: XmlDate | XmlPeriod = None  # Mandatory
     country_of_origin: List[str] = None
     status: StatusType | None = None
-    approximate_length: str | None = None
+    approximate_length: XmlDuration | None = None
     alternate_id: List[str] = None
     credits: CreditsDict | None = None
     registrant_extra: str | None = None
@@ -93,7 +93,7 @@ class BaseObjectMeta:
         return cls(parser.from_string(res_str, BaseObjectInfoType, ns))
 
     def __init__(self, obj: BaseObjectInfoType):
-        self._obj = obj
+        self.obj = obj
         self.id = obj.id.value
         self.structural_type = obj.structural_type
         self.mode = obj.mode
@@ -119,11 +119,11 @@ class BaseObjectMeta:
             mode=lang.mode,
             type_value=lang.type_value
         ) for lang in obj.version_language]
-        self.associated_org = [org.role.name for org in obj.associated_org]  # TODO: Full dict here?
-        self.release_date = obj.release_date.data
+        self.associated_org = [org.role for org in obj.associated_org]  # TODO: Full dict here?
+        self.release_date = obj.release_date
         self.country_of_origin = [country.value for country in obj.country_of_origin]
         self.status = obj.status
-        self.approximate_length = obj.approximate_length.data
+        self.approximate_length = obj.approximate_length
         self.alternate_id = [alt.value for alt in obj.alternate_id]
         self.credits = None if obj.credits is None else CreditsDict(
             actor=[] if len(obj.credits.actor) <= 0 else [NameDict(
@@ -140,8 +140,8 @@ class BaseObjectMeta:
             director=[] if len(obj.credits.director) <= 0 else [NameDict(
                 display_name=NameAndLanguageDict(name=name.display_name.value or None,
                                                  language=name.display_name.language or None),
-                sort_name=NameAndLanguageDict(name=name.sort_name.value or None,
-                                              language=name.sort_name.language or None),
+                sort_name=NameAndLanguageDict(name=name.sort_name.value if name.sort_name is not None else None,
+                                              language=name.sort_name.language if name.sort_name is not None else None),
                 first_given_name=name.first_given_name or None,
                 second_given_name=name.second_given_name or None,
                 family_name=name.family_name or None,
@@ -151,7 +151,12 @@ class BaseObjectMeta:
         )
 
         self.registrant_extra = obj.registrant_extra
-        self.description = obj.description.value
+        self.description = None if obj.description is None else obj.description.value
+
+    def __repr__(self):
+        dict = self.__dict__.copy()
+        del dict["obj"]
+        return str(dict)
 
 
 from app.scheme.com.movielabs.schema.md.v2.pkg_8.md.comp_obj_class_type import CompObjClassType
@@ -548,7 +553,7 @@ class ExtraObjectMeta:
     packaging_info: List[PackagingInfoDict]
 
     def __init__(self, obj: ExtraObjectMetadataType):
-        self._obj = obj
+        self.obj = obj
 
         self.compilation_info = None if obj.compilation_info is None else CompObjectDict(
             entry=[CompObjEntryDict(
@@ -565,7 +570,7 @@ class ExtraObjectMeta:
         )
         self.season_info = None if obj.season_info is None else SeasonInfoDict(
             parent=obj.season_info.parent.value,
-            end_date=obj.season_info.end_date.data if obj.season_info.end_date else None,
+            end_date=obj.season_info.end_date,
             season_class=obj.season_info.season_class.copy(),
             number_required=obj.season_info.number_required,
             date_required=obj.season_info.date_required,
@@ -574,7 +579,7 @@ class ExtraObjectMeta:
         )
 
         self.series_info = None if obj.series_info is None else SeriesInfoDict(
-            end_date=obj.series_info.end_date.data if obj.series_info.end_date else None,
+            end_date=obj.series_info.end_date,
             series_class=obj.series_info.series_class,
             number_required=obj.series_info.number_required,
             date_required=obj.series_info.date_required,
@@ -595,8 +600,8 @@ class ExtraObjectMeta:
                     domain=obj.episode_info.sequence_info.distribution_number.domain
                 ) if obj.episode_info.sequence_info.distribution_number else None,
                 house_sequence=ComplexSequenceInfoHouseSequenceDict(
-                    value=obj.episode_info.sequence_info.house_sequence.value,
-                    domain=obj.episode_info.sequence_info.house_sequence.domain
+                    value=obj.episode_info.sequence_info.house_sequence.value if obj.episode_info.sequence_info.house_sequence else None,
+                    domain=obj.episode_info.sequence_info.house_sequence.domain if obj.episode_info.sequence_info.house_sequence else None
                 ),
                 alternate_number=[ComplexSequenceInfoAlternateNumberDict(
                     value=alt.value,
@@ -615,11 +620,11 @@ class ExtraObjectMeta:
                     value=element.other_id.value,
                     relation=element.other_id.relation
                 ) if element.other_id else None,
-                source_start=element.source_start.data if element.source_start else None,
-                source_duration=element.source_duration.data if element.source_duration else None,
+                source_start=element.source_start,
+                source_duration=element.source_duration,
                 components_mode=element.components_mode,
-                dest_start=element.dest_start.data if element.dest_start else None,
-                dest_duration=element.dest_duration.data if element.dest_duration else None,
+                dest_start=element.dest_start if element.dest_start else None,
+                dest_duration=element.dest_duration if element.dest_duration else None,
                 description=element.description
             ) for element in comp_info.element]
         ) for comp_info in obj.composite_info]
@@ -663,8 +668,8 @@ class ExtraObjectMeta:
         self.clip_info = None if obj.clip_info is None else ClipInfoDict(
             parent=obj.clip_info.parent.value,
             components_mode=obj.clip_info.components_mode,
-            start=obj.clip_info.start.data if obj.clip_info.start else None,
-            duration=[dur.data for dur in obj.clip_info.duration]
+            start=obj.clip_info.start,
+            duration=[dur for dur in obj.clip_info.duration]
         )
 
         self.promotion_info = [PromotionInfoDict(
@@ -687,7 +692,10 @@ class ExtraObjectMeta:
             packaging_class=pack.packaging_class
         ) for pack in obj.packaging_info]
 
-
+    def __repr__(self):
+        dict = self.__dict__.copy()
+        del dict["obj"]
+        return str(dict)
 # Video Service classes below
 
 class ServiceNameDict(TypedDict):
@@ -824,3 +832,8 @@ class FullMeta:
     def __init__(self, meta: FullObjectInfoType):
         self.base_meta = BaseObjectMeta(meta.base_object_data)
         self.extra_meta = ExtraObjectMeta(meta.extra_object_metadata)
+    def __repr__(self):
+        dict = self.__dict__.copy()
+        return str(dict)
+
+

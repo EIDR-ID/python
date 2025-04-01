@@ -38,88 +38,48 @@ class PartyQuery(NoOperationRequest):
             continuation_token=continuation_token
         )
 
-
     @classmethod
-    def service_expression(
+    def party_expression(
             cls,
             id: str | None = None,
             display_name: str | None = None,
-            alternate_service_name: str | None = None,
-            description: str | None = None,
-            other_affiliation: str | None = None,
-            active: str | None = None,
-            primary_time_zone: str | None = None,
-            region: str | None = None,
-            primary_audio_language: str | None = None,
-            delivery_model: str | None = None,
+            sort_name: str | None = None,
+            organization_id: str | None = None,
+            id_type: str | None = None,
+            alternate_party_name: str | None = None,  # Now treated as a regular string
+            contact_name: str | None = None,
+            primary_email: str | None = None,
+            alternate_email: str | None = None,
+            contact_address: str | None = None,
+            contact_phone: str | None = None,
+
+            active: bool | None = None,
+            party_account_name: str | None = None,
+            allowed_roles: str | None = None,  # Now treated as a regular string
     ) -> str:
-        # Map Service parameters to their keys.
-        service_param_mapping = [
-            (id, "ID"),
-            (display_name, "ServiceName/DisplayName"),
-            (alternate_service_name, "AlternateServiceName"),
-            (description, "Description"),
-            (other_affiliation, "OtherAffiliation"),
-            (active, "Active"),
-            (primary_time_zone, "PrimaryTimeZone"),
-            (region, "Region"),
-            (primary_audio_language, "PrimaryAudioLanguage"),
-            (delivery_model, "DeliveryModel"),
-        ]
-
-        # Build query clauses for each provided parameter.
-        clauses = [
-            f'(/Service/{key} "{value}")'
-            for value, key in service_param_mapping if value is not None
-        ]
-
-        return " AND ".join(clauses) if clauses else ""
-    @classmethod
-    def kernel_metadata_expression(
-            cls,
-            referent_doi_name: str | None = None,
-            primary_referent_type: str | None = None,
-            registration_agency_doi_name: str | None = None,
-            issue_date: str | None = None,
-            issue_number: str | None = None,
-            party_principal_name: str | None = None,
-            party_abbreviated_name: str | None = None,
-            party_structural_type: str | None = None,
-            associated_role: str | None = None,
-            associated_territory: str | None = None,
-    ) -> str:
-        # Map kernel metadata parameters to their keys.
-        kernel_param_mapping = [
-            (referent_doi_name, "referentDoiName"),
-            (primary_referent_type, "primaryReferentType"),
-            (registration_agency_doi_name, "registrationAgencyDoiName"),
-            (issue_date, "issueDate"),
-            (issue_number, "issueNumber"),
-        ]
-
-        # Build query clauses for top-level kernel metadata.
-        kernel_clauses = [
-            f'(/KernelMetadata/{key} "{value}")'
-            for value, key in kernel_param_mapping
-            if value is not None
-        ]
-
-        # Map referentParty parameters to their keys.
+        # Map Party parameters to their keys.
         party_param_mapping = [
-            (party_principal_name, "name[PrincipalName]"),
-            (party_abbreviated_name, "name[AbbreviatedName]"),
-            (party_structural_type, "structuralType"),
-            (associated_role, "associatedRole"),
-            (associated_territory, "associatedTerritory"),
+            (id, "ID"),
+            (display_name, "PartyName/DisplayName"),
+            (sort_name, "PartyName/SortName"),
+            (organization_id, "PartyName/OrganizationID"),
+            (id_type, "PartyName/IdType"), # TODO: Is the name here right?
+            (alternate_party_name, "AlternatePartyName"),
+            (contact_name, "ContactInfo/Name"),
+            (primary_email, "ContactInfo/PrimaryEmail"),
+            (alternate_email, "ContactInfo/AlternateEmail"),
+            (contact_address, "ContactInfo/Address"),
+            (contact_phone, "ContactInfo/Phone/Value"),
+            (active, "Active"),
+            (party_account_name, "PartyAccountName"),
+            (allowed_roles, "AllowedRoles"),
         ]
 
-        # Build query clauses for referentParty.
+        # Build query clauses for Party parameters.
         party_clauses = [
-            f'(/KernelMetadata/referentParty/{key} "{value}")'
+            f'(/Party/{key} "{value}")'
             for value, key in party_param_mapping
             if value is not None
         ]
 
-        # Combine both clause sets.
-        clauses = kernel_clauses + party_clauses
-        return " AND ".join(clauses) if clauses else ""
+        return " AND ".join(party_clauses) if party_clauses else ""
