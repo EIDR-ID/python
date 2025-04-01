@@ -1,12 +1,23 @@
 from typing import Optional
 
-from .interface import ServiceBase
+from app.services.interface import ServiceBase
 
 from app.scheme.org.eidr.schema  import request, operation_type, query_type, asset_doitype
 
 
+
 class Query(ServiceBase):
     name = "query"
+
+    def __init__(self, doi: Optional[str] = None, expression: Optional[str] = None, page_num: Optional[int] = None, page_size: Optional[int] = None, continuation_token: Optional[str] = None, extended_family: Optional[bool] = None):
+        super().__init__(
+            doi=doi,
+            expression=expression,
+            page_num=page_num,
+            page_size=page_size,
+            continuation_token=continuation_token,
+            extended_family=extended_family
+        )
 
     def validate(self) -> bool:
         expected = {
@@ -39,7 +50,7 @@ class Query(ServiceBase):
         page_size: Optional[int] = self.args.get("page_size", None)
         continuation_token: Optional[str] = self.args.get("continuation_token", None)
         extended_family: Optional[bool] = self.args.get("extended_family", None)
-        self.obj = request.Request(operation=[operation_type.OperationType(
+        self.obj = operation_type.OperationType(
             query=query_type.QueryType(
                 id=asset_doitype.AssetDoitype(value=doi) if doi else None,
                 expression=expression,
@@ -48,7 +59,7 @@ class Query(ServiceBase):
                 continuation_token=continuation_token,
                 extended_family=extended_family
             )
-        )])
+        )
 # def test_query():
 #     driver = API_Driver.from_default()
 #     res = driver.post(Query(
@@ -79,55 +90,46 @@ class Query(ServiceBase):
                             credits: str | None = None,
                             registrant_extra: str | None = None,
                             description: str | None = None,
-                            ):
-        if structural_type and structural_type not in ["Abstraction", "Performance", "Digital", "Physical"]:
-            raise ValueError("structural_type must be one of 'Abstraction', 'Performance', 'Digital', or 'Physical'")
-        if mode and mode not in ["Visual", "AudioVisual", "Audio", "Other"]:
-            raise ValueError("mode must be one of 'Visual', 'AudioVisual', 'Audio', or 'Other'")
+                            ) -> str:
+        # Parameter validation helper
+        def validate_param(value: str | None, allowed: list[str], param_name: str) -> None:
+            if value is not None and value not in allowed:
+                allowed_str = ", ".join(f"'{v}'" for v in allowed)
+                raise ValueError(f"{param_name} must be one of {allowed_str}")
 
-        base = ""
-        name_map = {}
-        if mode:
-            name_map["Mode"] = mode
-        if referent_type:
-            name_map["ReferentType"] = referent_type
-        if resource_name:
-            name_map["ResourceName"] = resource_name
-        if alternate_resource_name:
-            name_map["AlternateResourceName"] = alternate_resource_name
-        if original_language:
-            name_map["OriginalLanguage"] = original_language
-        if dubbed_language:
-            name_map["DubbedLanguage"] = dubbed_language
-        if associated_org:
-            name_map["AssociatedOrg"] = associated_org
-        if release_date:
-            name_map["ReleaseDate"] = release_date
-        if country_of_origin:
-            name_map["CountryOfOrigin"] = country_of_origin
-        if status:
-            name_map["Status"] = status
-        if approximate_length:
-            name_map["ApproximateLength"] = approximate_length
-        if alternate_id:
-            name_map["AlternateID"] = alternate_id
-        if display_name:
-            name_map["DisplayName"] = display_name
-        if credits:
-            name_map["Credits"] = credits
-        if registrant_extra:
-            name_map["RegistrantExtra"] = registrant_extra
-        if description:
-            name_map["Description"] = description
+        # Validate constrained parameters
+        validate_param(
+            structural_type,
+            ["Abstraction", "Performance", "Digital", "Physical"],
+            "structural_type",
+        )
+        validate_param(mode, ["Visual", "AudioVisual", "Audio", "Other"], "mode")
 
-        for name,val in name_map.items():
-            if not base:
-                base = "(/FullMetadata/BaseObjectData/{} \"{}\")".format(name, val)
-            else:
-                base += " AND (/FullMetadata/BaseObjectData/{} \"{}\")".format(name, val)
+        # Map parameters to their corresponding keys
+        param_key_mapping = [
+            (mode, "Mode"),
+            (referent_type, "ReferentType"),
+            (resource_name, "ResourceName"),
+            (alternate_resource_name, "AlternateResourceName"),
+            (original_language, "OriginalLanguage"),
+            (dubbed_language, "DubbedLanguage"),
+            (associated_org, "AssociatedOrg"),
+            (release_date, "ReleaseDate"),
+            (country_of_origin, "CountryOfOrigin"),
+            (status, "Status"),
+            (approximate_length, "ApproximateLength"),
+            (alternate_id, "AlternateID"),
+            (display_name, "DisplayName"),
+            (credits, "Credits"),
+            (registrant_extra, "RegistrantExtra"),
+            (description, "Description"),
+        ]
 
-        return base
+        # Build query clauses
+        clauses = [
+            f'(/FullMetadata/BaseObjectData/{key} "{value}")'
+            for value, key in param_key_mapping
+            if value is not None
+        ]
 
-
-
-
+        return " AND ".join(clauses) if clauses else ""

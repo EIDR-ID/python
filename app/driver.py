@@ -2,15 +2,18 @@ import base64
 import hashlib
 import os
 from dataclasses import dataclass, field
+from enum import Enum
 from typing import Dict, Optional
 
-from app.services import Query, ServiceBase
+from app.scheme.org.eidr.schema import Request
+from app.scheme.org.eidr.schema.request import RequestType
+
+from app.services import Query, ServiceBase, RegistryRequest, Delete
 
 os.environ['default_proxy_port'] = "80"
 
 import requests
 from lxml import etree  # Suggested to use lxml for XML parsing, other option is xml.etree.ElementTree
-
 
 default_proxy_port = 80
 
@@ -122,6 +125,16 @@ class EIDR_Config:
 
 
 # This is the main class that initiates a connection to EIDR and makes HTTP requests
+class ResolveMode(Enum):
+    FULL = "full"
+    DOI = "doi"
+
+
+class QueryMode(Enum):
+    ID = "ID"
+    FULL = "full"
+
+
 class API_Driver:
 
     def __init__(self, config: EIDR_Config):
@@ -133,18 +146,40 @@ class API_Driver:
             config = EIDR_Config.from_xml(file.read())
         return API_Driver(config)
 
-    def get_object(self, object_id):
+    def get_object(self, object_id, service_doi: str | ResolveMode = ResolveMode.FULL):
         print(self.config.headers)
 
         req = self.config.url + 'object/' + object_id + '?type=Full&followAlias=true'
         resp = requests.get(req, headers=self.config.headers)
-        print(resp.content)
+        # print(resp.content)
         return resp.content
 
-    def post(self, service: ServiceBase):
+    def get_video_service(self, service_id: str, service_doi: str | ResolveMode, followAlias: bool = True) -> str:
+        doi_mode = service_doi
+        if isinstance(doi_mode, ResolveMode):
+            doi_mode = service_doi.value
+        if doi_mode.lower() not in ["doi", "full"]:
+            raise ValueError("Resolution mode must be either 'doi' or 'full'")
+        req = self.config.url + 'service/resolve/' + service_id + '?type=' + doi_mode + '&followAlias=' + str(
+            followAlias).lower()
+        resp = requests.get(req, headers=self.config.headers)
+        return resp.content.decode('utf-8')
+        # https://registry1.eidr.org/EIDR/service/resolve/{servicedoi}?type=[doi|full]&followAlias=[true|false]
+
+    def get_party(self, party_id: str, party_doi: str | ResolveMode):
+        doi_mode = party_doi
+        if isinstance(doi_mode, ResolveMode):
+            doi_mode = party_doi.value
+        if doi_mode.lower() not in ["doi", "full"]:
+            raise ValueError("Resolution mode must be either 'doi' or 'full'")
+        req = self.config.url + 'party/resolve/' + party_id + '?type=' + doi_mode
+        resp = requests.get(req, headers=self.config.headers)
+        return resp.content.decode('utf-8')
+
+    def post(self, service: RegistryRequest):
         return self.post_raw(service.xml, service.name)
 
-    def post_raw(self, xml: str, endpoint: str):
+    def post_raw(self, xml: str, endpoint: str, params: dict = None):
         # multipart might be better off ignored here, assume it is always false for now
         data = xml if not self.config.multipart else (
             "{}\n{}\n{}\n{}\n{}".format(
@@ -156,8 +191,12 @@ class API_Driver:
             ))
         # print(self.config.headers)
         # print(data)
+        extra = ""
+        if params is not None:
+            for key, value in params.items():
+                extra += "?{}={}".format(key, value)
         resp = requests.post(
-            self.config.url + endpoint + "/",
+            self.config.url + endpoint + "/" + extra,
             data=data,
             headers={**self.config.headers}
         )
@@ -174,6 +213,8 @@ def test_get():
         config = EIDR_Config.from_xml(file.read())
     driver = API_Driver(config)
     res = driver.get_object("10.5240/0EF3-54F9-2642-0B49-6829-R")
+
+
 # test_get()
 
 def test_post_file():
@@ -189,7 +230,6 @@ def test_post_file():
 
 # test_post_file()
 
-
 def to_pretty_xml(s):
     root = etree.fromstring(s)
     return etree.tostring(root, pretty_print=True, xml_declaration=True, encoding='UTF-8').decode('utf-8')
@@ -200,14 +240,40 @@ def test_query():
     exp = Query.base_obj_expression(
         release_date="2005"
     )
-    #print(exp)
-    res = driver.post(Query(
+    # print(exp)
+    q = Query(
         expression=exp,
         page_num=1,
         page_size=1
+    )
+
+    res = driver.post(RegistryRequest(
+        operations=[q]
     ))
+
     return to_pretty_xml(res.content)
 
 
-print(test_query())
+def test_delete():
+    driver = API_Driver.from_default()
+    d = Delete(
+        id="10.5240/55C4-C624-362D-B110-0F9D-J"
+    )
+    req = RegistryRequest(
+        operations=[d]
+    )
+    print(req.xml)
+    res = driver.post(req)
 
+    return to_pretty_xml(res.content)
+
+
+# print(test_delete())
+
+def test_video_service_get():
+    driver = API_Driver.from_default()
+    res = driver.get_video_service("10.5239/170B-1D36", ResolveMode.FULL)
+    print(res)
+
+
+test_video_service_get()

@@ -1,10 +1,20 @@
+from enum import Enum
+from typing import Tuple
+
 from xsdata.formats.dataclass.context import XmlContext
 from xsdata.formats.dataclass.parsers import XmlParser
 from xsdata.formats.dataclass.parsers.config import ParserConfig
-from app.scheme.org.eidr.schema import response, response_type
-from app.driver import test_query
 
-from util import attempt
+import app.driver as d
+from app.scheme.org.doi.pkg_2010.doischema import KernelMetadata
+from app.scheme.org.eidr.schema import ServiceQueryResults, PartyQueryResults
+
+from app.scheme.org.eidr.schema.response import Response
+from app.services import Query, RegistryRequest
+from app.services.simple_metadata import SimpleMetadata
+from app.scheme.org.eidr.schema.simple_info import SimpleInfo
+
+from app.util import attempt
 
 config = ParserConfig()
 context = XmlContext()
@@ -12,11 +22,29 @@ parser = XmlParser(context=context, config=config)
 ns = {"": "http://www.eidr.org/schema"}
 
 
-class ResponseReader:
-    obj = None
+class ResponseType(Enum):
+    DEFAULT = Response
+    SERVICE = ServiceQueryResults
+    KERNELMETADATA = KernelMetadata
+    PARTY = PartyQueryResults
 
-    def __init__(self, res_str):
-        self.obj = parser.from_string(res_str, response.Response, ns)
+
+class ResponseReader:
+    obj: Response | ServiceQueryResults | KernelMetadata = None
+    token: str | None = None
+    status: Tuple[int, str] = None
+    continuation_token: str | None = None
+
+    def __init__(self, res_str, t: ResponseType = ResponseType.DEFAULT, driver: d.API_Driver = None):
+        self.__dir__()
+        self.obj = parser.from_string(res_str, t.value, ns)
+        self.driver = driver
+        if hasattr(self.obj, "request_status") and self.obj.request_status:
+            self.token = self.obj.request_status.token
+        if t is not ResponseType.DEFAULT:
+            self.status = 0, "Status Unavailable"
+        else:
+            self.status = self.obj.status.code.value, self.obj.status.type_value.value
 
     @classmethod
     def from_xml(cls, xml: str):
@@ -26,7 +54,6 @@ class ResponseReader:
         return self.get_field(key)
 
     def get_field(self, key: str):
-        print(self.obj)
         res, err = attempt(lambda: getattr(self.obj, key))
         if err is not None:
             raise err
@@ -39,17 +66,42 @@ class ResponseReader:
             out.append(f)
         return out
 
+    def get_simple_metaData(self, ) -> list[SimpleMetadata]:
+        simple_metadata: list[SimpleInfo] = self.get_field("simple_metadata")
+        simpleInfo: list[SimpleMetadata] = []
+        for i in simple_metadata:
+            simpleInfo.append(SimpleMetadata(i, self.driver))
+        return simpleInfo
+
+
+def test_query():
+    driver = d.API_Driver.from_default()
+    exp = Query.base_obj_expression(
+        release_date="2005"
+    )
+    # print(exp)
+    q = Query(
+        expression=exp,
+        page_num=1,
+        page_size=1
+    )
+
+    res = driver.post(RegistryRequest(
+        operations=[q]
+    ))
+
+    return d.to_pretty_xml(res.content)
 
 
 def test():
-    r = test_query()
-    res = ResponseReader.from_xml(test_query())
-    res, err = res.get_fields(
+    r = ResponseReader.from_xml(test_query())
+    res, err = r.get_fields(
         "query_results",
         "status",
         "version"
     ), None
     print(res)
+    print("SHITNING", r.status)
 
 
 test()
