@@ -13,7 +13,7 @@ from   .graph.get_dependants_type import GetDependantsType
 from    .graph.get_leaf_descendants_type import (
     GetLeafDescendantsType,
 )
-from    .get_lightweight_relationships_type import (
+from app.scheme.org.eidr.schema.graph.get_lightweight_relationships_type import (
     GetLightweightRelationshipsType
 )
 from   .graph.get_parent_type import GetParentType

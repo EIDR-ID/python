@@ -14,7 +14,7 @@ from app.scheme.org.eidr.schema.create_basic_data_type import CreateBasicDataTyp
 from app.services.res import ResponseReader
 from app.services.simple_metadata import SimpleMetadata
 
-from typing import Tuple, Any
+from typing import Tuple , Any
 
 
 class GraphTraversal(unittest.TestCase):
@@ -44,90 +44,81 @@ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 
     def test_find_descendents(self):
         doi = "10.5240/8B55-F9AA-007F-B18E-C000-6"
-        req = self.traversal.find_descendants(doi)
-        res = self.driver.post_raw(
-            req,
-            "object/graph"
-        )
-        xml = to_pretty_xml(res.content)
-        response: SimpleInfoType = response.obj
-        self.assertEqual(StatusTypeType.SUCCESS.value, response.status.type_value.value, "Unsuccessful Request")
-        print(response)
+        response_reader,err = self.traversal.find_descendants(doi)
+        if err is not None:
+            self.fail(err)
 
-    def test_find_descendants_with_Dict(self):
-        doi_endgame = "10.5240/C745-6B21-0FC0-70A0-9ECE-6"
-        doi_infinity_war = "10.5240/ACF2-FF3C-9F47-02A0-EA40-H"
-        doi = AssetDoitype(doi_infinity_war)
-        find_descendants = FindDescendantsType(
-            id=doi,
-            referent_type=None,
-            relationship_type=None,
-            structural_type=None,
-        )
-        req = self.traversal.find_descendants(find_descendants=find_descendants)
-        res = self.driver.post_raw(
-            req,
-            "object/graph"
-        )
-        xml = to_pretty_xml(res.content)
-        response: Response = Response.from_xml(xml)
-        response: SimpleInfoType = response.obj
-        self.assertEqual(StatusTypeType.SUCCESS.value, response.status.type_value.value, "Unsuccessful Request")
-        print(response)
+        _,status_value = response_reader.status
+        self.assertEqual(StatusTypeType.SUCCESS.value, status_value, "Unsuccessful Request")
 
     def test_find_ancestors(self):
         doi = "10.5240/8B55-F9AA-007F-B18E-C000-6"
         doi = AssetDoitype(doi)
-        response:Tuple[ResponseReader,Any] = self.traversal.find_ancestors(doi)
-        if response[1] is not None:
-            print("Error finding ancestor",response[1])
-        response_reader:ResponseReader = response[0]
-        self.assertEqual(StatusTypeType.SUCCESS.value, response_reader.status[1], "Unsuccessful Request")
-        print(response_reader.get_simple_metaData())
+        response_reader,err = self.traversal.find_ancestors(doi)
+        if err is not None:
+            self.fail(err)
+        _,status_value = response_reader.status
+        self.assertEqual(StatusTypeType.SUCCESS.value, status_value, "Unsuccessful Request")
+    def test_remotest_ancestor(self):
+        doi = "10.5240/8B55-F9AA-007F-B18E-C000-6"
+        doi = AssetDoitype(doi)
+        response_reader,err = self.traversal.get_remotest_ancestor(doi)
+        if err is not None:
+            self.fail(err)
+        _,status_value = response_reader.status
+        self.assertEqual(StatusTypeType.SUCCESS.value, status_value, "Unsuccessful Request")
 
-    def test_find_ancestors_with_Dict(self):
-        doi_endgame = "10.5240/C745-6B21-0FC0-70A0-9ECE-6"
-        doi_infinity_war = "10.5240/ACF2-FF3C-9F47-02A0-EA40-H"
-        doi = AssetDoitype(doi_endgame)
-        find_ancestors = FindAncestorsType(
-            id=doi,
-            referent_type=None,
-            relationship_type=None,
-            structural_type=None,
-        )
-        req = self.traversal.find_ancestors(find_ancestors=find_ancestors)
-        print(req)
-        res = self.driver.post_raw(
-            req,
-            "object/graph"
+    def test_get_leaf_descendants(self):
+        doi = "10.5240/8B55-F9AA-007F-B18E-C000-6"
+        doi = AssetDoitype(doi)
+        response_reader,err = self.traversal.get_leaf_descendants(doi)
+        if err is not None:
+            self.fail(err)
 
-        )
-        xml = to_pretty_xml(res.content)
-        response: Response = Response.from_xml(xml)
-        response: SimpleInfoType = response.obj
-        self.assertEqual(StatusTypeType.SUCCESS.value, response.status.type_value.value, "Unsuccessful Request")
-        print(response)
+        _,status_value = response_reader.status
+        self.assertEqual(StatusTypeType.SUCCESS.value, status_value, "Unsuccessful Request")
+    def test_get_lightweight_relationship(self):
+        doi = "10.5240/8B55-F9AA-007F-B18E-C000-6"
+        doi = AssetDoitype(doi)
+        response_reader,err = self.traversal.get_lightweight_relationships(doi)
+        if err is not None:
+            self.fail(err)
+
+        _,status_value = response_reader.status
+        self.assertEqual(StatusTypeType.SUCCESS.value, status_value, "Unsuccessful Request")
 
     def test_get_dependants(self):
-
-        """ DOI the id of a EIDR record  """
         doi_THEGODFATHER = "10.5240/4911-14D5-3C9F-7BE1-AF9D-X"
+        response_reader,err = self.traversal.get_dependants(doi_THEGODFATHER)
+        if err is not None:
+            self.fail(err)
+        _,status_value = response_reader.status
+        self.assertEqual(StatusTypeType.SUCCESS.value, status_value, "Unsuccessful Request")
 
-        """ Request Object For Communicating with Eidr API   """
-        req = self.traversal.get_dependants(doi_THEGODFATHER)
-        res =  self.driver.post_raw(req, "object/graph")
+    def test_get_children(self):
+        doi = "10.5240/5448-E7EB-CB49-E03F-999A-L"
+        response_reader,err = self.traversal.get_children(doi)
+        if err is not None:
+            self.fail(err)
+        _,status_value = response_reader.status
+        self.assertEqual(StatusTypeType.SUCCESS.value, status_value, "Unsuccessful Request")
 
-        xml = to_pretty_xml(res.content)
-        print(xml,"hgkhgkgkhk")
+    def test_get_parent(self):
+        doi = "10.5240/5448-E7EB-CB49-E03F-999A-L"
+        doi_THEGODFATHER = "10.5240/4911-14D5-3C9F-7BE1-AF9D-X"
+        response_reader,err = self.traversal.get_parent(doi_THEGODFATHER)
+        if err is not None:
+            self.fail(err)
+        _,status_value = response_reader.status
+        self.assertEqual(StatusTypeType.SUCCESS.value, status_value, "Unsuccessful Request")
 
-        """ Reponse Containing SimpleMetaData  """
-        response: Response = Response.from_xml(xml)
-        response: SimpleInfoType = response.obj
-
-        """ Validating The Success Of the Request  """
-
-        self.assertEqual(StatusTypeType.SUCCESS.value, response.status.type_value.value, "Unsuccessful Request")
-
+    def test_get_series_ancestry(self):
+        doi = "10.5240/5448-E7EB-CB49-E03F-999A-L"
+        response_reader,err = self.traversal.get_series_ancestry(doi)
+        if err is not None:
+            self.fail(err)
+        _,status_value = response_reader.status
+        self.assertEqual(StatusTypeType.SUCCESS.value, status_value, "Unsuccessful Request")
 
 if __name__ == '__main__':
     unittest.main()
