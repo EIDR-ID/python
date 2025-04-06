@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Config>
+    <EndpointInfo>
+        <BaseURL>https://sandbox1.eidr.org:443/EIDR/</BaseURL>
+        <Party>10.5237/XXXX-XXXX</Party>
+        <User>10.5238/XXXX</User>
+        <Passwd>Datur</Passwd>
+    </EndpointInfo>
+</Config>
+<!-- Replace dummy values and rename to "config.xml" -->
