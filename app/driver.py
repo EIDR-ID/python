@@ -151,8 +151,8 @@ class API_Driver:
         self.config = config
 
     @classmethod
-    def from_default(cls):
-        with open("config.xml", "r") as file:
+    def from_default(cls, config_file: str = "config.xml"):
+        with open(config_file, "r") as file:
             config = EIDR_Config.from_xml(file.read())
         return API_Driver(config)
 
