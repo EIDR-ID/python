@@ -144,15 +144,6 @@ class ACL_Type(Enum):
     WRITE_ACL = "WriteACL"
     READ_PROV = "ReadProvenance"
 
-class ModifyType(Enum):
-    CREATE_BASIC = "CreateBasic"
-    CREATE_SERIES = "CreateSeries"
-    CREATE_SEASON = "CreateSeason"
-    CREATE_EPISODE = "CreateEpisode"
-    CREATE_CLIP = "CreateClip"
-    CREATE_COMPILATION = "CreateCompilation"
-    CREATE_EDIT = "CreateEdit"
-    CREATE_MANIFESTATION = "CreateManifestation"
 
 class API_Driver:
 
@@ -160,8 +151,8 @@ class API_Driver:
         self.config = config
 
     @classmethod
-    def from_default(cls, config_file: str = "./config/config.xml"):
-        with open(config_file, "r") as file:
+    def from_default(cls):
+        with open("config.xml", "r") as file:
             config = EIDR_Config.from_xml(file.read())
         return API_Driver(config)
 
@@ -213,13 +204,6 @@ class API_Driver:
         if isinstance(acl_type, ACL_Type):
             acl_type = acl_type.value
         req = self.config.url + 'permissions/read/' + object_id + '?aclType=' + acl_type
-        resp = requests.get(req, headers=self.config.headers)
-        return resp.content.decode('utf-8')
-
-    def get_modification_base(self, object_id: str, mod_type: ModifyType | str):
-        if isinstance(mod_type, ModifyType):
-            mod_type = mod_type.value
-        req = self.config.url + f'object/modificationbase/{object_id}/?type={mod_type}'
         resp = requests.get(req, headers=self.config.headers)
         return resp.content.decode('utf-8')
 
