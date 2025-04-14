@@ -39,7 +39,7 @@ class Query(ServiceBase):
                     # The nasty __args__[0] above is to get the expected type name instead of just "Optional"
                 if (arg == "page_num" or arg == "page_size") and self.args[arg] < 0:
                     # ...and bad values
-                    raise ValueError("Arg {} cannot be negative".format(arg))
+                    raise ValueError("Arg {} is required and must be positive".format(arg))
 
         return True
 
