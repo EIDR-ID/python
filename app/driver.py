@@ -5,9 +5,6 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import Dict, Optional
 
-from requests import Response
-
-from app.scheme.org.eidr.schema.asset_doitype import AssetDoitype
 from app.scheme.org.eidr.schema import Request
 from app.scheme.org.eidr.schema.request import RequestType
 
@@ -144,6 +141,15 @@ class ACL_Type(Enum):
     WRITE_ACL = "WriteACL"
     READ_PROV = "ReadProvenance"
 
+class ModifyType(Enum):
+    CREATE_BASIC = "CreateBasic"
+    CREATE_SERIES = "CreateSeries"
+    CREATE_SEASON = "CreateSeason"
+    CREATE_EPISODE = "CreateEpisode"
+    CREATE_CLIP = "CreateClip"
+    CREATE_COMPILATION = "CreateCompilation"
+    CREATE_EDIT = "CreateEdit"
+    CREATE_MANIFESTATION = "CreateManifestation"
 
 class API_Driver:
 
@@ -176,6 +182,15 @@ class API_Driver:
         return resp.content.decode('utf-8')
         # https://registry1.eidr.org/EIDR/service/resolve/{servicedoi}?type=[doi|full]&followAlias=[true|false]
 
+    def get_video_service_traversal(self, service_doi: AssetDoitype, service_endpoint:str, all_children: bool)-> Response:
+        service_url = "service/{}/{}".format(service_endpoint,service_doi.value)
+        if all_children:
+            service_url += "?allChildren=true"
+        req = self.config.url + service_url
+        resp = requests.get(req, headers=self.config.headers)
+        return resp
+        # https://registry1.eidr.org/EIDR/service/resolve/{servicedoi}?type=[doi|full]&followAlias=[true|false]
+
     def get_video_service_traversal(self, service_doi: AssetDoitype, service_endpoint: str,
                                     all_children: bool) -> Response:
         service_url = "service/{}/{}".format(service_endpoint, service_doi.value)
@@ -194,19 +209,10 @@ class API_Driver:
         doi_mode =resolve_mode
 
         if isinstance(doi_mode, ResolveMode):
-            doi_mode = resolve_mode.value
+            doi_mode = party_doi.value
         if doi_mode.lower() not in ["doi", "full"]:
             raise ValueError("Resolution mode must be either 'doi' or 'full'")
-
-        endpoint = "party/resolve/"
-        options = "?type={}".format(doi_mode)
-        key = party_id
-
-        if party_id is None:
-            key = _user_doi
-            endpoint = "user/resolve/"
-
-        req = self.config.url + endpoint + key + options
+        req = self.config.url + 'party/resolve/' + party_id + '?type=' + doi_mode
         resp = requests.get(req, headers=self.config.headers)
         return resp.content.decode('utf-8')
 
@@ -219,6 +225,13 @@ class API_Driver:
         if isinstance(acl_type, ACL_Type):
             acl_type = acl_type.value
         req = self.config.url + 'permissions/read/' + object_id + '?aclType=' + acl_type
+        resp = requests.get(req, headers=self.config.headers)
+        return resp.content.decode('utf-8')
+
+    def get_modification_base(self, object_id: str, mod_type: ModifyType | str):
+        if isinstance(mod_type, ModifyType):
+            mod_type = mod_type.value
+        req = self.config.url + f'object/modificationbase/{object_id}/?type={mod_type}'
         resp = requests.get(req, headers=self.config.headers)
         return resp.content.decode('utf-8')
 

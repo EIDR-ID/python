@@ -5,6 +5,7 @@ from textwrap import dedent
 from types import NoneType
 from typing import Optional, Set, get_type_hints, get_origin, Union, get_args, List, Tuple, Any, Type, Dict
 import re
+
 from urllib.parse import uses_params
 
 from xsdata.formats.dataclass.serializers import XmlSerializer
@@ -123,15 +124,28 @@ default_map: Dict[type, Any] = {
 ## Create an instance of a dataclass with default values, including for nested dataclasses
 def default_dataclass(cls):
     if not is_dataclass(cls):
-        return cls
-    if cls in default_map:
-        return cls(default_map[cls])
-    if len(cls.__init__.__code__.co_varnames) == 1:
-        return cls()
+        raise TypeError(f"{cls} is not a dataclass")
+
+    hints = get_type_hints(cls)
+    params = ()
+    for name, _type in hints.items():
+        _type = extract_union(_type)
+        if _type in default_map:
+            params += (name, default_map[_type])
+        elif is_dataclass(_type):
+            inner = default_dataclass(_type)
+            params += (name, inner)
+        else:
+            params += (name, _type())
+
+def extract_union(t):
+    if get_origin(t) is Union:
+        args = get_args(t)
+        if len(args) == 2 and type(None) in args:
+            return next(a for a in args if a is not type(None))
+        return None
     else:
-        return cls(*(default_dataclass(getattr(cls, field.name)) for field in fields(cls)))
-
-
+        return t
 
 def generate_default(cls):
     sig = inspect.signature(cls.__init__)
@@ -185,12 +199,84 @@ def repr_non_serials(d: dict):
 
     return out
 
-if __name__ == "__main__":
+
+def instance_to_dict(
+    obj: Any,
+    include_types: bool = False,
+    exclude_prefixes: Tuple[str, ...] = ('_',), # Exclude attributes starting with '_'
+    exclude_names: Set[str] = set(), # Specific names to exclude
+) -> Any:
+    """
+    Converts a class instance into a dictionary based on its attributes.
+
+    Relies on the globally defined `allowed_types` set. Assumes input is
+    controlled: None, Enum, List, a type in `allowed_types`, or a
+    dataclass-like object instance to be converted recursively.
+
+    Args:
+        obj: The value or class instance to convert.
+        include_types: If True, attempts to add type hint information for
+                       each field in object dictionaries using a "_type" suffix.
+        exclude_prefixes: A tuple of string prefixes. Attributes starting with
+                          any of these prefixes will be excluded. Defaults to ('_',).
+        exclude_names: A set of exact attribute names to exclude.
+
+    Returns:
+        A dictionary representation of the instance's attributes, a converted
+        list/enum value, the original value if primitive, or None.
+    """
+    global allowed_types
+
+    if obj is None:
+        return None
+    elif type(obj) in allowed_types:
+        return obj
+    elif isinstance(obj, Enum):
+        return obj.value
+    elif isinstance(obj, list):
+        return [instance_to_dict(item, include_types, exclude_prefixes, exclude_names) for item in obj]
+    else:
+        result_dict = {}
+        hints = {}
+        obj_type = type(obj) # Get type for hints
+
+        if include_types:
+            try:
+                # Attempt to get type hints for adding _type suffix
+                hints = get_type_hints(obj_type)
+            except Exception:
+                # Ignore errors if hints cannot be retrieved
+                hints = {}
+        try:
+            attributes_items = vars(obj).items()
+        except TypeError:
+            attributes_items = {} # Treat as empty if vars() fails
+
+        for key, value in attributes_items:
+            # Apply exclusion rules based on prefixes and names
+            if key in exclude_names:
+                continue
+            if any(key.startswith(prefix) for prefix in exclude_prefixes):
+                 continue
+
+            # Recursively convert the attribute's value
+            converted_value = instance_to_dict(value, include_types, exclude_prefixes, exclude_names)
+            result_dict[key] = converted_value
+
+            # Add type information if requested and hint is available
+            if include_types and key in hints:
+                result_dict[key + "_dataclass"] = hints[key] # Store the hint
+
+        return result_dict
+
+
+if __name__ == "__main__": # TODO: Move to test file
     # Test the RegistryHandler
     # Example usage
     indents = 4
-    out = to_field_dict(Query)
-    print(json.dumps(repr_non_serials(filter_type_info(out)), indent=indents))
+    #out = to_field_dict(QueryType)
+    out = default_dataclass(QueryType)
+    print(out)
 
 
 
