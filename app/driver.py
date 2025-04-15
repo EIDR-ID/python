@@ -176,22 +176,37 @@ class API_Driver:
         return resp.content.decode('utf-8')
         # https://registry1.eidr.org/EIDR/service/resolve/{servicedoi}?type=[doi|full]&followAlias=[true|false]
 
-    def get_video_service_traversal(self, service_doi: AssetDoitype, service_endpoint:str, all_children: bool)-> Response:
-        service_url = "service/{}/{}".format(service_endpoint,service_doi.value)
+    def get_video_service_traversal(self, service_doi: AssetDoitype, service_endpoint: str,
+                                    all_children: bool) -> Response:
+        service_url = "service/{}/{}".format(service_endpoint, service_doi.value)
         if all_children:
             service_url += "?allChildren=true"
         req = self.config.url + service_url
         resp = requests.get(req, headers=self.config.headers)
         return resp
-        # https://registry1.eidr.org/EIDR/service/resolve/{servicedoi}?type=[doi|full]&followAlias=[true|false]
 
-    def get_party(self, party_id: str, party_doi: str | ResolveMode):
-        doi_mode = party_doi
+    def get_party(
+            self,
+            party_id: str = None,
+            resolve_mode: str | ResolveMode = None,
+            _user_doi: str = None
+    ) -> str:
+        doi_mode =resolve_mode
+
         if isinstance(doi_mode, ResolveMode):
-            doi_mode = party_doi.value
+            doi_mode = resolve_mode.value
         if doi_mode.lower() not in ["doi", "full"]:
             raise ValueError("Resolution mode must be either 'doi' or 'full'")
-        req = self.config.url + 'party/resolve/' + party_id + '?type=' + doi_mode
+
+        endpoint = "party/resolve/"
+        options = "?type={}".format(doi_mode)
+        key = party_id
+
+        if party_id is None:
+            key = _user_doi
+            endpoint = "user/resolve/"
+
+        req = self.config.url + endpoint + key + options
         resp = requests.get(req, headers=self.config.headers)
         return resp.content.decode('utf-8')
 
