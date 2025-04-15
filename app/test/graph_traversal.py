@@ -11,7 +11,7 @@ from app.scheme.org.eidr.schema.status_type_type import StatusTypeType
 from app.scheme.org.eidr.schema.simple_info_type import SimpleInfoType
 from app.scheme.org.eidr.schema.registrations_type import RegistrationsType
 from app.scheme.org.eidr.schema.create_basic_data_type import CreateBasicDataType, CreationFullInfo
-from app.services.res import ResponseReader
+from app.services.response_reader import ResponseReader
 from app.services.simple_metadata import SimpleMetadata
 
 from typing import Tuple , Any
