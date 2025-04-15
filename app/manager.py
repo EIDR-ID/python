@@ -22,6 +22,7 @@ from app.util import instance_to_dict, repr_non_serials
 class AdminResponseError(Exception):
     ...
 
+
 def check_err(res: ResponseReader):
     if res.admin_response:
         raise AdminResponseError("\n\nAdmin Response Code {}: {}\n\t{}".format(*res.status, res.get_field("details")))
@@ -61,7 +62,7 @@ class SessionManager:
 
         res = self.post(q, params={"type": res_type})
         if res.status[0] != 0:
-            #print(res.obj)
+            # print(res.obj)
             raise RuntimeError("Got bad status {}".format(res.status))
         check_err(res)
         if res_type == Query.QueryResponseType.ID.value:
@@ -76,14 +77,14 @@ class SessionManager:
     def status(self, s: RegistryRequest) -> Tuple[List[dict], str]:
         if s.name != "status":
             raise ValueError("Must call status with status request")
-        #print(s.xml)
+        # print(s.xml)
         res = self.post(s)
-        #print(res.obj)
+        # print(res.obj)
         if res.status[0] != 0:
             raise RuntimeError("Got bad status {}".format(res.status))
         check_err(res)
         status_res = res.get_field("request_status_results")
-        #print(status_res)
+        # print(status_res)
         operation_stats = [{
             "token": op_res.token,
             "status": (op_res.status.code.value, op_res.status.type_value.value),
@@ -120,7 +121,7 @@ class SessionManager:
             raise ValueError("Must call service query with service query request")
         res = self.post(s, res_type=ResponseType.SERVICE)
         check_err(res)
-        #print(res)
+        # print(res)
         q_res = res.obj
         if q_res.continuation_token is not None:
             self.tokens.append(q_res.continuation_token)
@@ -143,6 +144,17 @@ class SessionManager:
         res = self.driver.get_party(party_id, resolve_mode)
         return PartyMeta.from_string(res)
 
+    def user_resolve(self, user_doi: str, resolve_mode: str | ResolveMode = ResolveMode.FULL):
+        res = self.driver.get_party(_user_doi=user_doi, resolve_mode=resolve_mode)
+        response = ResponseReader(res)
+        check_err(response)
+        return response
+
+    def change_user_password(self, user_doi: str, password: str):
+        endpoint = "user/password/{}".format(user_doi)
+        response = self.driver.post_raw("", endpoint, {"password": password})
+        response = ResponseReader(response.content.decode("utf-8"))
+        return response
 
     # TODO: check
     def party_query(self, p: NoOperationRequest, full: bool = True):
@@ -171,7 +183,6 @@ class SessionManager:
         out: List[str] = res.get_field("party_id")
         return out
 
-
     def modification_base(self, object_id: str, modification_type: str | ModifyType, include_types: bool = False):
         if isinstance(modification_type, Enum):
             modification_type = modification_type.value
@@ -183,10 +194,12 @@ class SessionManager:
         out: dict = instance_to_dict(res.get_field(base), include_types=include_types)
         return repr_non_serials(out)
 
+
 def test_permissions():
     ses = SessionManager.from_default()
     res = ses.permissions("10.5240/8B55-F9AA-007F-B18E-C000-6", acl_type=ACL_Type.MODIFY)
     print(res)
+
 
 def test_query():
     ses = SessionManager.from_default()
@@ -204,12 +217,14 @@ def test_query():
     ))
     print(res)
 
+
 def test_modification_base():
     ses = SessionManager.from_default()
     res = ses.modification_base("10.5240/8B55-F9AA-007F-B18E-C000-6", ModifyType.CREATE_EDIT)
     print(res)
 
+
 if __name__ == "__main__":
-    #test_permissions()
-    #test_query()
+    # test_permissions()
+    # test_query()
     test_modification_base()

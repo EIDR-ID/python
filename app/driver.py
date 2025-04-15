@@ -144,15 +144,23 @@ class ACL_Type(Enum):
     WRITE_ACL = "WriteACL"
     READ_PROV = "ReadProvenance"
 
-
+class ModifyType(Enum):
+    CREATE_BASIC = "CreateBasic"
+    CREATE_SERIES = "CreateSeries"
+    CREATE_SEASON = "CreateSeason"
+    CREATE_EPISODE = "CreateEpisode"
+    CREATE_CLIP = "CreateClip"
+    CREATE_COMPILATION = "CreateCompilation"
+    CREATE_EDIT = "CreateEdit"
+    CREATE_MANIFESTATION = "CreateManifestation"
 class API_Driver:
 
     def __init__(self, config: EIDR_Config):
         self.config = config
 
     @classmethod
-    def from_default(cls):
-        with open("config.xml", "r") as file:
+    def from_default(cls, config_file: str = "./config/config.xml"):
+        with open(config_file, "r") as file:
             config = EIDR_Config.from_xml(file.read())
         return API_Driver(config)
 

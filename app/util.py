@@ -20,7 +20,7 @@ from dataclasses import make_dataclass, field, fields, is_dataclass
 from app.services import Query, ResponseReader
 from app.driver import API_Driver
 
-from scheme.org.eidr.schema import CreateSeriesDataType, CreateBasic, CreateBasicDataType, CreateInteractiveDataType, \
+from app.scheme.org.eidr.schema import CreateSeriesDataType, CreateBasic, CreateBasicDataType, CreateInteractiveDataType, \
     CreateEpisode, CreateSeason, CreateSeasonDataType, CreateEpisodeDataType, CreateManifestationDataType, \
     CreateClipDataType, CreateComposite, CreateEdit, CreateCompilationDataType
 
