@@ -11,7 +11,6 @@ from app.services import RegistryRequest, ServiceBase, ResponseReader, Query, St
 from app.driver import API_Driver, ResolveMode, ACL_Type
 from app.services.metadata import BaseObjectMeta, FullMeta, ServiceMeta, PartyMeta
 from app.services.party_query import PartyQuery
-from app.services.registration.modify import Modify
 from app.services.res import test_query, parser, config
 from app.services.service_query import NoOperationRequest, ServiceQuery
 from app.services.simple_metadata import SimpleMetadata
@@ -41,7 +40,7 @@ class SessionManager:
     def post(self, req: RegistryRequest | NoOperationRequest, res_type: ResponseType = ResponseType.DEFAULT,
              params: dict = None):
         raw = self.driver.post_raw(req.xml, req.name, params=params).content.decode("utf-8")
-        res = ResponseReader(raw, res_type)
+        res = ResponseReader(raw)
         if res.token:
             self.tokens.append(res.token)
         return res
