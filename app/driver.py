@@ -134,6 +134,13 @@ class QueryMode(Enum):
     ID = "ID"
     FULL = "full"
 
+class ACL_Type(Enum):
+    MODIFY = "Modify"
+    DELETE = "Delete"
+    READ_ACL = "ReadACL"
+    WRITE_ACL = "WriteACL"
+    READ_PROV = "ReadProvenance"
+
 
 class API_Driver:
 
@@ -173,6 +180,18 @@ class API_Driver:
         if doi_mode.lower() not in ["doi", "full"]:
             raise ValueError("Resolution mode must be either 'doi' or 'full'")
         req = self.config.url + 'party/resolve/' + party_id + '?type=' + doi_mode
+        resp = requests.get(req, headers=self.config.headers)
+        return resp.content.decode('utf-8')
+
+    # https://registry1.eidr.org/EIDR/permissions/read/%7BassetID%7D?aclType={aclType
+    # returns: An instance of the
+        # eidr:AdminResponse or
+        # eidr:PartyIDList
+
+    def get_permissions(self, object_id: str, acl_type: str | ACL_Type):
+        if isinstance(acl_type, ACL_Type):
+            acl_type = acl_type.value
+        req = self.config.url + 'permissions/read/' + object_id + '?aclType=' + acl_type
         resp = requests.get(req, headers=self.config.headers)
         return resp.content.decode('utf-8')
 
@@ -275,5 +294,15 @@ def test_video_service_get():
     res = driver.get_video_service("10.5239/170B-1D36", ResolveMode.FULL)
     print(res)
 
+def test_permissions():
+    driver = API_Driver.from_default()
+    res = driver.get_permissions("10.5240/8B55-F9AA-007F-B18E-C000-6", ACL_Type.MODIFY)
+    print(res)
 
-test_video_service_get()
+if __name__ == "__main__":
+    # test_post_file()
+    # test_get()
+    # test_query()
+    # test_video_service_get()
+    # test_permissions()
+    pass
