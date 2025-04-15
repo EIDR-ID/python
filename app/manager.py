@@ -144,6 +144,17 @@ class SessionManager:
         res = self.driver.get_party(party_id, resolve_mode)
         return PartyMeta.from_string(res)
 
+    def user_resolve(self, user_doi: str, resolve_mode: str | ResolveMode = ResolveMode.FULL):
+        res = self.driver.get_party(_user_doi=user_doi, resolve_mode=resolve_mode)
+        response = ResponseReader(res)
+        check_err(response)
+        return response
+
+    def change_user_password(self, user_doi: str, password: str):
+        endpoint = "user/password/{}".format(user_doi)
+        response = self.driver.post_raw("", endpoint, {"password": password})
+        response = ResponseReader(response.content.decode("utf-8"))
+        return response
 
     # TODO: check
     def party_query(self, p: NoOperationRequest, full: bool = True):
@@ -216,4 +227,5 @@ def test_modification_base():
 
 if __name__ == "__main__":
     #test_permissions()
+    #test_query()
     test_modification_base()

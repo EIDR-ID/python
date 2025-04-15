@@ -1,4 +1,4 @@
-from typing import List, TypedDict, Optional, Union
+from typing import List, TypedDict, Optional, Union, Any
 
 from xsdata.formats.dataclass.context import XmlContext
 from xsdata.formats.dataclass.parsers import XmlParser
@@ -696,6 +696,8 @@ class ExtraObjectMeta:
         dict = self.__dict__.copy()
         del dict["obj"]
         return str(dict)
+
+
 # Video Service classes below
 
 class ServiceNameDict(TypedDict):
@@ -821,6 +823,7 @@ class PartyMeta:
         del dict['obj']
         return str(dict)
 
+
 class FullMeta:
     base_meta: BaseObjectMeta
     extra_meta: ExtraObjectMeta
@@ -832,8 +835,7 @@ class FullMeta:
     def __init__(self, meta: FullObjectInfoType):
         self.base_meta = BaseObjectMeta(meta.base_object_data)
         self.extra_meta = ExtraObjectMeta(meta.extra_object_metadata)
+
     def __repr__(self):
         dict = self.__dict__.copy()
         return str(dict)
-
-

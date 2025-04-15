@@ -20,6 +20,9 @@ from dataclasses import make_dataclass, field, fields, is_dataclass
 from app.services import Query, ResponseReader
 from app.driver import API_Driver
 
+from app.scheme.org.eidr.schema import CreateSeriesDataType, CreateBasic, CreateBasicDataType, CreateInteractiveDataType, \
+    CreateEpisode, CreateSeason, CreateSeasonDataType, CreateEpisodeDataType, CreateManifestationDataType, \
+    CreateClipDataType, CreateComposite, CreateEdit, CreateCompilationDataType
 
 import inspect
 
@@ -88,27 +91,27 @@ def to_field_dict(cls, default_enums = True, include_xml = True) -> dict | str:
             if is_optional_type(_type):
                 inner_type = get_optional_inner_type(_type)
                 out[member] = generate_default(inner_type)
-                out[member + "_type"] = inner_type
+                out[member + "_dataclass"] = inner_type
             else:
                 out[member] = generate_default(_type)
-                out[member + "_type"] = _type
+                out[member + "_dataclass"] = _type
         else:
             if get_origin(_type) is list:
                 inner_type = get_args(_type)[0]
                 if inner_type not in allowed_types:
-                    obj_dict = to_field_dict(inner_type)
+                    obj_dict = to_field_dict(inner_type, default_enums, include_xml)
                     out[member] = [obj_dict]
                 else:
                     out[member] = []
-                out[member + "_type"] = List[inner_type]
+                out[member + "_dataclass"] = List[inner_type]
             else:
                 if is_optional_type(_type):
-                    inner = to_field_dict(get_optional_inner_type(_type))
-                    out[member + "_type"] = _type
+                    inner = to_field_dict(get_optional_inner_type(_type), default_enums, include_xml)
+                    out[member + "_dataclass"] = _type
                 else:
-                    inner = to_field_dict(_type)
+                    inner = to_field_dict(_type, default_enums, include_xml)
                 out[member] = inner
-                out[member + "_type"] = _type
+                out[member + "_dataclass"] = _type
 
     return out
 
@@ -161,7 +164,7 @@ def generate_xml(cls):
     xml_str = serializer.render(cls(), ns_map)
     return xml_str
 
-def filter_type_info(d: dict, substr: str = "_type"):
+def filter_type_info(d: dict, substr: str = "_dataclass"):
     out = {}
     for key, value in d.items():
         if isinstance(value, dict):
@@ -269,16 +272,52 @@ def instance_to_dict(
 
         return result_dict
 
+# will be moved to a record manager class/file, but placed here temporarily for demonstration
+def create_record_config(file_name: str, record_type: str):
+    """
+    Create a new record config file in the given file path.
+
+    Record types:
+        - basic
+        - series
+        - interactive
+        - episode
+        - season
+        - manifestation
+        - clip
+        - composite
+        - edit
+        - compilation
+    :param file_name: name of the newly created file
+    :param record_type: record type
+    """
+    record_types = {
+        'basic': CreateBasicDataType,
+        'series': CreateSeriesDataType,
+        'interactive': CreateInteractiveDataType,
+        'episode': CreateEpisodeDataType,
+        'season': CreateSeasonDataType,
+        'manifestation': CreateManifestationDataType,
+        'clip': CreateClipDataType,
+        'composite': CreateComposite,
+        'edit': CreateEdit,
+        'compilation': CreateCompilationDataType
+    }
+    record_type = record_type.lower()
+    if record_type not in record_types.keys():
+        raise ValueError(f'Invalid record type passed: {record_type}')
+    record_dict = to_field_dict(record_types.get(record_type), False, False)
+    with open(file_name, "w") as f:
+        f.write(json.dumps(repr_non_serials(filter_type_info(record_dict)), indent= 4))
+        print(f'{file_name} created.')
 
 if __name__ == "__main__": # TODO: Move to test file
     # Test the RegistryHandler
     # Example usage
-    indents = 4
+    # indents = 4
     #out = to_field_dict(QueryType)
-    out = default_dataclass(QueryType)
-    print(out)
+    # out = default_dataclass(QueryType)
+    # print(out)
 
-
-
-
-
+    # demonstrate conversion of dataclass to json template file
+    create_record_config(file_name="ua_test_2.json", record_type="basic")
