@@ -1,15 +1,23 @@
+from enum import Enum
 from typing import Optional
 
 from app.services.interface import ServiceBase
 
-from app.scheme.org.eidr.schema  import request, operation_type, query_type, asset_doitype
-
+from app.scheme.org.eidr.schema import request, operation_type, query_type, asset_doitype, QueryResultsType
 
 
 class Query(ServiceBase):
     name = "query"
+    response_type = "simple"
 
-    def __init__(self, doi: Optional[str] = None, expression: Optional[str] = None, page_num: Optional[int] = None, page_size: Optional[int] = None, continuation_token: Optional[str] = None, extended_family: Optional[bool] = None):
+    class QueryResponseType(Enum):
+        SIMPLE = "simple"
+        ID = "ID"
+
+    def __init__(self, doi: Optional[str] = None, expression: Optional[str] = None, page_num: Optional[int] = None, page_size: Optional[int] = None, continuation_token: Optional[str] = None, extended_family: Optional[bool] = None, response_type: QueryResponseType | str = QueryResponseType.SIMPLE):
+        if isinstance(response_type, Enum):
+            response_type = response_type.value
+        self.response_type = response_type
         super().__init__(
             doi=doi,
             expression=expression,
@@ -39,7 +47,7 @@ class Query(ServiceBase):
                     # The nasty __args__[0] above is to get the expected type name instead of just "Optional"
                 if (arg == "page_num" or arg == "page_size") and self.args[arg] < 0:
                     # ...and bad values
-                    raise ValueError("Arg {} cannot be negative".format(arg))
+                    raise ValueError("Arg {} is required and must be positive".format(arg))
 
         return True
 

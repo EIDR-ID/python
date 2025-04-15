@@ -7,14 +7,20 @@ from xsdata.formats.dataclass.parsers.config import ParserConfig
 
 import app.driver as d
 from app.scheme.org.doi.pkg_2010.doischema import KernelMetadata
-from app.scheme.org.eidr.schema import ServiceQueryResults, PartyQueryResults
+from app.scheme.org.eidr.schema import ServiceQueryResults, PartyQueryResults, PartyDoilistType, AdminResponse
 
 from app.scheme.org.eidr.schema.response import Response
 from app.services import Query, RegistryRequest
 from app.services.simple_metadata import SimpleMetadata
 from app.scheme.org.eidr.schema.simple_info import SimpleInfo
 
-from app.util import attempt
+#from app.util import attempt
+
+def attempt(func):
+    try:
+        return func(), None
+    except Exception as e:
+        return None, e
 
 config = ParserConfig()
 context = XmlContext()
@@ -27,24 +33,29 @@ class ResponseType(Enum):
     SERVICE = ServiceQueryResults
     KERNELMETADATA = KernelMetadata
     PARTY = PartyQueryResults
-
+    PERMISSIONS = PartyDoilistType
 
 class ResponseReader:
-    obj: Response | ServiceQueryResults | KernelMetadata = None
+    obj: Response | ServiceQueryResults | KernelMetadata | AdminResponse | PartyDoilistType = None
     token: str | None = None
     status: Tuple[int, str] = None
     continuation_token: str | None = None
-
-    def __init__(self, res_str, t: ResponseType = ResponseType.DEFAULT, driver: d.API_Driver = None):
+    admin_response: bool = False
+    def __init__(self, res_str, driver: d.API_Driver = None):
         self.__dir__()
-        self.obj = parser.from_string(res_str, t.value, ns)
+
+        self.obj = parser.from_string(res_str, None, ns)
         self.driver = driver
         if hasattr(self.obj, "request_status") and self.obj.request_status:
             self.token = self.obj.request_status.token
-        if t is not ResponseType.DEFAULT:
-            self.status = 0, "Status Unavailable"
-        else:
+
+        if isinstance(self.obj, AdminResponse):
+            self.admin_response = True
+            self.status = self.obj.code.value, self.obj.type_value.value
+        elif hasattr(self.obj, "status") and self.obj.status:
             self.status = self.obj.status.code.value, self.obj.status.type_value.value
+        else:
+            self.status = 0, "Status Unavailable"
 
     @classmethod
     def from_xml(cls, xml: str):
@@ -104,4 +115,4 @@ def test():
     print("SHITNING", r.status)
 
 
-test()
+#test()

@@ -6,15 +6,25 @@ from typing import List, Tuple, TypedDict
 from requests import Session
 from xsdata.formats.dataclass.parsers.config import ParserConfig
 
-from app.scheme.org.eidr.schema import RegistrantType
+from app.scheme.org.eidr.schema import RegistrantType, PartyDoilistType, PartyIdlist
 from app.services import RegistryRequest, ServiceBase, ResponseReader, Query, StatusRequest, Delete
-from app.driver import API_Driver, ResolveMode
+from app.driver import API_Driver, ResolveMode, ACL_Type, ModifyType
 from app.services.metadata import BaseObjectMeta, FullMeta, ServiceMeta, PartyMeta
 from app.services.party_query import PartyQuery
 from app.services.service_query import NoOperationRequest, ServiceQuery
 from app.services.simple_metadata import SimpleMetadata
 from app.services.response_reader import ResponseType
 from app.scheme.org.eidr.schema.base_object_info_type import BaseObjectInfoType
+
+from app.util import instance_to_dict, repr_non_serials
+
+
+class AdminResponseError(Exception):
+    ...
+
+def check_err(res: ResponseReader):
+    if res.admin_response:
+        raise AdminResponseError("\n\nAdmin Response Code {}: {}\n\t{}".format(*res.status, res.get_field("details")))
 
 
 class SessionManager:
@@ -31,7 +41,7 @@ class SessionManager:
     def post(self, req: RegistryRequest | NoOperationRequest, res_type: ResponseType = ResponseType.DEFAULT,
              params: dict = None):
         raw = self.driver.post_raw(req.xml, req.name, params=params).content.decode("utf-8")
-        res = ResponseReader(raw, res_type)
+        res = ResponseReader(raw)
         if res.token:
             self.tokens.append(res.token)
         return res
@@ -45,10 +55,20 @@ class SessionManager:
     def query(self, q: RegistryRequest):
         if q.name != "query":
             raise ValueError("Must call query with query request")
-        res = self.post(q)
+        res_type = q.response_type
+        if isinstance(res_type, Enum):
+            res_type = res_type.value
+
+        res = self.post(q, params={"type": res_type})
         if res.status[0] != 0:
-            print(res.obj)
+            #print(res.obj)
             raise RuntimeError("Got bad status {}".format(res.status))
+        check_err(res)
+        if res_type == Query.QueryResponseType.ID.value:
+            # ID list case
+            q_res = res.get_field("query_results")
+            matched = [doi.value for doi in q_res.id]
+            return matched, q_res.continuation_token
         q_res = res.get_field("query_results")
         matched = [SimpleMetadata(data, driver=self.driver) for data in q_res.simple_metadata]
         return matched, q_res.continuation_token
@@ -56,11 +76,14 @@ class SessionManager:
     def status(self, s: RegistryRequest) -> Tuple[List[dict], str]:
         if s.name != "status":
             raise ValueError("Must call status with status request")
-        print(s.xml)
+        #print(s.xml)
         res = self.post(s)
-        print(res.obj)
+        #print(res.obj)
+        if res.status[0] != 0:
+            raise RuntimeError("Got bad status {}".format(res.status))
+        check_err(res)
         status_res = res.get_field("request_status_results")
-        print(status_res)
+        #print(status_res)
         operation_stats = [{
             "token": op_res.token,
             "status": (op_res.status.code.value, op_res.status.type_value.value),
@@ -73,6 +96,9 @@ class SessionManager:
         if s.name != "status":
             raise ValueError("Must call status with status request")
         res = self.post(s)
+        if res.status[0] != 0:
+            raise RuntimeError("Got bad status {}".format(res.status))
+        check_err(res)
         status_res = res.get_field("request_status_results")
         operation_stats = [{
             "token": op_res.token,
@@ -93,7 +119,8 @@ class SessionManager:
         if s.name != "service/query":
             raise ValueError("Must call service query with service query request")
         res = self.post(s, res_type=ResponseType.SERVICE)
-        print(res)
+        check_err(res)
+        #print(res)
         q_res = res.obj
         if q_res.continuation_token is not None:
             self.tokens.append(q_res.continuation_token)
@@ -116,18 +143,73 @@ class SessionManager:
         res = self.driver.get_party(party_id, resolve_mode)
         return PartyMeta.from_string(res)
 
+
+    # TODO: check
     def party_query(self, p: NoOperationRequest, full: bool = True):
         if p.name != "party/query":
             raise ValueError("Must call party query with party query request")
         res: ResponseReader
         matches: List[PartyMeta | str] = []
+
         if full:
             res = self.post(p, res_type=ResponseType.PARTY, params={"type": "full"})
+            check_err(res)
             matches = [PartyMeta(p) for p in res.get_field("party")]
         else:
             res = self.post(p, res_type=ResponseType.PARTY, params={"type": "ID"})
+            check_err(res)
             matches = [PartyMeta(p) for p in res.get_field("party_id")]
         if res.continuation_token:
             self.tokens.append(res.continuation_token)
         return matches
 
+    def permissions(self, object_id: str, acl_type: str | ACL_Type = ACL_Type.MODIFY):
+        res = ResponseReader(self.driver.get_permissions(object_id, acl_type))
+        check_err(res)
+        if res.status[0] != 0:
+            raise RuntimeError("Got bad status {}".format(res.status))
+        out: List[str] = res.get_field("party_id")
+        return out
+
+
+    def modification_base(self, object_id: str, modification_type: str | ModifyType, include_types: bool = False):
+        if isinstance(modification_type, Enum):
+            modification_type = modification_type.value
+        base = modification_type.lower().replace("create", "")
+        res = ResponseReader(self.driver.get_modification_base(object_id, modification_type))
+        check_err(res)
+        if res.status[0] != 0:
+            raise RuntimeError("Got bad status {}".format(res.status))
+        out: dict = instance_to_dict(res.get_field(base), include_types=include_types)
+        return repr_non_serials(out)
+
+def test_permissions():
+    ses = SessionManager.from_default()
+    res = ses.permissions("10.5240/8B55-F9AA-007F-B18E-C000-6", acl_type=ACL_Type.MODIFY)
+    print(res)
+
+def test_query():
+    ses = SessionManager.from_default()
+    exp = Query.base_obj_expression(
+        release_date="2005"
+    )
+    q = Query(
+        response_type=Query.QueryResponseType.ID,
+        expression=exp,
+        page_num=1,
+        page_size=100
+    )
+    res = ses.query(RegistryRequest(
+        operations=[q]
+    ))
+    print(res)
+
+def test_modification_base():
+    ses = SessionManager.from_default()
+    res = ses.modification_base("10.5240/8B55-F9AA-007F-B18E-C000-6", ModifyType.CREATE_EDIT)
+    print(res)
+
+if __name__ == "__main__":
+    #test_permissions()
+    #test_query()
+    test_modification_base()
