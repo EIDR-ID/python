@@ -17,6 +17,7 @@ from app.services.response_reader import ResponseType
 from app.scheme.org.eidr.schema.base_object_info_type import BaseObjectInfoType
 
 from app.util import instance_to_dict, repr_non_serials
+import json
 
 
 class AdminResponseError(Exception):
@@ -207,9 +208,12 @@ def test_query():
 def test_modification_base():
     ses = SessionManager.from_default()
     res = ses.modification_base("10.5240/8B55-F9AA-007F-B18E-C000-6", ModifyType.CREATE_EDIT)
-    print(res)
+    out = json.dumps(res, indent=4)
+    with open("mod_base_test.json", "w") as f:
+        f.write(out)
+    print(out)
+
 
 if __name__ == "__main__":
     #test_permissions()
-    #test_query()
     test_modification_base()
