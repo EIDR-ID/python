@@ -54,11 +54,20 @@ class SessionManager:
     def query(self, q: RegistryRequest):
         if q.name != "query":
             raise ValueError("Must call query with query request")
-        res = self.post(q)
+        res_type = q.response_type
+        if isinstance(res_type, Enum):
+            res_type = res_type.value
+
+        res = self.post(q, params={"type": res_type})
         if res.status[0] != 0:
             #print(res.obj)
             raise RuntimeError("Got bad status {}".format(res.status))
         check_err(res)
+        if res_type == Query.QueryResponseType.ID.value:
+            # ID list case
+            q_res = res.get_field("query_results")
+            matched = [doi.value for doi in q_res.id]
+            return matched, q_res.continuation_token
         q_res = res.get_field("query_results")
         matched = [SimpleMetadata(data, driver=self.driver) for data in q_res.simple_metadata]
         return matched, q_res.continuation_token
@@ -166,5 +175,22 @@ def test_permissions():
     res = ses.permissions("10.5240/8B55-F9AA-007F-B18E-C000-6", acl_type=ACL_Type.MODIFY)
     print(res)
 
+def test_query():
+    ses = SessionManager.from_default()
+    exp = Query.base_obj_expression(
+        release_date="2005"
+    )
+    q = Query(
+        response_type=Query.QueryResponseType.ID,
+        expression=exp,
+        page_num=1,
+        page_size=100
+    )
+    res = ses.query(RegistryRequest(
+        operations=[q]
+    ))
+    print(res)
+
 if __name__ == "__main__":
-    test_permissions()
+    #test_permissions()
+    test_query()

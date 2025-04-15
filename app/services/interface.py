@@ -1,3 +1,4 @@
+from enum import Enum
 from typing import Any, Type
 
 from lxml import etree
@@ -22,6 +23,7 @@ class ServiceBase(ABC):
     inner_obj: Any = None
     args: dict[str, Any] = dict()
     xml: str = ""
+    response_type: Enum | str = ""
 
     def __init__(self, **kwargs):
         if not self.xml_name:
