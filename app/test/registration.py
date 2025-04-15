@@ -132,6 +132,17 @@ class RegistrationTest(unittest.TestCase):
         print(f"the request: \n {req_register.xml}")
         res_register = self.manager.post(req=req_register)
 
+
+## Google Playstore
+## ALL OF DISNEY PLUS uses eidr ids
+## One company used it for age rating data
+## Cognisant ran case study on Warner Bros and Microsoft about
+        # putting movies on Xbox (SPREADSHEETS with EIDR)
+## Google using EIDR in Google search for streaming content AI knowledge graph
+## Alt ids work, some ones like disney are only for devs (ROSSETTA STONE FOR CONTENT ID)
+        
+
+
         # TODO: implement polling
         # req_status = StatusRequest(
         #     page_number=1,

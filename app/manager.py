@@ -8,7 +8,7 @@ from xsdata.formats.dataclass.parsers.config import ParserConfig
 
 from app.scheme.org.eidr.schema import RegistrantType, PartyDoilistType, PartyIdlist
 from app.services import RegistryRequest, ServiceBase, ResponseReader, Query, StatusRequest, Delete
-from app.driver import API_Driver, ResolveMode, ACL_Type
+from app.driver import API_Driver, ResolveMode, ACL_Type, ModifyType
 from app.services.metadata import BaseObjectMeta, FullMeta, ServiceMeta, PartyMeta
 from app.services.party_query import PartyQuery
 from app.services.res import test_query, parser, config
@@ -16,6 +16,8 @@ from app.services.service_query import NoOperationRequest, ServiceQuery
 from app.services.simple_metadata import SimpleMetadata
 from app.services.res import ResponseType
 from app.scheme.org.eidr.schema.base_object_info_type import BaseObjectInfoType
+
+from app.util import instance_to_dict, repr_non_serials
 
 
 class AdminResponseError(Exception):
@@ -170,6 +172,18 @@ class SessionManager:
         out: List[str] = res.get_field("party_id")
         return out
 
+
+    def modification_base(self, object_id: str, modification_type: str | ModifyType, include_types: bool = False):
+        if isinstance(modification_type, Enum):
+            modification_type = modification_type.value
+        base = modification_type.lower().replace("create", "")
+        res = ResponseReader(self.driver.get_modification_base(object_id, modification_type))
+        check_err(res)
+        if res.status[0] != 0:
+            raise RuntimeError("Got bad status {}".format(res.status))
+        out: dict = instance_to_dict(res.get_field(base), include_types=include_types)
+        return repr_non_serials(out)
+
 def test_permissions():
     ses = SessionManager.from_default()
     res = ses.permissions("10.5240/8B55-F9AA-007F-B18E-C000-6", acl_type=ACL_Type.MODIFY)
@@ -191,6 +205,12 @@ def test_query():
     ))
     print(res)
 
+def test_modification_base():
+    ses = SessionManager.from_default()
+    res = ses.modification_base("10.5240/8B55-F9AA-007F-B18E-C000-6", ModifyType.CREATE_EDIT)
+    print(res)
+
 if __name__ == "__main__":
     #test_permissions()
-    test_query()
+    #test_query()
+    test_modification_base()
