@@ -137,7 +137,22 @@ class QueryMode(Enum):
     ID = "ID"
     FULL = "full"
 
+class ACL_Type(Enum):
+    MODIFY = "Modify"
+    DELETE = "Delete"
+    READ_ACL = "ReadACL"
+    WRITE_ACL = "WriteACL"
+    READ_PROV = "ReadProvenance"
 
+class ModifyType(Enum):
+    CREATE_BASIC = "CreateBasic"
+    CREATE_SERIES = "CreateSeries"
+    CREATE_SEASON = "CreateSeason"
+    CREATE_EPISODE = "CreateEpisode"
+    CREATE_CLIP = "CreateClip"
+    CREATE_COMPILATION = "CreateCompilation"
+    CREATE_EDIT = "CreateEdit"
+    CREATE_MANIFESTATION = "CreateManifestation"
 class API_Driver:
 
     def __init__(self, config: EIDR_Config):
@@ -169,22 +184,49 @@ class API_Driver:
         return resp.content.decode('utf-8')
         # https://registry1.eidr.org/EIDR/service/resolve/{servicedoi}?type=[doi|full]&followAlias=[true|false]
 
-    def get_video_service_traversal(self, service_doi: AssetDoitype, service_endpoint:str, all_children: bool)-> Response:
-        service_url = "service/{}/{}".format(service_endpoint,service_doi.value)
+    def get_video_service_traversal(self, service_doi: AssetDoitype, service_endpoint: str,
+                                    all_children: bool) -> Response:
+        service_url = "service/{}/{}".format(service_endpoint, service_doi.value)
         if all_children:
             service_url += "?allChildren=true"
         req = self.config.url + service_url
         resp = requests.get(req, headers=self.config.headers)
         return resp
-        # https://registry1.eidr.org/EIDR/service/resolve/{servicedoi}?type=[doi|full]&followAlias=[true|false]
 
-    def get_party(self, party_id: str, party_doi: str | ResolveMode):
-        doi_mode = party_doi
+    def get_party(
+            self,
+            party_id: str = None,
+            resolve_mode: str | ResolveMode = None,
+            _user_doi: str = None
+    ) -> str:
+        doi_mode =resolve_mode
+
         if isinstance(doi_mode, ResolveMode):
-            doi_mode = party_doi.value
+            doi_mode = resolve_mode.value
         if doi_mode.lower() not in ["doi", "full"]:
             raise ValueError("Resolution mode must be either 'doi' or 'full'")
-        req = self.config.url + 'party/resolve/' + party_id + '?type=' + doi_mode
+
+        endpoint = "party/resolve/"
+        options = "?type={}".format(doi_mode)
+        key = party_id
+
+        if party_id is None:
+            key = _user_doi
+            endpoint = "user/resolve/"
+
+        req = self.config.url + endpoint + key + options
+        resp = requests.get(req, headers=self.config.headers)
+        return resp.content.decode('utf-8')
+
+    # https://registry1.eidr.org/EIDR/permissions/read/%7BassetID%7D?aclType={aclType
+    # returns: An instance of the
+        # eidr:AdminResponse or
+        # eidr:PartyIDList
+
+    def get_permissions(self, object_id: str, acl_type: str | ACL_Type):
+        if isinstance(acl_type, ACL_Type):
+            acl_type = acl_type.value
+        req = self.config.url + 'permissions/read/' + object_id + '?aclType=' + acl_type
         resp = requests.get(req, headers=self.config.headers)
         return resp.content.decode('utf-8')
 
@@ -287,5 +329,15 @@ def test_video_service_get():
     res = driver.get_video_service("10.5239/170B-1D36", ResolveMode.FULL)
     print(res)
 
+def test_permissions():
+    driver = API_Driver.from_default()
+    res = driver.get_permissions("10.5240/8B55-F9AA-007F-B18E-C000-6", ACL_Type.MODIFY)
+    print(res)
 
-test_video_service_get()
+if __name__ == "__main__":
+    # test_post_file()
+    # test_get()
+    # test_query()
+    # test_video_service_get()
+    # test_permissions()
+    pass

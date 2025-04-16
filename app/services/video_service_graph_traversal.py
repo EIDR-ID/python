@@ -94,7 +94,6 @@ class VideoServiceGraphTraversal:
             raise ValueError("DOI Must Be String")
         if len(doi_string) <= 0:
             raise ValueError("DOI Cannot Be Empty Or None")
-
         return AssetDoitype(doi_string)
 
     def serialize(self, req) -> str:

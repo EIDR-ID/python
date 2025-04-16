@@ -5,6 +5,7 @@ from textwrap import dedent
 from types import NoneType
 from typing import Optional, Set, get_type_hints, get_origin, Union, get_args, List, Tuple, Any, Type, Dict
 import re
+
 from urllib.parse import uses_params
 
 from xsdata.formats.dataclass.serializers import XmlSerializer
@@ -19,6 +20,9 @@ from dataclasses import make_dataclass, field, fields, is_dataclass
 from app.services import Query, ResponseReader
 from app.driver import API_Driver
 
+from app.scheme.org.eidr.schema import CreateSeriesDataType, CreateBasic, CreateBasicDataType, CreateInteractiveDataType, \
+    CreateEpisode, CreateSeason, CreateSeasonDataType, CreateEpisodeDataType, CreateManifestationDataType, \
+    CreateClipDataType, CreateComposite, CreateEdit, CreateCompilationDataType
 
 import inspect
 
@@ -87,27 +91,27 @@ def to_field_dict(cls, default_enums = True, include_xml = True) -> dict | str:
             if is_optional_type(_type):
                 inner_type = get_optional_inner_type(_type)
                 out[member] = generate_default(inner_type)
-                out[member + "_type"] = inner_type
+                out[member + "_dataclass"] = inner_type
             else:
                 out[member] = generate_default(_type)
-                out[member + "_type"] = _type
+                out[member + "_dataclass"] = _type
         else:
             if get_origin(_type) is list:
                 inner_type = get_args(_type)[0]
                 if inner_type not in allowed_types:
-                    obj_dict = to_field_dict(inner_type)
+                    obj_dict = to_field_dict(inner_type, default_enums, include_xml)
                     out[member] = [obj_dict]
                 else:
                     out[member] = []
-                out[member + "_type"] = List[inner_type]
+                out[member + "_dataclass"] = List[inner_type]
             else:
                 if is_optional_type(_type):
-                    inner = to_field_dict(get_optional_inner_type(_type))
-                    out[member + "_type"] = _type
+                    inner = to_field_dict(get_optional_inner_type(_type), default_enums, include_xml)
+                    out[member + "_dataclass"] = _type
                 else:
-                    inner = to_field_dict(_type)
+                    inner = to_field_dict(_type, default_enums, include_xml)
                 out[member] = inner
-                out[member + "_type"] = _type
+                out[member + "_dataclass"] = _type
 
     return out
 
@@ -123,15 +127,28 @@ default_map: Dict[type, Any] = {
 ## Create an instance of a dataclass with default values, including for nested dataclasses
 def default_dataclass(cls):
     if not is_dataclass(cls):
-        return cls
-    if cls in default_map:
-        return cls(default_map[cls])
-    if len(cls.__init__.__code__.co_varnames) == 1:
-        return cls()
+        raise TypeError(f"{cls} is not a dataclass")
+
+    hints = get_type_hints(cls)
+    params = ()
+    for name, _type in hints.items():
+        _type = extract_union(_type)
+        if _type in default_map:
+            params += (name, default_map[_type])
+        elif is_dataclass(_type):
+            inner = default_dataclass(_type)
+            params += (name, inner)
+        else:
+            params += (name, _type())
+
+def extract_union(t):
+    if get_origin(t) is Union:
+        args = get_args(t)
+        if len(args) == 2 and type(None) in args:
+            return next(a for a in args if a is not type(None))
+        return None
     else:
-        return cls(*(default_dataclass(getattr(cls, field.name)) for field in fields(cls)))
-
-
+        return t
 
 def generate_default(cls):
     sig = inspect.signature(cls.__init__)
@@ -147,7 +164,7 @@ def generate_xml(cls):
     xml_str = serializer.render(cls(), ns_map)
     return xml_str
 
-def filter_type_info(d: dict, substr: str = "_type"):
+def filter_type_info(d: dict, substr: str = "_dataclass"):
     out = {}
     for key, value in d.items():
         if isinstance(value, dict):
@@ -185,14 +202,122 @@ def repr_non_serials(d: dict):
 
     return out
 
-if __name__ == "__main__":
+
+def instance_to_dict(
+    obj: Any,
+    include_types: bool = False,
+    exclude_prefixes: Tuple[str, ...] = ('_',), # Exclude attributes starting with '_'
+    exclude_names: Set[str] = set(), # Specific names to exclude
+) -> Any:
+    """
+    Converts a class instance into a dictionary based on its attributes.
+
+    Relies on the globally defined `allowed_types` set. Assumes input is
+    controlled: None, Enum, List, a type in `allowed_types`, or a
+    dataclass-like object instance to be converted recursively.
+
+    Args:
+        obj: The value or class instance to convert.
+        include_types: If True, attempts to add type hint information for
+                       each field in object dictionaries using a "_type" suffix.
+        exclude_prefixes: A tuple of string prefixes. Attributes starting with
+                          any of these prefixes will be excluded. Defaults to ('_',).
+        exclude_names: A set of exact attribute names to exclude.
+
+    Returns:
+        A dictionary representation of the instance's attributes, a converted
+        list/enum value, the original value if primitive, or None.
+    """
+    global allowed_types
+
+    if obj is None:
+        return None
+    elif type(obj) in allowed_types:
+        return obj
+    elif isinstance(obj, Enum):
+        return obj.value
+    elif isinstance(obj, list):
+        return [instance_to_dict(item, include_types, exclude_prefixes, exclude_names) for item in obj]
+    else:
+        result_dict = {}
+        hints = {}
+        obj_type = type(obj) # Get type for hints
+
+        if include_types:
+            try:
+                # Attempt to get type hints for adding _type suffix
+                hints = get_type_hints(obj_type)
+            except Exception:
+                # Ignore errors if hints cannot be retrieved
+                hints = {}
+        try:
+            attributes_items = vars(obj).items()
+        except TypeError:
+            attributes_items = {} # Treat as empty if vars() fails
+
+        for key, value in attributes_items:
+            # Apply exclusion rules based on prefixes and names
+            if key in exclude_names:
+                continue
+            if any(key.startswith(prefix) for prefix in exclude_prefixes):
+                 continue
+
+            # Recursively convert the attribute's value
+            converted_value = instance_to_dict(value, include_types, exclude_prefixes, exclude_names)
+            result_dict[key] = converted_value
+
+            # Add type information if requested and hint is available
+            if include_types and key in hints:
+                result_dict[key + "_dataclass"] = hints[key] # Store the hint
+
+        return result_dict
+
+# will be moved to a record manager class/file, but placed here temporarily for demonstration
+def create_record_config(file_name: str, record_type: str):
+    """
+    Create a new record config file in the given file path.
+
+    Record types:
+        - basic
+        - series
+        - interactive
+        - episode
+        - season
+        - manifestation
+        - clip
+        - composite
+        - edit
+        - compilation
+    :param file_name: name of the newly created file
+    :param record_type: record type
+    """
+    record_types = {
+        'basic': CreateBasicDataType,
+        'series': CreateSeriesDataType,
+        'interactive': CreateInteractiveDataType,
+        'episode': CreateEpisodeDataType,
+        'season': CreateSeasonDataType,
+        'manifestation': CreateManifestationDataType,
+        'clip': CreateClipDataType,
+        'composite': CreateComposite,
+        'edit': CreateEdit,
+        'compilation': CreateCompilationDataType
+    }
+    record_type = record_type.lower()
+    if record_type not in record_types.keys():
+        raise ValueError(f'Invalid record type passed: {record_type}')
+    record_dict = to_field_dict(record_types.get(record_type), False, False)
+    with open(file_name, "w") as f:
+        f.write(json.dumps(repr_non_serials(filter_type_info(record_dict)), indent= 4))
+        print(f'{file_name} created.')
+
+if __name__ == "__main__": # TODO: Move to test file
     # Test the RegistryHandler
     # Example usage
-    indents = 4
-    out = to_field_dict(Query)
-    print(json.dumps(repr_non_serials(filter_type_info(out)), indent=indents))
+    # indents = 4
+    #out = to_field_dict(QueryType)
+    # out = default_dataclass(QueryType)
+    # print(out)
 
-
-
-
-
+    # demonstrate conversion of dataclass to json template file
+    create_record_config(file_name="ua_test_2.json", record_type="basic")

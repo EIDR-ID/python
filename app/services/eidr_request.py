@@ -1,13 +1,19 @@
+from enum import Enum
 from typing import List
 
 from app.scheme.org.eidr.schema.request import Request
 from app.scheme.org.eidr.schema.request_type import OperationType
+from app.services import Query
 from app.services.interface import ServiceBase
 
 
 class RegistryRequest(ServiceBase):
 
+    # Add any response types into the type below
+    response_type: Query.QueryResponseType | Enum | str = None
+
     def __init__(self, operations: List[ServiceBase]):
+        self.response_type = operations[0].response_type
         first = operations[0]
         if isinstance(first, RegistryRequest):
             raise ValueError("Request cannot hold other requests")
