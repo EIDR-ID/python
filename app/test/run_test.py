@@ -3,7 +3,7 @@ import coverage
 
 # will be very useful for CLI and doing the Scheme ingestion for diff versions
 # folders to include in coverage report
-COVERAGE_SOURCE = ['scheme', 'services']
+COVERAGE_SOURCE = ['../scheme', '../services']
 
 
 def main():
@@ -24,7 +24,6 @@ def main():
     for name in COVERAGE_SOURCE:
         print(f"\n{name.capitalize()} coverage:")
         cov.report(include=[f'{name}/*'], show_missing=True)
-
 
     if not result.wasSuccessful():
         exit(1)
