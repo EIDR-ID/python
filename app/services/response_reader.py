@@ -5,7 +5,6 @@ from xsdata.formats.dataclass.context import XmlContext
 from xsdata.formats.dataclass.parsers import XmlParser
 from xsdata.formats.dataclass.parsers.config import ParserConfig
 
-import app.driver as d
 from app.scheme.org.doi.pkg_2010.doischema import KernelMetadata
 from app.scheme.org.eidr.schema import ServiceQueryResults, PartyQueryResults, PartyDoilistType, AdminResponse
 
@@ -13,6 +12,7 @@ from app.scheme.org.eidr.schema.response import Response
 from app.services import Query, RegistryRequest
 from app.services.simple_metadata import SimpleMetadata
 from app.scheme.org.eidr.schema.simple_info import SimpleInfo
+from app.driver import API_Driver, to_pretty_xml
 
 #from app.util import attempt
 
@@ -41,7 +41,7 @@ class ResponseReader:
     status: Tuple[int, str] = None
     continuation_token: str | None = None
     admin_response: bool = False
-    def __init__(self, res_str, driver: d.API_Driver = None):
+    def __init__(self, res_str, driver: API_Driver = None):
         self.__dir__()
 
         self.obj = parser.from_string(res_str, None, ns)
@@ -86,7 +86,7 @@ class ResponseReader:
 
 
 def test_query():
-    driver = d.API_Driver.from_default()
+    driver = API_Driver.from_default()
     exp = Query.base_obj_expression(
         release_date="2005"
     )
@@ -101,7 +101,7 @@ def test_query():
         operations=[q]
     ))
 
-    return d.to_pretty_xml(res.content)
+    return to_pretty_xml(res.content)
 
 
 def test():

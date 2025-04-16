@@ -2,3 +2,4 @@
 ./myenv/
 ./app/config.xml
 ./app/test/config.xml
+./app/.coverage

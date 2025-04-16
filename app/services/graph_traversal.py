@@ -68,7 +68,6 @@ class GraphTraversal():
         self.serializer = XmlSerializer(config=SerializerConfig(indent="    "))
         self.ns_map = {"": "http://www.eidr.org/schema"}
 
-
     def find_ancestors(
             self,
             doi: Optional[Union[str, AssetDoitype]] = None,
@@ -237,7 +236,6 @@ class GraphTraversal():
         operation = OperationType(get_dependents=get_dependants)
         return self.validate_response(self.create_operations([operation]))
 
-
     def get_children(
             self,
             doi: Optional[Union[str, AssetDoitype]] = None
@@ -313,13 +311,51 @@ class GraphTraversal():
         operation = OperationType(get_series_ancestry=series)
         return self.validate_response(self.create_operations([operation]))
 
+    def video_service_get_children(
+            self,
+            doi: Optional[Union[str, AssetDoitype]] = None,
+            all_children: bool = False
+    ) -> Tuple[Optional['ResponseReader.ResponseReader'], Optional[ValueError]]:
+        """
+        """
+        if doi is None:
+            doi = self.validate_doi(self.doi)
+        else:
+            doi = self.validate_doi(doi)
+
+        response = self.driver.get_video_service_traversal(
+            service_doi=doi,
+            service_endpoint="children",
+            all_children=all_children
+        )
+        return self.validate_response(response=response)
+
+    def video_service_get_parent(
+            self,
+            doi: Optional[Union[str, AssetDoitype]] = None
+    ) -> Tuple[Optional['ResponseReader.ResponseReader'], Optional[ValueError]]:
+        """
+        """
+        if doi is None:
+            doi = self.validate_doi(self.doi)
+        else:
+            doi = self.validate_doi(doi)
+
+        response = self.driver.get_video_service_traversal(
+            service_doi=doi,
+            service_endpoint="parent",
+            all_children=False
+        )
+        return self.validate_response(response=response)
+
     def validate_response(
             self,
-            request: Request
+            request: Request= None,
+            response: Response = None,
     ) -> Tuple[Optional['ResponseReader.ResponseReader'], Optional[ValueError]]:
         """
         Validates and processes the response from a server request.
-
+        validates response if request is not provided
         Args:
             request (Request): The request object to be sent.
 
@@ -334,21 +370,25 @@ class GraphTraversal():
             - Converts the response content to pretty-formatted XML.
             - Uses ResponseReader to parse the XML and check the status code.
             - Raises specific errors based on status codes 18 and 19.
+            :param request:
+            :param response:
         """
-        response = self.driver.post_raw(
-            self.serialize(request),
-            self.name
-        )
+        if response is None:
+            response = self.driver.post_raw(
+                self.serialize(request),
+                self.name
+            )
+
         response.raise_for_status()
         xml = Driver.to_pretty_xml(response.content)
         response_reader: ResponseReader = ResponseReader.ResponseReader(res_str=xml, driver=self.driver)
         status_code, _ = response_reader.status
         if status_code == 18:
-            return None, ValueError("The object of a GetParent request is itself the root of a content record tree")
+            return None, ValueError("The object of a GetParent request is itself the root of a content record tree", {response_reader.status})
         if status_code == 19:
-            return None, ValueError("The object of a GetChildren request is itself a leaf of a content record tree")
+            return None, ValueError("The object of a GetChildren request is itself a leaf of a content record tree", {response_reader.status})
         if status_code != 0:
-            raise RuntimeError("Unsuccessful Request")
+            return None, ValueError("Unsuccessful Request", f"Status Code: {response_reader.status}")
         return response_reader, None
 
     @staticmethod
