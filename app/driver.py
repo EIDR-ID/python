@@ -10,6 +10,7 @@ from requests import Response
 from app.scheme.org.eidr.schema.asset_doitype import AssetDoitype
 from app.scheme.org.eidr.schema import Request
 from app.scheme.org.eidr.schema.request import RequestType
+from app.config.config import CONFIG_PATH
 
 from app.services import Query, ServiceBase, RegistryRequest, Delete
 
@@ -159,7 +160,7 @@ class API_Driver:
         self.config = config
 
     @classmethod
-    def from_default(cls, config_file: str = "./config/config.xml"):
+    def from_default(cls, config_file: str = CONFIG_PATH):
         with open(config_file, "r") as file:
             config = EIDR_Config.from_xml(file.read())
         return API_Driver(config)

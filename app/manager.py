@@ -15,7 +15,7 @@ from app.services.service_query import NoOperationRequest, ServiceQuery
 from app.services.simple_metadata import SimpleMetadata
 from app.services.response_reader import ResponseType
 from app.scheme.org.eidr.schema.base_object_info_type import BaseObjectInfoType
-
+from app.config.config import CONFIG_PATH
 from app.util import instance_to_dict, repr_non_serials
 
 
@@ -37,7 +37,7 @@ class SessionManager:
 
     @classmethod
     def from_default(cls):
-        return cls(API_Driver.from_default())
+        return cls(API_Driver.from_default(config_file=CONFIG_PATH))
 
     def post(self, req: RegistryRequest | NoOperationRequest, res_type: ResponseType = ResponseType.DEFAULT,
              params: dict = None):
