@@ -135,21 +135,21 @@ class GraphTraversal():
             structural_type_filter: list[CreationStructuralType] = None,
     ) -> Tuple[Optional['ResponseReader.ResponseReader'], Optional[ValueError]]:
         """
-        Retrieve the descendants of a given DOI.
+            Retrieve the descendants of a given DOI.
 
-        Parameters:
-            doi (Optional[Union[str, AssetDoitype]]): The DOI to search for. If not provided, it will be validated.
-            extended_family (Optional[bool]): Whether to include extended family members in the result.
-            referent_type_filter (list[ReferentType]): A list of referent types to filter by.
-            relationship_type_filter (list[RelationshipType]): A list of relationship types to filter by.
-            structural_type_filter (list[CreationStructuralType]): A list of structural types to filter by.
-            find_descendants (FindDescendantsType): An instance of FindDescendantsType containing the search criteria.
+            Parameters:
+                doi (Optional[Union[str, AssetDoitype]]): The DOI to search for. If not provided, it will be validated.
+                extended_family (Optional[bool]): Whether to include extended family members in the result.
+                referent_type_filter (list[ReferentType]): A list of referent types to filter by.
+                relationship_type_filter (list[RelationshipType]): A list of relationship types to filter by.
+                structural_type_filter (list[CreationStructuralType]): A list of structural types to filter by.
+                find_descendants (FindDescendantsType): An instance of FindDescendantsType containing the search criteria.
 
-        Returns:
-            Tuple[Optional[ResponseReader], Optional[ValueError]]:
-                A tuple where the first element is the ResponseReader instance
-                containing relationship data, and the second is an optional ValueError
-                indicating any issues with the response status code.   str: The serialized XML representation of the request.
+            Returns:
+                Tuple[Optional[ResponseReader], Optional[ValueError]]:
+                    A tuple where the first element is the ResponseReader instance
+                    containing relationship data, and the second is an optional ValueError
+                    indicating any issues with the response status code.   str: The serialized XML representation of the request.
         """
         if doi is None:
             doi = self.validate_doi(self.doi)
@@ -299,7 +299,7 @@ class GraphTraversal():
                     containing ancestor information, and the second is an optional ValueError
                     indicating any issues with the response status code.
 
-                Notes:
+            Notes:
                 - Series ancestry provides a complete lineage of the object.
     """
         if doi is None:
@@ -317,7 +317,18 @@ class GraphTraversal():
             all_children: bool = False
     ) -> Tuple[Optional['ResponseReader.ResponseReader'], Optional[ValueError]]:
         """
-        """
+        Retrieves the children of a given Digital Object using the video service.
+
+        Parameters:
+            doi (Optional[Union[str, AssetDoitype]]): The DOI to search for. If not provided, it will be validated.
+            all_children (bool): Whether to include all children in the result.
+
+        Returns:
+            Tuple[Optional[ResponseReader.ResponseReader], Optional[ValueError]]:
+                A tuple where the first element is the ResponseReader instance
+                containing child information, and the second is an optional ValueError
+                indicating any issues with the response status code.
+    """
         if doi is None:
             doi = self.validate_doi(self.doi)
         else:
@@ -335,6 +346,16 @@ class GraphTraversal():
             doi: Optional[Union[str, AssetDoitype]] = None
     ) -> Tuple[Optional['ResponseReader.ResponseReader'], Optional[ValueError]]:
         """
+        Retrieves the parent of a given Digital Object using the video service.
+
+        Parameters:
+            doi (Optional[Union[str, AssetDoitype]]): The DOI to search for. If not provided, it will be validated.
+
+        Returns:
+            Tuple[Optional[ResponseReader.ResponseReader], Optional[ValueError]]:
+                A tuple where the first element is the ResponseReader instance
+                containing parent information, and the second is an optional ValueError
+                indicating any issues with the response status code.
         """
         if doi is None:
             doi = self.validate_doi(self.doi)
@@ -354,8 +375,8 @@ class GraphTraversal():
             response: Response = None,
     ) -> Tuple[Optional['ResponseReader.ResponseReader'], Optional[ValueError]]:
         """
-        Validates and processes the response from a server request.
-        validates response if request is not provided
+            Validates and processes the response from a server request.
+            validates response if request is not provided
         Args:
             request (Request): The request object to be sent.
 
@@ -370,8 +391,6 @@ class GraphTraversal():
             - Converts the response content to pretty-formatted XML.
             - Uses ResponseReader to parse the XML and check the status code.
             - Raises specific errors based on status codes 18 and 19.
-            :param request:
-            :param response:
         """
         if response is None:
             response = self.driver.post_raw(
