@@ -1,20 +1,31 @@
-from app.driver import API_Driver
+import unittest
+
 from app.manager import SessionManager
 from app.services import RegistryRequest, StatusRequest
 
 
-def test_status():
-    token = "1741054324732003662"
-    driver = API_Driver.from_default()
-    ses = SessionManager(driver)
-    s = RegistryRequest(
-        operations=[StatusRequest(
-            user_id="10.5238/cramos",
-            page_number=1,
-            page_size=10
-        )]
-    )
-    res, _ = ses.status(s)
-    assert res is not None  # Dummy assert
-    for item in res:
-        assert item is not None  # Dummy assert
+class TestStatus(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        from app.driver import API_Driver
+        cls.ses = SessionManager(API_Driver.from_default())
+
+    def test_status(self):
+        token = "1741054324732003662"
+        s = RegistryRequest(
+            operations=[StatusRequest(
+                user_id=self.ses.driver.config.user,
+                page_number=1,
+                page_size=10
+            )]
+        )
+
+        res, _ = self.ses.status(s)
+        self.assertNotEqual(res, None)
+        for item in res:
+            self.assertNotEqual(item, None)
+
+
+if __name__ == "__main__":
+    unittest.main()
