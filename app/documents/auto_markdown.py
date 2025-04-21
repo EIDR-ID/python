@@ -1,12 +1,15 @@
 import ast
 import sys
 import re
+import os
 
 SECTION_HEADERS = ["Args", "Arguments", "Parameters", "Returns", "Raises", "Note", "Notes"]
+
 
 def is_bullet(line):
     stripped = line.strip()
     return stripped.startswith(("-", "*"))
+
 
 def parse_docstring(doc):
     if not doc:
@@ -21,7 +24,7 @@ def parse_docstring(doc):
     def flush_description():
         if buffer:
             output.append("\n**Description:**\n")
-            output.append("\n".join(buffer)+"\n")
+            output.append("\n".join(buffer) + "\n")
             buffer.clear()
 
     for line in lines:
@@ -84,12 +87,29 @@ def extract_to_markdown(path):
 
         return '\n'.join(md_lines)
 
+
 if __name__ == "__main__":
-    path = sys.argv[1]
-    markdown = extract_to_markdown(path)
+    input_path = sys.argv[1]
+    output_dir = sys.argv[2] if len(sys.argv) > 2 else os.getcwd()
 
-    out_path = path.split("/")[-1].replace(".py", ".md")
-    with open(out_path, "w") as f:
-        f.write(markdown)
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
 
-    print(f"✅ Markdown written to {out_path}")
+    def write_markdown_file(source_path):
+        markdown = extract_to_markdown(source_path)
+        filename = os.path.splitext(os.path.basename(source_path))[0] + ".md"
+        out_path = os.path.join(output_dir, filename)
+
+        with open(out_path, "w", encoding="utf-8") as f:
+            f.write(markdown)
+
+        print(f"✅ Markdown written to {out_path}")
+
+    if os.path.isdir(input_path):
+        for root, _, files in os.walk(input_path):
+            for file in files:
+                if file.endswith(".py"):
+                    full_path = os.path.join(root, file)
+                    write_markdown_file(full_path)
+    else:
+        write_markdown_file(input_path)

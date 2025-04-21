@@ -42,10 +42,10 @@ class SimpleMetadata(GraphTraversal):
         return str(dict)
 
 
-    def pull(self, driver: 'Driver.API_Driver') -> ResponseReader:
-        from app.services.graph_traversal import GraphTraversal
-        newGraph = GraphTraversal(driver)
-        return newGraph.find_ancestors(self.id)
+    # def pull(self, driver: 'Driver.API_Driver') -> ResponseReader:
+    #     from app.services.graph_traversal import GraphTraversal
+    #     newGraph = GraphTraversal(driver)
+    #     return newGraph.find_ancestors(self.id)
 
     # def find_ancestors(
     #         self,
