@@ -41,7 +41,6 @@ class ResponseType(Enum):
 class ResponseReader:
     """
     A class to parse and handle responses from the API.
-
     Attributes:
         obj: Parsed response object, which can be of various types such as Response, ServiceQueryResults, etc.
         token: Optional token extracted from the response.

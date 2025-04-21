@@ -48,7 +48,6 @@ class PartyQuery(NoOperationRequest):
         Converts the query parameters into the internal representation.
 
         This method creates a `FindServices` object using the provided arguments.
-
         Raises:
             ValueError: If invalid arguments are provided.
         """

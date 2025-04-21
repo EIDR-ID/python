@@ -11,6 +11,7 @@ class StatusRequest(ServiceBase):
 
     Attributes:
         name (str): The name of the service.
+
     """
 
     name = "status"

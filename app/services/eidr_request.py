@@ -13,7 +13,6 @@ class RegistryRequest(ServiceBase):
 
     Attributes:
         response_type (Query.QueryResponseType | Enum | str): The type of response expected from the request.
-
     Methods:
         __init__(operations: List[ServiceBase]):
             Initializes the RegistryRequest with a list of operations.

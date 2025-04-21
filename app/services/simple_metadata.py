@@ -42,6 +42,7 @@ class SimpleMetadata(GraphTraversal):
         return str(dict)
 
 
+
     # def pull(self, driver: 'Driver.API_Driver') -> ResponseReader:
     #     from app.services.graph_traversal import GraphTraversal
     #     newGraph = GraphTraversal(driver)
