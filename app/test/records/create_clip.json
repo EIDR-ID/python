@@ -1,0 +1,42 @@
+{
+    "base_object_data": {
+        "structural_type": "Performance",
+        "mode": "Audio",
+        "referent_type": "Supplemental",
+        "resource_name": {
+            "value": "Goku Solos the Universe",
+            "lang": "en",
+            "title_class": "release",
+            "system_generated": false
+        },
+        "release_date": "2014-01-29",
+        "country_of_origin": [
+            "US"
+        ],
+        "status": "valid",
+        "approximate_length": "P2Y6M5DT12H",
+        "administrators": {
+            "registrant": {
+                "value": ""
+            }
+        },
+        "credits": {
+            "director": [
+                {
+                    "display_name": {
+                        "value": "Mr Test Director",
+                        "language": "en"
+                    }
+                }
+            ]
+        }
+    },
+    "extra_object_metadata": {
+        "clip_info": {
+            "parent": {
+                "value": "10.5240/46EE-CADE-F397-58F4-594B-N"
+            },
+            "components_mode": "AudioVisual"
+        }
+    }
+}

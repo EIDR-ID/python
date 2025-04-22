@@ -306,6 +306,26 @@ class SessionManager:
         del out["_dataclass"]
         return out
 
+    def register(self, new_record: RegistryRequest, immediate_resp: bool):
+        """
+        Register a new record with the EIDR API.
+        :param new_record: The new record to register.
+        :param immediate_resp:
+        :return:
+            Tuple[int, str]: A tuple containing the status code and details of the registration.
+        """
+        if new_record.name != "register":
+            raise ValueError("Must call register with register request")
+        if immediate_resp:
+            self.driver.config.set_header('Immediate-Response', 'true')
+        else:
+            self.driver.config.remove_header('Immediate-Response')
+        resp  = self.post(new_record)
+        if resp.status[0] == 0:
+            if operation_status := resp.obj.request_status_results.operation_status[0]:
+                return operation_status
+        return resp.status, resp.obj.status.details
+
 def test_permissions():
     ses = SessionManager.from_default()
     res = ses.permissions("10.5240/8B55-F9AA-007F-B18E-C000-6", acl_type=ACL_Type.MODIFY)

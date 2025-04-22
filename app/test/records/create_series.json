@@ -1,0 +1,46 @@
+{
+    "base_object_data": {
+        "structural_type": "Abstraction",
+        "mode": "Audio",
+        "referent_type": "Series",
+        "resource_name": {
+            "value": "Hilter Von StrongBerg's Golden Freddy",
+            "lang": "en"
+        },
+        "original_language": [
+            {
+                "value": "en",
+                "mode": "Audio"
+            }
+        ],
+        "release_date": "2011-01-23",
+        "country_of_origin": [
+            "US"
+        ],
+        "status": "valid",
+        "approximate_length": "P2Y6M5DT12H",
+        "administrators": {
+            "registrant": {
+                "value": ""
+            }
+        },
+        "credits": {
+            "director": [
+                {
+                    "display_name": {
+                        "value": "Mr Test Directory",
+                        "language": "en"
+                    }
+                }
+            ]
+        }
+    },
+    "extra_object_metadata": {
+        "series_info": {
+            "series_class": "Episodic",
+            "number_required": false,
+            "date_required": false,
+            "original_title_required": false
+        }
+    }
+}

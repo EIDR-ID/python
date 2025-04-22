@@ -1,0 +1,59 @@
+{
+    "base_object_data": {
+        "structural_type": "Abstraction",
+        "mode": "AudioVisual",
+        "referent_type": "Compilation",
+        "resource_name": {
+            "value": "freddy's masion series test",
+            "title_class": "release",
+            "lang": "en"
+        },
+        "original_language": [
+            {
+                "value": "en",
+                "mode": "Audio",
+                "type_value": "commentary"
+            }
+        ],
+        "release_date": "2014-10-31",
+        "country_of_origin": [
+            "US"
+        ],
+        "status": "valid",
+        "approximate_length": "P2Y6M5DT12H",
+        "administrators": {
+            "registrant": {
+                "value": ""
+            }
+        },
+        "credits": {
+            "director": [
+                {
+                    "display_name": {
+                        "value": "Mr Test Director",
+                        "language": "en"
+                    }
+                }
+            ]
+        }
+    },
+    "extra_object_metadata": {
+        "compilation_info": {
+            "entry": [
+                {
+                    "display_name": {
+                        "value": "freddy's masion house extended edition",
+                        "language": "en"
+                    },
+                    "entry_number": "1",
+                    "entry_class": "Episode",
+                    "content_id": "10.5240/5751-89D9-27AD-0ACB-BDED-1"
+                }
+            ],
+            "compilation_class": {
+                "value": "Blu-ray",
+                "has_other_inclusions": false
+            }
+        }
+    }
+}

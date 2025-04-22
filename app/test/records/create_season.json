@@ -1,0 +1,54 @@
+{
+    "base_object_data": {
+        "structural_type": "Abstraction",
+        "mode": "Audio",
+        "referent_type": "Season",
+        "resource_name": {
+            "value": "Bite of WWII",
+            "lang":"en",
+            "title_class":"series numeric",
+            "system_generated": true
+        },
+        "original_language": [
+            {
+                "value": "en",
+                "mode": "Audio",
+                "type_value": "commentary"
+            }
+        ],
+        "country_of_origin": [
+            "US"
+        ],
+        "release_date": "2014-01-23",
+        "status": "valid",
+        "administrators": {
+            "registrant": {
+                "value": ""
+            }
+        },
+        "credits": {
+            "director": [
+                {
+                    "display_name": {
+                        "value": "Mr Test Director",
+                        "language": "en"
+                    }
+                }
+            ]
+        }
+    },
+    "extra_object_metadata": {
+        "season_info": {
+            "parent": {
+                "value": "10.5240/8480-6C29-F8AB-54D7-84CF-Y"
+            },
+            "season_class": [
+                "Main"
+            ],
+            "number_required": false,
+            "date_required": false,
+            "original_title_required": false,
+            "sequence_number": 3
+        }
+    }
+}

@@ -1,0 +1,348 @@
+{
+    "base_object_data": {
+        "structural_type": "Abstraction",
+        "mode": "Audio",
+        "referent_type": "Series",
+        "resource_name": {
+            "value": "",
+            "title_class": "release",
+            "lang": "",
+            "system_generated": false
+        },
+        "original_language": [
+            {
+                "value": "en",
+                "mode": "Audio",
+                "type_value": "commentary"
+            }
+        ],
+        "release_date": "2014-01-23",
+        "country_of_origin": [
+            "US"
+        ],
+        "status": "valid",
+        "administrators": {
+            "registrant": {
+                "value": ""
+            }
+        },
+        "credits": {
+            "director": [
+                {
+                    "display_name": {
+                        "value": "Hilter Von Strongberg",
+                        "language": "en"
+                    },
+                    "sort_name": {
+                        "value": "",
+                        "language": ""
+                    },
+                    "first_given_name": "",
+                    "second_given_name": "",
+                    "family_name": "",
+                    "suffix": "",
+                    "moniker": ""
+                }
+            ]
+        }
+    },
+    "extra_object_metadata": {
+        "manifestation_info": {
+            "parent": {
+                "value": "10.5240/0B9A-1A71-BBF3-219E-F3C7-E"
+            },
+            "manifestation_class": [
+                "web"
+            ],
+            "digital": {
+                "track": [
+                    {
+                        "audio": {
+                            "description": "",
+                            "type_value": "commentary",
+                            "encoding": {
+                                "codec": "H.264",
+                                "codec_type": [],
+                                "bitrate_max": 0,
+                                "bitrate_average": 0,
+                                "vbr": "VBR",
+                                "sample_rate": 0,
+                                "sample_bit_depth": 0,
+                                "channel_mapping": "5.1 Matrix",
+                                "watermark": [
+                                    {
+                                        "vendor": "",
+                                        "product_and_version_id": "",
+                                        "data": "",
+                                        "guaranteed_absent": false
+                                    }
+                                ],
+                                "actual_length": "P2Y6M5DT12H"
+                            },
+                            "language": {
+                                "value": "",
+                                "dubbed": false
+                            },
+                            "channels": "",
+                            "track_reference": "",
+                            "private": {
+                                "encoding_agent": {
+                                    "display_name": "",
+                                    "sort_name": "",
+                                    "alternate_name": [],
+                                    "organization_id": "",
+                                    "id_type": "EIDRPartyID",
+                                    "role": "producer"
+                                },
+                                "description": {
+                                    "value": "",
+                                    "language": ""
+                                },
+                                "hash": [
+                                    {
+                                        "value": "",
+                                        "method": "C4"
+                                    }
+                                ],
+                                "size": {
+                                    "value": 0,
+                                    "pad": 0
+                                }
+                            }
+                        },
+                        "video": {
+                            "description": "",
+                            "type_value": "angle",
+                            "encoding": {
+                                "codec": "AVI Uncompressed",
+                                "codec_type": [],
+                                "mpegprofile": "SP",
+                                "mpeglevel": "LL",
+                                "bitrate_max": 0,
+                                "bit_rate_average": 0,
+                                "vbr": "VBR",
+                                "watermark": [
+                                    {
+                                        "vendor": "",
+                                        "product_and_version_id": "",
+                                        "data": "",
+                                        "guaranteed_absent": false
+                                    }
+                                ],
+                                "actual_length": "P2Y6M5DT12H"
+                            },
+                            "picture": {
+                                "aspect_ratio": "",
+                                "pixel_aspect": "NTSC",
+                                "width_pixels": 0,
+                                "height_pixels": 0,
+                                "active_width_pixels": 0,
+                                "active_height_pixels": 0,
+                                "frame_rate": {
+                                    "value": 0,
+                                    "multiplier": "1000/1001",
+                                    "timecode": "Drop"
+                                },
+                                "progressive": {
+                                    "value": false,
+                                    "scan_order": "BFF"
+                                },
+                                "color_subsampling": "4:1:1",
+                                "colorimetry": "601",
+                                "type3_d": "2D-plus-depth"
+                            },
+                            "color_type": "color",
+                            "picture_format": "360",
+                            "subtitle_language": [
+                                {
+                                    "value": "",
+                                    "closed": false,
+                                    "type_value": "commentary"
+                                }
+                            ],
+                            "signed_language": "",
+                            "cardset_list": [
+                                {
+                                    "type_value": [
+                                        "Theatrical"
+                                    ],
+                                    "region": [
+                                        "Domestic"
+                                    ],
+                                    "cardset": [
+                                        {
+                                            "type_value": [
+                                                "AntiPiracy"
+                                            ],
+                                            "description": "",
+                                            "sequence": 0
+                                        }
+                                    ]
+                                }
+                            ],
+                            "track_reference": "",
+                            "private": {
+                                "encoding_agent": {
+                                    "display_name": "",
+                                    "sort_name": "",
+                                    "alternate_name": [],
+                                    "organization_id": "",
+                                    "id_type": "EIDRPartyID",
+                                    "role": "producer"
+                                },
+                                "description": {
+                                    "value": "",
+                                    "language": ""
+                                },
+                                "hash": [
+                                    {
+                                        "value": "",
+                                        "method": "C4"
+                                    }
+                                ],
+                                "size": {
+                                    "value": 0,
+                                    "pad": 0
+                                }
+                            }
+                        },
+                        "subtitle": {
+                            "format": {
+                                "value": "Text",
+                                "sdimage": false,
+                                "hdimage": false
+                            },
+                            "description": "",
+                            "type_value": [
+                                "commentary"
+                            ],
+                            "format_type": "3GPP",
+                            "language": "",
+                            "cardset_list": [
+                                {
+                                    "type_value": [
+                                        "Theatrical"
+                                    ],
+                                    "region": [
+                                        "Domestic"
+                                    ],
+                                    "cardset": [
+                                        {
+                                            "type_value": [
+                                                "AntiPiracy"
+                                            ],
+                                            "description": "",
+                                            "sequence": 0
+                                        }
+                                    ]
+                                }
+                            ],
+                            "track_reference": "",
+                            "private": {
+                                "encoding_agent": {
+                                    "display_name": "",
+                                    "sort_name": "",
+                                    "alternate_name": [],
+                                    "organization_id": "",
+                                    "id_type": "EIDRPartyID",
+                                    "role": "producer"
+                                },
+                                "description": {
+                                    "value": "",
+                                    "language": ""
+                                },
+                                "hash": [
+                                    {
+                                        "value": "",
+                                        "method": "C4"
+                                    }
+                                ],
+                                "size": {
+                                    "value": 0,
+                                    "pad": 0
+                                }
+                            }
+                        },
+                        "interactive": {
+                            "type_value": "360",
+                            "format_type": "Text",
+                            "language": "",
+                            "encoding": [
+                                {
+                                    "runtime_environment": "Android",
+                                    "first_version": "",
+                                    "last_version": ""
+                                }
+                            ],
+                            "track_reference": "",
+                            "private": {
+                                "encoding_agent": {
+                                    "display_name": "",
+                                    "sort_name": "",
+                                    "alternate_name": [],
+                                    "organization_id": "",
+                                    "id_type": "EIDRPartyID",
+                                    "role": "producer"
+                                },
+                                "description": {
+                                    "value": "",
+                                    "language": ""
+                                },
+                                "hash": [
+                                    {
+                                        "value": "",
+                                        "method": "C4"
+                                    }
+                                ],
+                                "size": {
+                                    "value": 0,
+                                    "pad": 0
+                                }
+                            }
+                        }
+                    }
+                ],
+                "container": [
+                    {
+                        "type_value": "3GP",
+                        "track": [
+                            {
+                                "external_track_reference": {
+                                    "value": "",
+                                    "namespace": "",
+                                    "location": "",
+                                    "track_reference": ""
+                                },
+                                "internal_track_reference": ""
+                            }
+                        ],
+                        "hash": [
+                            {
+                                "value": "",
+                                "method": "C4"
+                            }
+                        ],
+                        "size": 0,
+                        "container_reference": "",
+                        "container_specific_metadata": {
+                            "encoding_agent": {
+                                "display_name": "",
+                                "sort_name": "",
+                                "alternate_name": [],
+                                "organization_id": "",
+                                "id_type": "EIDRPartyID",
+                                "role": "producer"
+                            },
+                            "description": {
+                                "value": "",
+                                "language": ""
+                            }
+                        }
+                    }
+                ]
+            },
+            "film": {},
+            "tape": {}
+        }
+    }
+}

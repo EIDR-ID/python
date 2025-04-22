@@ -1,0 +1,58 @@
+{
+    "base_object_data": {
+        "structural_type": "Physical",
+        "mode": "Audio",
+        "referent_type": "Movie",
+        "resource_name": {
+            "value": "ua test #2 excerpt",
+            "title_class": "release",
+            "lang": "",
+            "system_generated": false
+        },
+        "original_language": [
+            {
+                "value": "en",
+                "mode": "Audio",
+                "type_value": "commentary"
+            }
+        ],
+        "release_date": "2001-03-11",
+        "country_of_origin": [
+            "US"
+        ],
+        "status": "valid",
+        "approximate_length": "P2Y6M5DT12H",
+        "administrators": {
+            "registrant": {
+                "value": ""
+            }
+        },
+        "credits": {
+            "director": [
+                {
+                    "display_name": {
+                        "value": "Mr Test Director",
+                        "language": "en"
+                    }
+                }
+            ]
+        }
+    },
+    "extra_object_metadata": {
+        "composite_info": {
+            "composite_class": "Excerpt",
+            "element": [
+                {
+                    "id": {
+                        "value": "10.5240/5751-89D9-27AD-0ACB-BDED-1"
+                    },
+                    "source_start": "P2Y6M5DT12H",
+                    "source_duration": "P2Y6M5DT12H",
+                    "components_mode": "Audio",
+                    "dest_start": "P2Y6M5DT12H",
+                    "dest_duration": "P2Y6M5DT12H"
+                }
+            ]
+        }
+    }
+}

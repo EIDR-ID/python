@@ -1,0 +1,115 @@
+{
+    "base_object_data": {
+        "structural_type": "Abstraction",
+        "mode": "Audio",
+        "referent_type": "Series",
+        "resource_name": {
+            "value": "",
+            "title_class": "release",
+            "lang": "",
+            "system_generated": false
+        },
+        "alternate_resource_name": [
+            {
+                "value": "",
+                "title_class": "release",
+                "lang": "",
+                "system_generated": false
+            }
+        ],
+        "original_language": [
+            {
+                "value": "",
+                "mode": "Audio",
+                "type_value": "commentary"
+            }
+        ],
+        "version_language": [
+            {
+                "value": "",
+                "mode": "Audio",
+                "type_value": "commentary"
+            }
+        ],
+        "associated_org": [
+            {
+                "display_name": "",
+                "sort_name": "",
+                "alternate_name": [],
+                "organization_id": "",
+                "id_type": "EIDRPartyID",
+                "role": "producer"
+            }
+        ],
+        "release_date": "1999-10+03:30",
+        "country_of_origin": [
+            "AD"
+        ],
+        "status": "valid",
+        "approximate_length": "P2Y6M5DT12H",
+        "alternate_id": [
+            {
+                "value": "",
+                "relation": "ContainsAllOf"
+            }
+        ],
+        "administrators": {
+            "registrant": {
+                "value": ""
+            },
+            "metadata_authority": [
+                {
+                    "value": ""
+                }
+            ]
+        },
+        "credits": {
+            "director": [
+                {
+                    "display_name": {
+                        "value": "",
+                        "language": ""
+                    },
+                    "sort_name": {
+                        "value": "",
+                        "language": ""
+                    },
+                    "first_given_name": "",
+                    "second_given_name": "",
+                    "family_name": "",
+                    "suffix": "",
+                    "moniker": ""
+                }
+            ],
+            "actor": [
+                {
+                    "display_name": {
+                        "value": "",
+                        "language": ""
+                    },
+                    "sort_name": {
+                        "value": "",
+                        "language": ""
+                    },
+                    "first_given_name": "",
+                    "second_given_name": "",
+                    "family_name": "",
+                    "suffix": "",
+                    "moniker": ""
+                }
+            ]
+        },
+        "registrant_extra": "",
+        "description": {
+            "value": "",
+            "lang": ""
+        }
+    },
+    "extra_object_metadata": {
+        "interactive_material_info": {
+            "type_value": "360",
+            "format_type": "Text",
+            "language": ""
+        }
+    }
+}
