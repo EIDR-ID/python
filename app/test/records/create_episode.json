@@ -1,0 +1,45 @@
+{
+    "base_object_data": {
+        "structural_type": "Abstraction",
+        "mode": "Audio",
+        "referent_type": "TV",
+        "resource_name": {
+            "value": "Bite of WWII",
+            "lang": "en"
+        },
+        "original_language": [
+            {
+                "value": "EN",
+                "mode": "Audio",
+                "type_value": "commentary"
+            }
+        ],
+        "release_date": "2014-01-29",
+        "country_of_origin": [
+            "US"
+        ],
+        "status": "valid",
+        "administrators": {
+            "registrant": {
+                "value": ""
+            }
+        },
+        "credits": {
+            "director": [
+                {
+                    "display_name": {
+                        "value": "Mr Test Director",
+                        "language": "en"
+                    }
+                }
+            ]
+        }
+    },
+    "extra_object_metadata": {
+        "episode_info": {
+            "parent": {
+                "value": "10.5240/11AF-1DBB-E445-25CC-2268-N"
+            }
+        }
+    }
+}

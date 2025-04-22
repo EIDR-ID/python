@@ -1,5 +1,4 @@
 from typing import Union
-
 from app.services.interface import ServiceBase
 
 from app.scheme.org.eidr.schema.create_edit_data_type import CreateEditDataType
