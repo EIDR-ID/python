@@ -7,10 +7,25 @@ from app.scheme.org.eidr.schema import operation_type, asset_doitype, expression
 from app.services.no_op import NoOperationRequest
 
 
+
+
 class ServiceQuery(NoOperationRequest):
+    """
+        Service for querying content delivery services present in the EIDR API.
+    """
     name = "service/query"
 
     def __init__(self, expression: Optional[str] = None, page_number: Optional[int] = 1, page_size: Optional[int] = 1, continuation_token: Optional[str] = None):
+        """
+            Initialize a ServiceQuery instance for retrieving service records.
+
+            Parameters:
+                expression (Optional[str]): An XPath or search expression to filter services; defaults to None.
+                page_number (Optional[int]): The page index for paginated results; must be ≥ 1. Defaults to 1.
+                page_size (Optional[int]): The number of items per page; must be ≥ 1. Defaults to 1.
+                continuation_token (Optional[str]): A token to continue a previous paginated query; defaults to None.
+        """
+
         super().__init__(
             expression=expression,
             page_number=page_number,
@@ -19,7 +34,6 @@ class ServiceQuery(NoOperationRequest):
         )
 
     def validate(self) -> bool:
-
         return True
 
     def objectify(self):
@@ -38,16 +52,6 @@ class ServiceQuery(NoOperationRequest):
             continuation_token=continuation_token
         )
 
-    # def test_query():
-    #     driver = API_Driver.from_default()
-    #     res = driver.post(Query(
-    #         expression="(/FullMetadata/BaseObjectData/ResourceName \"Avengers: Endgame\") AND /FullMetadata/BaseObjectData/ReferentType "
-    #                    "\"movie\"",
-    #         page_num=1,
-    #         page_size=1
-    #     ))
-    #     return to_pretty_xml(res.content)
-    #
 
     @classmethod
     def service_expression(
@@ -63,6 +67,25 @@ class ServiceQuery(NoOperationRequest):
             primary_audio_language: str | None = None,
             delivery_model: str | None = None,
     ) -> str:
+        """
+                Build an XPath query expression for Service resources.
+
+                Parameters:
+                    id (str | None): Filter by the Service ID.
+                    display_name (str | None): Filter by the service’s DisplayName.
+                    alternate_service_name (str | None): Filter by AlternateServiceName.
+                    description (str | None): Filter by service Description.
+                    other_affiliation (str | None): Filter by OtherAffiliation.
+                    active (str | None): Filter by Active status.
+                    primary_time_zone (str | None): Filter by PrimaryTimeZone.
+                    region (str | None): Filter by Region.
+                    primary_audio_language (str | None): Filter by PrimaryAudioLanguage.
+                    delivery_model (str | None): Filter by DeliveryModel.
+
+                Returns:
+                    str: A combined XPath clause string using " AND " between each filter,
+                         or an empty string if no parameters are provided.
+        """
         # Map Service parameters to their keys.
         service_param_mapping = [
             (id, "ID"),
@@ -98,6 +121,20 @@ class ServiceQuery(NoOperationRequest):
             associated_role: str | None = None,
             associated_territory: str | None = None,
     ) -> str:
+        """
+        Build an XPath query expression for KernelMetadata resources.
+        :param referent_doi_name: Referent name according to DOI
+        :param primary_referent_type: Referent type
+        :param registration_agency_doi_name: Name of the registration agency according to DOI
+        :param issue_date: Date of issue
+        :param issue_number: Issue number
+        :param party_principal_name: Principal name of the party tied to this service
+        :param party_abbreviated_name: Abbreviated name of the party tied to this service
+        :param party_structural_type: Structural type of the relevant party
+        :param associated_role: Role of the service
+        :param associated_territory: Territory associated with the service
+        :return: A combined XPath clause string using " AND " between each filter,
+        """
         # Map kernel metadata parameters to their keys.
         kernel_param_mapping = [
             (referent_doi_name, "referentDoiName"),

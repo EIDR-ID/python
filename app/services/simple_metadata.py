@@ -6,7 +6,11 @@ from app.scheme.org.eidr.schema.simple_info import SimpleInfo
 from app.services.graph_traversal import GraphTraversal, Driver
 
 
+
 class SimpleMetadata(GraphTraversal):
+    """
+    A class representing a simple metadata/simple info response from the EIDR API.
+    """
     def __init__(self, info: SimpleInfo, driver: 'Driver.API_Driver'):
         super().__init__(driver)
         self.obj = info

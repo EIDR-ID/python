@@ -9,7 +9,7 @@ from app.services.interface import ServiceBase
 
 class RegistryRequest(ServiceBase):
     """
-    A class representing a registry request.
+    A class representing a registry request that is one or many operations of the same type.
 
     Attributes:
         response_type (Query.QueryResponseType | Enum | str): The type of response expected from the request.

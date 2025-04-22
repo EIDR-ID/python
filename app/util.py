@@ -39,7 +39,13 @@ from app.scheme.org.eidr.schema import CreateSeriesDataType, CreateBasic, Create
 import inspect
 
 
+
 def attempt(func):
+    """
+    A Go-like attempt function that returns a tuple of the result and an exception if it occurs.
+    :param func: function to attempt
+    :return: tuple of (result, exception)
+    """
     try:
         return func(), None
     except Exception as e:
@@ -67,7 +73,6 @@ def get_type_name(t: type) -> str:
             inner = next(a for a in args if a is not type(None))
             return f"Optional[{get_type_name(inner)}]"
     return getattr(t, "__name__", str(t))
-
 
 allowed_types: Set[type] = {
     str, int, float, bool, type(None), Enum, Optional[str], Optional[int], Optional[float],
@@ -129,7 +134,13 @@ default_map: Dict[type, Any] = {
 }
 
 ## Create an instance of a dataclass with default values, including for nested dataclasses
-def default_dataclass(cls, default_enums = True, include_xml = True):
+def default_dataclass(cls, default_enums = True):
+    """
+    Create an instance of a dataclass with default values, including for nested dataclasses.
+    :param cls: The dataclass to create an instance of.
+    :param default_enums: If True, use the first value of the enum as the default value.
+    :return: An instance of the dataclass with default values.
+    """
     if not is_dataclass(cls):
         raise TypeError(f"{cls} is not a dataclass")
 
@@ -160,9 +171,6 @@ def default_dataclass(cls, default_enums = True, include_xml = True):
                 val = _type()
             params[name] = [val]
     out = cls(**params)
-    if include_xml:
-        # This WILL crash for frozen dataclasses
-        setattr(out, "_xml_", generate_xml(out))
     return out
 
 def extract_union(t):
@@ -244,11 +252,13 @@ context = XmlContext()
 json_serializer = JsonSerializer(config=SerializerConfig(xml_declaration=True))
 json_parser = JsonParser(config=ParserConfig(base_url="http://www.eidr.org/schema", process_xinclude=True))
 
-
-
-
-
 def instance_to_dict(obj) -> Dict:
+    """
+    Convert a dataclass to a dict representation.
+    :param obj: dataclass instance
+    :return:
+        dict representation of the dataclass
+    """
     global json_serializer
     if not is_dataclass(obj):
         raise TypeError(f"{obj} is not a dataclass")
@@ -257,6 +267,12 @@ def instance_to_dict(obj) -> Dict:
     return dict_out
 
 def dict_to_instance(d: Dict) -> Any:
+    """
+    Convert a dict representation of a dataclass to an instance of the dataclass.
+    :param d: dict representation of the dataclass
+    :return:
+        instance of the dataclass
+    """
     global json_parser
     if not isinstance(d, dict):
         raise TypeError(f"{d} is not a dict")
@@ -266,9 +282,6 @@ def dict_to_instance(d: Dict) -> Any:
         copy = d.copy()
         del copy["_dataclass"]
         return json_parser.from_string(json.dumps(copy), d["_dataclass"])
-
-
-
 
 # will be moved to a record manager class/file, but placed here temporarily for demonstration
 def create_record_config(file_name: str, record_type: str):
@@ -321,7 +334,7 @@ if __name__ == "__main__": # TODO: Move to test file
     #create_record_config(file_name="ua_test_2.json", record_type="basic")
 
     # testing default dataclass
+    default = default_dataclass(CreateBasicDataType)
     out = instance_to_dict(default_dataclass(CreateBasicDataType))
-    print(out)
     reverse = dict_to_instance(out)
     print(reverse)
