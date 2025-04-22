@@ -217,7 +217,6 @@ class GraphTraversal():
     ) -> Tuple[Optional['ResponseReader.ResponseReader'], Optional[ValueError]]:
         """
         Retrieves all dependents of a Digital Object.
-
         Returns:
             Tuple[Optional[ResponseReader], Optional[ValueError]]:
                 A tuple where the first element is the ResponseReader instance

@@ -8,9 +8,25 @@ from app.services.no_op import NoOperationRequest
 
 
 class PartyQuery(NoOperationRequest):
+    """
+    Represents a service for querying party information.
+
+    This service allows querying party details using various parameters such as
+    ID, display name, organization ID, and more. It extends the `NoOperationRequest`
+    base class.
+    """
     name = "party/query"
 
     def __init__(self, expression: Optional[str] = None, page_number: Optional[int] = 1, page_size: Optional[int] = 1, continuation_token: Optional[str] = None):
+        """
+        Initializes the PartyQuery service with optional query parameters.
+
+        Args:
+            expression (Optional[str]): The query expression.
+            page_number (Optional[int]): The page number for pagination. Defaults to 1.
+            page_size (Optional[int]): The number of results per page. Defaults to 1.
+            continuation_token (Optional[str]): Token for continuing a previous query.
+        """
         super().__init__(
             expression=expression,
             page_number=page_number,
@@ -19,10 +35,22 @@ class PartyQuery(NoOperationRequest):
         )
 
     def validate(self) -> bool:
+        """
+        Validates the query parameters.
 
+        Returns:
+            bool: Always returns True as validation is not implemented.
+        """
         return True
 
     def objectify(self):
+        """
+        Converts the query parameters into the internal representation.
+
+        This method creates a `FindServices` object using the provided arguments.
+        Raises:
+            ValueError: If invalid arguments are provided.
+        """
         expression: Optional[str] = self.args.get("expression", None)
         page_number: Optional[int] = None
         try:
@@ -46,24 +74,44 @@ class PartyQuery(NoOperationRequest):
             sort_name: str | None = None,
             organization_id: str | None = None,
             id_type: str | None = None,
-            alternate_party_name: str | None = None,  # Now treated as a regular string
+            alternate_party_name: str | None = None,
             contact_name: str | None = None,
             primary_email: str | None = None,
             alternate_email: str | None = None,
             contact_address: str | None = None,
             contact_phone: str | None = None,
-
             active: bool | None = None,
             party_account_name: str | None = None,
-            allowed_roles: str | None = None,  # Now treated as a regular string
+            allowed_roles: str | None = None,
     ) -> str:
-        # Map Party parameters to their keys.
+        """
+        Builds a query expression for party parameters.
+
+        Args:
+            id (str | None): The party ID.
+            display_name (str | None): The display name of the party.
+            sort_name (str | None): The sort name of the party.
+            organization_id (str | None): The organization ID of the party.
+            id_type (str | None): The type of the party ID.
+            alternate_party_name (str | None): Alternate name of the party.
+            contact_name (str | None): Contact name of the party.
+            primary_email (str | None): Primary email of the party.
+            alternate_email (str | None): Alternate email of the party.
+            contact_address (str | None): Contact address of the party.
+            contact_phone (str | None): Contact phone number of the party.
+            active (bool | None): Whether the party is active.
+            party_account_name (str | None): Account name of the party.
+            allowed_roles (str | None): Allowed roles for the party.
+
+        Returns:
+            str: A query expression string combining all provided parameters.
+        """
         party_param_mapping = [
             (id, "ID"),
             (display_name, "PartyName/DisplayName"),
             (sort_name, "PartyName/SortName"),
             (organization_id, "PartyName/OrganizationID"),
-            (id_type, "PartyName/IdType"), # TODO: Is the name here right?
+            (id_type, "PartyName/IdType"),
             (alternate_party_name, "AlternatePartyName"),
             (contact_name, "ContactInfo/Name"),
             (primary_email, "ContactInfo/PrimaryEmail"),
@@ -75,7 +123,6 @@ class PartyQuery(NoOperationRequest):
             (allowed_roles, "AllowedRoles"),
         ]
 
-        # Build query clauses for Party parameters.
         party_clauses = [
             f'(/Party/{key} "{value}")'
             for value, key in party_param_mapping

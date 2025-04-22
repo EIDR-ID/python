@@ -3,18 +3,43 @@ from typing import Optional
 
 from app.services.interface import ServiceBase
 
-from app.scheme.org.eidr.schema import request, operation_type, query_type, asset_doitype, QueryResultsType
+from app.scheme.org.eidr.schema import operation_type, query_type, asset_doitype, QueryResultsType
+
 
 
 class Query(ServiceBase):
+    """
+        Service for executing EIDR queries against the API.
+
+        Attributes:
+            name (str): The fixed service name, always "query".
+            response_type (str): The format of the response, either "simple", "ID", or a member of QueryResponseType.
+            QueryResponseType (Enum): Enumeration of supported response_type values:
+                - SIMPLE: returns simple metadata for each matching object
+                - ID: returns only the EIDR IDs
+    """
     name = "query"
     response_type = "simple"
+
 
     class QueryResponseType(Enum):
         SIMPLE = "simple"
         ID = "ID"
 
+
     def __init__(self, doi: Optional[str] = None, expression: Optional[str] = None, page_num: Optional[int] = None, page_size: Optional[int] = None, continuation_token: Optional[str] = None, extended_family: Optional[bool] = None, response_type: QueryResponseType | str = QueryResponseType.SIMPLE):
+        """
+                Initialize a Query service instance. Must be placed within a request, see RegistryRequest.
+
+                Parameters:
+                    doi (Optional[str]): An EIDR DOI to scope the query; if None, no DOI filter is applied.
+                    expression (Optional[str]): An XPath expression to filter results; defaults to None.
+                    page_num (Optional[int]): The page number for paginated results; must be present and non‑negative.
+                    page_size (Optional[int]): The number of items per page; must be present and non‑negative.
+                    continuation_token (Optional[str]): A token to resume a previous paginated query; defaults to None.
+                    extended_family (Optional[bool]): Whether to include extended family relationships in results; defaults to None.
+                    response_type (QueryResponseType | str): The desired response format, either SIMPLE or ID; defaults to SIMPLE.
+        """
         if isinstance(response_type, Enum):
             response_type = response_type.value
         self.response_type = response_type
@@ -79,6 +104,7 @@ class Query(ServiceBase):
 #     return to_pretty_xml(res.content)
 #
 
+
     @classmethod
     def base_obj_expression(cls,
                             structural_type: str | None = None,
@@ -99,13 +125,32 @@ class Query(ServiceBase):
                             registrant_extra: str | None = None,
                             description: str | None = None,
                             ) -> str:
-        # Parameter validation helper
-        def validate_param(value: str | None, allowed: list[str], param_name: str) -> None:
-            if value is not None and value not in allowed:
-                allowed_str = ", ".join(f"'{v}'" for v in allowed)
-                raise ValueError(f"{param_name} must be one of {allowed_str}")
 
-        # Validate constrained parameters
+        """
+            Construct an XPath expression for querying BaseObjectData fields.
+
+            Parameters:
+                structural_type (str | None): One of ["Abstraction", "Performance", "Digital", "Physical"] to filter by StructuralType.
+                mode (str | None): One of ["Visual", "AudioVisual", "Audio", "Other"] to filter by Mode.
+                referent_type (str | None): Value to filter by ReferentType.
+                resource_name (str | None): Value to filter by ResourceName.
+                alternate_resource_name (str | None): Value to filter by AlternateResourceName.
+                original_language (str | None): Value to filter by OriginalLanguage.
+                dubbed_language (str | None): Value to filter by DubbedLanguage.
+                associated_org (str | None): Value to filter by AssociatedOrg.
+                release_date (str | None): Value to filter by ReleaseDate.
+                country_of_origin (str | None): Value to filter by CountryOfOrigin.
+                status (str | None): Value to filter by Status.
+                approximate_length (str | None): Value to filter by ApproximateLength.
+                alternate_id (str | None): Value to filter by AlternateID.
+                display_name (str | None): Value to filter by DisplayName.
+                credits (str | None): Value to filter by Credits.
+                registrant_extra (str | None): Value to filter by RegistrantExtra.
+                description (str | None): Value to filter by Description.
+
+            Returns:
+                str: An XPath clause combining all provided filters with " AND ", or an empty string if no filters are given.
+        """
         validate_param(
             structural_type,
             ["Abstraction", "Performance", "Digital", "Physical"],
@@ -141,3 +186,8 @@ class Query(ServiceBase):
         ]
 
         return " AND ".join(clauses) if clauses else ""
+
+def validate_param(value: str | None, allowed: list[str], param_name: str) -> None:
+    if value is not None and value not in allowed:
+        allowed_str = ", ".join(f"'{v}'" for v in allowed)
+        raise ValueError(f"{param_name} must be one of {allowed_str}")

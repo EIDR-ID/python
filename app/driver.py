@@ -231,6 +231,13 @@ class API_Driver:
         resp = requests.get(req, headers=self.config.headers)
         return resp.content.decode('utf-8')
 
+    def get_modification_base(self, object_id: str, mod_type: ModifyType | str):
+        if isinstance(mod_type, ModifyType):
+            mod_type = mod_type.value
+        req = self.config.url + f'object/modificationbase/{object_id}/?type={mod_type}'
+        resp = requests.get(req, headers=self.config.headers)
+        return resp.content.decode('utf-8')
+
     def post(self, service: RegistryRequest):
         return self.post_raw(service.xml, service.name)
 

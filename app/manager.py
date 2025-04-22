@@ -6,7 +6,7 @@ from typing import List, Tuple, TypedDict
 from requests import Session
 from xsdata.formats.dataclass.parsers.config import ParserConfig
 
-from app.scheme.org.eidr.schema import RegistrantType, PartyDoilistType, PartyIdlist
+from app.scheme.org.eidr.schema import RegistrantType, PartyDoilistType, PartyIdlist, QueryResultsType
 from app.services import RegistryRequest, ServiceBase, ResponseReader, Query, StatusRequest, Delete
 from app.driver import API_Driver, ResolveMode, ACL_Type, ModifyType
 from app.services.metadata import BaseObjectMeta, FullMeta, ServiceMeta, PartyMeta
@@ -17,11 +17,11 @@ from app.services.response_reader import ResponseType
 from app.scheme.org.eidr.schema.base_object_info_type import BaseObjectInfoType
 from app.config.config import CONFIG_PATH
 from app.util import instance_to_dict, repr_non_serials
+import json
 
 
 class AdminResponseError(Exception):
     ...
-
 
 def check_err(res: ResponseReader):
     if res.admin_response:
@@ -29,6 +29,10 @@ def check_err(res: ResponseReader):
 
 
 class SessionManager:
+    """
+    A class to manage a session with the EIDR API, using a config file.
+    Maintains a list of tokens for the session, and exposes methods to interact with the API.
+    """
     driver: API_Driver = None
     tokens: List[str] = []
 
@@ -37,23 +41,52 @@ class SessionManager:
 
     @classmethod
     def from_default(cls):
+        """
+        Create a SessionManager instance using the default config file.
+        :return:
+            SessionManager: An instance of SessionManager with the default API_Driver.
+        """
         return cls(API_Driver.from_default(config_file=CONFIG_PATH))
 
     def post(self, req: RegistryRequest | NoOperationRequest, res_type: ResponseType = ResponseType.DEFAULT,
              params: dict = None):
+        """
+        Post a request to the EIDR API.
+        :param req: The request to post.
+        :param res_type: Unused.
+        :param params: Extra HTTP parameters to pass over
+        :return:
+            ResponseReader: The response from the API wrapped in a helper class.
+        """
         raw = self.driver.post_raw(req.xml, req.name, params=params).content.decode("utf-8")
         res = ResponseReader(raw)
         if res.token:
             self.tokens.append(res.token)
         return res
 
-    def resolve(self, id: str):
+    def resolve(self, id: str, resolve_mode: str | ResolveMode = ResolveMode.FULL) -> FullMeta:
+        """
+        Resolve an ID to a FullMeta object (will be streamlined into file paradigm).
+        :param resolve_mode:
+        :param id:
+        :return:
+            FullMeta: The resolved FullMeta object. (for now)
+        """
         res = self.driver.get_object(id)
         info = FullMeta.from_string(res.decode("utf-8"))
         # print(info.base_meta.resource_name)
         return info
 
-    def query(self, q: RegistryRequest):
+    def query(self, q: RegistryRequest) -> Tuple[List[SimpleMetadata] | List[str], str]:
+        """
+        Query the EIDR API with a query request.
+        :param q: A RegistryRequest object containing the query. Must be of type Query.
+        :return:
+            Tuple[List[SimpleMetadata] | List[str], str]:
+                A tuple containing a list of SimpleMetadata and a continuation token, OR
+                A tuple containing a list of EIDR ids and a continuation token.
+
+        """
         if q.name != "query":
             raise ValueError("Must call query with query request")
         res_type = q.response_type
@@ -62,7 +95,7 @@ class SessionManager:
 
         res = self.post(q, params={"type": res_type})
         if res.status[0] != 0:
-            # print(res.obj)
+            #print(res.obj)
             raise RuntimeError("Got bad status {}".format(res.status))
         check_err(res)
         if res_type == Query.QueryResponseType.ID.value:
@@ -75,16 +108,22 @@ class SessionManager:
         return matched, q_res.continuation_token
 
     def status(self, s: RegistryRequest) -> Tuple[List[dict], str]:
+        """
+        Get the status of an operation using the provided service.
+        :param s: The status request to post.
+        :return:
+            Tuple[List[dict], str]: A tuple containing a list of operation statuses and a continuation token.
+        """
         if s.name != "status":
             raise ValueError("Must call status with status request")
-        # print(s.xml)
+        #print(s.xml)
         res = self.post(s)
-        # print(res.obj)
+        #print(res.obj)
         if res.status[0] != 0:
             raise RuntimeError("Got bad status {}".format(res.status))
         check_err(res)
         status_res = res.get_field("request_status_results")
-        # print(status_res)
+        #print(status_res)
         operation_stats = [{
             "token": op_res.token,
             "status": (op_res.status.code.value, op_res.status.type_value.value),
@@ -94,6 +133,14 @@ class SessionManager:
         return operation_stats, status_res.continuation_token
 
     def future_status(self, s: RegistryRequest, wait: float = 1, retries: int = 10) -> List[Future]:
+        """
+        Get the status of an operation, for use in an async pipeline.
+        :param s: The status request to post.
+        :param wait: The time to wait between retries.
+        :param retries: The number of retries to attempt.
+        :return:
+            List[Future]: A list of futures representing the status of the operation.
+        """
         if s.name != "status":
             raise ValueError("Must call status with status request")
         res = self.post(s)
@@ -113,15 +160,29 @@ class SessionManager:
         return futures
 
     def service_resolve(self, id: str, service_doi: str | ResolveMode = ResolveMode.FULL, followAlias: bool = True):
+        """
+        Resolve a service to a ServiceMeta object.
+        :param id: ID of the service in the EIDR registry.
+        :param service_doi: The type of response desired
+        :param followAlias: Whether to follow the alias of the service when resolving.
+        :return:
+            ServiceMeta: The resolved ServiceMeta object.
+        """
         res = self.driver.get_video_service(id, service_doi, followAlias)
         return ServiceMeta.from_string(res)
 
     def service_query(self, s: NoOperationRequest):
+        """
+        Query the EIDR API with a service query request.
+        :param s: The service query/queries request to post.
+        :return:
+            List[ServiceMeta]: A list of ServiceMeta objects representing the services that match the query.
+        """
         if s.name != "service/query":
             raise ValueError("Must call service query with service query request")
         res = self.post(s, res_type=ResponseType.SERVICE)
         check_err(res)
-        # print(res)
+        #print(res)
         q_res = res.obj
         if q_res.continuation_token is not None:
             self.tokens.append(q_res.continuation_token)
@@ -129,6 +190,14 @@ class SessionManager:
         return out
 
     async def poll_status(self, token: str, wait: float, retries: int):
+        """
+        Poll the status of an operation using the provided token.
+        :param token: The token assigned to the operation to poll.
+        :param wait: The time to wait between retries.
+        :param retries: The number of retries to attempt.
+        :return:
+            dict: The status of the operation(s).
+        """
         for i in range(retries):
             s = StatusRequest(token=token)
             req = RegistryRequest(operations=[s])
@@ -141,16 +210,36 @@ class SessionManager:
         return None
 
     def party_resolve(self, party_id: str, resolve_mode: str | ResolveMode = ResolveMode.FULL):
+        """
+        Resolve a party to a PartyMeta object.
+        :param party_id: The ID of the party to resolve.
+        :param resolve_mode: The type of response desired.
+        :return:
+            PartyMeta: The resolved PartyMeta object.
+        """
         res = self.driver.get_party(party_id, resolve_mode)
         return PartyMeta.from_string(res)
 
     def user_resolve(self, user_doi: str, resolve_mode: str | ResolveMode = ResolveMode.FULL):
+        """
+        Resolve a user.
+        :param user_doi: The ID of the user to resolve.
+        :param resolve_mode: The type of response desired.
+        :return:
+            ResponseReader: The response from the API wrapped in a helper class.
+        """
         res = self.driver.get_party(_user_doi=user_doi, resolve_mode=resolve_mode)
         response = ResponseReader(res)
         check_err(response)
         return response
 
     def change_user_password(self, user_doi: str, password: str):
+        """
+        Change the password of a user. The user's current credentials must be provided in the config file.
+        :param user_doi: The ID of the user to change the password for.
+        :param password: The new password to set for the user.
+        :return:
+        """
         endpoint = "user/password/{}".format(user_doi)
         response = self.driver.post_raw("", endpoint, {"password": password})
         response = ResponseReader(response.content.decode("utf-8"))
@@ -158,6 +247,13 @@ class SessionManager:
 
     # TODO: check
     def party_query(self, p: NoOperationRequest, full: bool = True):
+        """
+        Query the EIDR API with a party query request.
+        :param p: The party query request to post.
+        :param full: Whether to return the full party metadata or just the ID.
+        :return:
+            List[PartyMeta | str]: A list of PartyMeta objects (or IDs) representing the parties that match the query.
+        """
         if p.name != "party/query":
             raise ValueError("Must call party query with party query request")
         res: ResponseReader
@@ -176,6 +272,13 @@ class SessionManager:
         return matches
 
     def permissions(self, object_id: str, acl_type: str | ACL_Type = ACL_Type.MODIFY):
+        """
+        Get a list of which parties have permissions to perform the according operation.
+        :param object_id: The ID of the object to get permissions for.
+        :param acl_type: The type of permissions to get.
+        :return:
+            List[str]: A list of party IDs that have permissions to perform the operation.
+        """
         res = ResponseReader(self.driver.get_permissions(object_id, acl_type))
         check_err(res)
         if res.status[0] != 0:
@@ -183,7 +286,15 @@ class SessionManager:
         out: List[str] = res.get_field("party_id")
         return out
 
-    def modification_base(self, object_id: str, modification_type: str | ModifyType, include_types: bool = False):
+
+    def modification_base(self, object_id: str, modification_type: str | ModifyType):
+        """
+        Get the base metadata to perform a modification from.
+        :param object_id: The ID of the object to get the base metadata for.
+        :param modification_type: The type of modification to perform.
+        :return:
+            dict: A dictionary containing the base metadata for modification.
+        """
         if isinstance(modification_type, Enum):
             modification_type = modification_type.value
         base = modification_type.lower().replace("create", "")
@@ -191,15 +302,14 @@ class SessionManager:
         check_err(res)
         if res.status[0] != 0:
             raise RuntimeError("Got bad status {}".format(res.status))
-        out: dict = instance_to_dict(res.get_field(base), include_types=include_types)
-        return repr_non_serials(out)
-
+        out: dict = instance_to_dict(res.get_field(base))
+        del out["_dataclass"]
+        return out
 
 def test_permissions():
     ses = SessionManager.from_default()
     res = ses.permissions("10.5240/8B55-F9AA-007F-B18E-C000-6", acl_type=ACL_Type.MODIFY)
     print(res)
-
 
 def test_query():
     ses = SessionManager.from_default()
@@ -217,14 +327,17 @@ def test_query():
     ))
     print(res)
 
-
 def test_modification_base():
     ses = SessionManager.from_default()
     res = ses.modification_base("10.5240/8B55-F9AA-007F-B18E-C000-6", ModifyType.CREATE_EDIT)
-    print(res)
+    out = json.dumps(res, indent=4)
+    with open("mod_base_test.json", "w") as f:
+        f.write(out)
+    print(out)
 
 
 if __name__ == "__main__":
-    # test_permissions()
-    # test_query()
+    ...
+    #test_permissions()
+    #test_query()
     test_modification_base()

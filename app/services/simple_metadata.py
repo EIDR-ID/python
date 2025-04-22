@@ -6,7 +6,11 @@ from app.scheme.org.eidr.schema.simple_info import SimpleInfo
 from app.services.graph_traversal import GraphTraversal, Driver
 
 
+
 class SimpleMetadata(GraphTraversal):
+    """
+    A class representing a simple metadata/simple info response from the EIDR API.
+    """
     def __init__(self, info: SimpleInfo, driver: 'Driver.API_Driver'):
         super().__init__(driver)
         self.obj = info
@@ -42,10 +46,11 @@ class SimpleMetadata(GraphTraversal):
         return str(dict)
 
 
-    def pull(self, driver: 'Driver.API_Driver') -> ResponseReader:
-        from app.services.graph_traversal import GraphTraversal
-        newGraph = GraphTraversal(driver)
-        return newGraph.find_ancestors(self.id)
+
+    # def pull(self, driver: 'Driver.API_Driver') -> ResponseReader:
+    #     from app.services.graph_traversal import GraphTraversal
+    #     newGraph = GraphTraversal(driver)
+    #     return newGraph.find_ancestors(self.id)
 
     # def find_ancestors(
     #         self,

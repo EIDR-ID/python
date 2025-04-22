@@ -71,9 +71,19 @@ class Batch(ServiceBase):
         self.objects = obj.operation
 
     def validate(self) -> bool:
+        """
+        Validates the Batch object.
+
+        Returns:
+            bool: Always returns True as Batch objects are considered valid by default.
+        """
         return True
 
     def objectify(self):
+        """
+        Converts the Batch object into its internal representation.
+        This method is currently not implemented.
+        """
         ...
 
     def then(self, other: "ServiceBase", token: str | None = None):
