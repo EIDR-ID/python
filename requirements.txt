@@ -17,3 +17,4 @@ untokenize==0.1.1
 urllib3==2.3.0
 xsdata==24.12
 coverage==7.8.0
+dacite==1.8.0

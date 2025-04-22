@@ -555,5 +555,25 @@ __all__ = [
     "Uuid",
     "VirtualFieldsType",
     "WaitingOnDependenciesType",
+    "registration_classes"
 ]
 
+registration_classes = {
+    "create_basic": CreateBasicDataType,
+    "create_series": CreateSeriesDataType,
+    "create_interactive": CreateInteractiveDataType,
+    "create_episode": CreateEpisodeDataType,
+    "create_season": CreateSeasonDataType,
+    "create_manifestation": CreateManifestationDataType,
+    "create_clip": CreateClipDataType,
+    "create_composite": CreateComposite,
+    "create_edit": CreateEdit,
+    "create_compilation": CreateCompilationDataType,
+    "delete": DeleteType,
+    "add_relationship": AddRelationshipType,
+    "replace_relationship": ReplaceRelationshipType,
+    "remove_relationship": RemoveRelationshipType,
+    "alias": AliasType,
+    "modify": ModifyType,
+    "promote": PromoteType,
+}
