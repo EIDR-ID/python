@@ -4,16 +4,16 @@ from pprint import pprint
 
 from app.manager import SessionManager
 import app.driver as driver
-from services import RegistryRequest
-from services.registration.add_relationship import AddRelationship
-from services.registration.alias import Alias
+from app.services import RegistryRequest
+from app.services.registration.add_relationship import AddRelationship
+from app.services.registration.alias import Alias
 
-from services.registration.create import Create
-from services.registration.modify import Modify
-from services.registration.promote import Promote
-from services.registration.replace_relationship import ReplaceRelationship
+from app.services.registration.create import Create
+from app.services.registration.modify import Modify
+from app.services.registration.promote import Promote
+from app.services.registration.replace_relationship import ReplaceRelationship
 
-from util import from_json, dict_to_dataclass
+from app.util import from_json, dict_to_dataclass
 
 
 class RegistrationTest(unittest.TestCase):

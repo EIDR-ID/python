@@ -77,10 +77,11 @@ class SessionManager:
         # print(info.base_meta.resource_name)
         return info
 
-    def query(self, q: RegistryRequest) -> Tuple[List[SimpleMetadata] | List[str], str]:
+    def query(self, q: RegistryRequest, as_file: bool = False) -> Tuple[List[SimpleMetadata] | List[str], str]:
         """
         Query the EIDR API with a query request.
         :param q: A RegistryRequest object containing the query. Must be of type Query.
+        :param as_file: Whether to save the results to a file named "query_results.json".
         :return:
             Tuple[List[SimpleMetadata] | List[str], str]:
                 A tuple containing a list of SimpleMetadata and a continuation token, OR
@@ -98,13 +99,17 @@ class SessionManager:
             #print(res.obj)
             raise RuntimeError("Got bad status {}".format(res.status))
         check_err(res)
-        if res_type == Query.QueryResponseType.ID.value:
-            # ID list case
-            q_res = res.get_field("query_results")
-            matched = [doi.value for doi in q_res.id]
-            return matched, q_res.continuation_token
         q_res = res.get_field("query_results")
-        matched = [SimpleMetadata(data, driver=self.driver) for data in q_res.simple_metadata]
+        matched = None
+        if res_type == Query.QueryResponseType.ID.value:
+            matched = [doi.value for doi in q_res.id]
+        else:
+            matched = [SimpleMetadata(data, driver=self.driver) for data in q_res.simple_metadata]
+        if as_file:
+            with open("query_results.json", "w") as f:
+                out = instance_to_dict(res.obj, include_type=False)
+                filtered = {key: val for key, val in out.items() if val not in [None, []]}
+                json.dump(filtered, f, indent=4)
         return matched, q_res.continuation_token
 
     def status(self, s: RegistryRequest) -> Tuple[List[dict], str]:
@@ -187,6 +192,7 @@ class SessionManager:
         if q_res.continuation_token is not None:
             self.tokens.append(q_res.continuation_token)
         out = [ServiceMeta(s) for s in q_res.service]
+
         return out
 
     async def poll_status(self, token: str, wait: float, retries: int):

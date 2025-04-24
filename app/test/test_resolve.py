@@ -1,10 +1,11 @@
-from app.manager import SessionManager, API_Driver
+from app.manager import SessionManager
 import unittest
 
 from app.scheme.com.movielabs.schema.md.v2.pkg_8.md import StringCompilationCompilationClass
 from app.scheme.org.doi.pkg_2010.doischema_avs import CreationStructuralType
 from app.services.metadata import FullMeta
 from  app.scheme.org.eidr.schema.user import User
+from  app.driver import API_Driver
 
 
 class TestResolve(unittest.TestCase):

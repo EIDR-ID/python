@@ -1,6 +1,6 @@
 from app.manager import SessionManager
 from app.scheme.org.eidr.schema import TimeZoneType
-from app.services import Query, RegistryRequest
+from app.services import Query, RegistryRequest, StatusRequest
 from app.services.party_query import PartyQuery
 from app.services.service_query import ServiceQuery
 import unittest
@@ -38,12 +38,13 @@ class TestQuery(unittest.TestCase):
         )
         q = RegistryRequest(
             operations=[Query(
+                response_type=Query.QueryResponseType.SIMPLE,
                 expression=exp,
                 page_num=1,
                 page_size=15
             )]
         )
-        res, _ = self.ses.query(q)  # We don't care about the continuation token
+        res, _ = self.ses.query(q, as_file=True)  # We don't care about the continuation token
         self.assertGreater(len(res), 0)
 
 if __name__ == '__main__':

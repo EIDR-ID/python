@@ -243,10 +243,13 @@ class API_Driver:
 
     def post_raw(self, xml: str, endpoint: str, params: dict = None):
         # multipart might be better off ignored here, assume it is always false for now
-        data = xml if not self.config.multipart else (
-            "{}\n{}\n{}\n{}\n{}".format(
+        if False:
+            self.config.headers['Content-Type'] = f'multipart/form-data; boundary={self.config.boundary}'
+        data = xml if True else (
+            "{}\n{}\n{}\n{}\n{}\n{}".format(
                 self.config.boundary,
-                'Content-Disposition: form-data; name={}'.format(endpoint),
+                *[f'{k}: {v}' for k, v in params.items()],
+                'Content-Disposition: form-data; name={}'.format(endpoint.split("/")[-1]),
                 'Content-Transfer-Encoding: binary',
                 xml,
                 self.config.boundary

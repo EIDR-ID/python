@@ -1,3 +1,7 @@
+"""
+Configuration file management for the application. See example-config.xml for details
+"""
+
 # config/config.py
 from pathlib import Path
 

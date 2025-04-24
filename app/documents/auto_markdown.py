@@ -214,11 +214,23 @@ def extract_to_markdown(path: str | Path) -> str:
 #  Main program
 # ─────────────────────────────────────────────────────────────────────────────
 def write_markdown_file(source_path: str | Path, output_dir: Path) -> None:
+    """
+               Convert *source_path* to Markdown and write it under *output_dir*
+               in a sub‑folder that matches the file's import‑path (module path).
+               Example:
+                   source_path = /proj/src/app/api/client.py
+                   input_path   = /proj/src           # the folder we're scanning
+                   output_dir   = /proj/docs          # current working dir
+                   --> markdown goes to /proj/docs/app/api/client.md
+               """
+    rel = Path(source_path).resolve().relative_to(input_path)
+    subdir = output_dir / rel.parent
+    subdir.mkdir(parents=True, exist_ok=True)
+
     markdown = extract_to_markdown(source_path)
-    filename = Path(source_path).stem + ".md"
-    out_path = output_dir / filename
-    out_path.write_text(markdown, encoding="utf-8")
-    print(f"✅ Markdown written to {out_path}")
+    md_path = subdir / (rel.stem + ".md")  # client.md
+    md_path.write_text(markdown, encoding="utf-8")
+    print(f"✅ Markdown written to {md_path}")
 
 
 def iter_py_files(root: Path) -> Iterable[Path]:

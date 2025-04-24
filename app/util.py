@@ -253,7 +253,7 @@ context = XmlContext()
 json_serializer = JsonSerializer(config=SerializerConfig(xml_declaration=True))
 json_parser = JsonParser(config=ParserConfig(base_url="http://www.eidr.org/schema", process_xinclude=True))
 
-def instance_to_dict(obj) -> Dict:
+def instance_to_dict(obj, include_type: bool = False) -> Dict:
     """
     Convert a dataclass to a dict representation.
     :param obj: dataclass instance
@@ -264,10 +264,11 @@ def instance_to_dict(obj) -> Dict:
     if not is_dataclass(obj):
         raise TypeError(f"{obj} is not a dataclass")
     dict_out = json.loads(json_serializer.render(obj))
-    dict_out["_dataclass"] = type(obj)
+    if include_type:
+        dict_out["_dataclass"] = type(obj)
     return dict_out
 
-def dict_to_instance(d: Dict) -> Any:
+def dict_to_instance(d: Dict, t: Type = None) -> Any:
     """
     Convert a dict representation of a dataclass to an instance of the dataclass.
     :param d: dict representation of the dataclass
@@ -277,7 +278,9 @@ def dict_to_instance(d: Dict) -> Any:
     global json_parser
     if not isinstance(d, dict):
         raise TypeError(f"{d} is not a dict")
-    if "_dataclass" not in d:
+    if t is not None:
+        return json_parser.from_string(json.dumps(d), t)
+    elif "_dataclass" not in d:
         return json_parser.from_string(json.dumps(d))
     else:
         copy = d.copy()
