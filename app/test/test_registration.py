@@ -59,7 +59,7 @@ class RegistrationTest(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.manager = SessionManager(driver.API_Driver.from_default())
+        cls.manager = SessionManager.from_default()
 
     def test_register_basic(self):
         data = from_json("create_basic.json")
