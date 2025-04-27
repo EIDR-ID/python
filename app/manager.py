@@ -17,6 +17,7 @@ from app.services.response_reader import ResponseType
 from app.scheme.org.eidr.schema.base_object_info_type import BaseObjectInfoType
 from app.config.config import CONFIG_PATH
 from app.util import instance_to_dict, repr_non_serials
+from app import ConfigDict
 import json
 
 
@@ -48,6 +49,15 @@ class SessionManager:
             SessionManager: An instance of SessionManager with the default API_Driver.
         """
         return cls(API_Driver.from_default(config_file=CONFIG_PATH))
+
+    @classmethod
+    def from_dict(cls, config: ConfigDict):
+        """
+        Create a SessionManger instance using a dict
+        :return:
+            SessionManger: An instance of SessionManger with the default API_Driver.
+        """
+        return cls(API_Driver.from_dict(config))
 
     def post(self, req: RegistryRequest | NoOperationRequest, res_type: ResponseType = ResponseType.DEFAULT,
              params: dict = None):

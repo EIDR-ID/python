@@ -13,6 +13,7 @@ from app.scheme.org.eidr.schema.request import RequestType
 from app.config.config import CONFIG_PATH
 
 from app.services import Query, ServiceBase, RegistryRequest, Delete
+from app import ConfigDict
 
 os.environ['default_proxy_port'] = "80"
 
@@ -63,6 +64,15 @@ class EIDR_Config:
             password=options.get('Passwd'),
         )
         return config
+
+    @classmethod
+    def from_dict(cls, config: ConfigDict):
+           return EIDR_Config(
+            url= config.get('url'),
+            party= config.get('party'),
+            user= config.get('user'),
+            password= config.get('password'),
+        )
 
     def set_header(self, header: str, value: str):
         self.headers.update({header: value})
@@ -164,6 +174,10 @@ class API_Driver:
         with open(config_file, "r") as file:
             config = EIDR_Config.from_xml(file.read())
         return API_Driver(config)
+
+    @classmethod
+    def from_dict(cls, config: ConfigDict):
+        return API_Driver(EIDR_Config.from_dict(config))
 
     def get_object(self, object_id, service_doi: str | ResolveMode = ResolveMode.FULL):
         print(self.config.headers)
