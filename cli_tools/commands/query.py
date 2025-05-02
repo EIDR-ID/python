@@ -178,6 +178,7 @@ def handle_query(args, session_manager: SessionManager):
         operations=[q]
     )
     result, _ = session_manager.query(request)
+    output_query(args, result)
 
 
 def handle_service_query(args, session_manager: SessionManager):
@@ -205,6 +206,7 @@ def handle_service_query(args, session_manager: SessionManager):
         expression=query_expression
     )
     result = session_manager.service_query(query)
+
     output_query(args, result)
 
 

@@ -84,7 +84,7 @@ class SessionManager:
         :return:
             FullMeta: The resolved FullMeta object. (for now)
         """
-        res = self.driver.get_object(id)
+        res = self.driver.get_object(id, resolve_mode)
         info = FullMeta.from_string(res.decode("utf-8"))
         # print(info.base_meta.resource_name)
         return info
