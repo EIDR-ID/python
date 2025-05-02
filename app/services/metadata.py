@@ -555,7 +555,8 @@ class ExtraObjectMeta:
     def __init__(self, obj: ExtraObjectMetadataType):
         self.obj = obj
 
-        self.compilation_info = None if obj.compilation_info is None else CompObjectDict(
+
+        self.compilation_info = None if (not hasattr(obj,"compilation_info") or obj.compilation_info is None) else CompObjectDict(
             entry=[CompObjEntryDict(
                 display_name=StringAndLanguageDict(value=entry.display_name.value,
                                                    language=entry.display_name.language),
