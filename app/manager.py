@@ -1,8 +1,8 @@
 import asyncio
 from asyncio import Future
 from enum import Enum
-from typing import List, Tuple, TypedDict
-
+from typing import List, Tuple
+from pathlib import Path
 from requests import Session
 from xsdata.formats.dataclass.parsers.config import ParserConfig
 
@@ -16,7 +16,7 @@ from app.services.simple_metadata import SimpleMetadata
 from app.services.response_reader import ResponseType
 from app.scheme.org.eidr.schema.base_object_info_type import BaseObjectInfoType
 from app.config.config import CONFIG_PATH
-from app.util import instance_to_dict, repr_non_serials
+from app.util import instance_to_dict
 from app import ConfigDict
 import json
 
@@ -37,6 +37,7 @@ class SessionManager:
     """
     driver: API_Driver = None
     tokens: List[str] = []
+    template_dir: Path = None
 
     def __init__(self, driver: API_Driver):
         self.driver = driver
@@ -152,7 +153,7 @@ class SessionManager:
         """
         Get the status of an operation, for use in an async pipeline.
         :param s: The status request to post.
-        :param wait: The time to wait between retries.
+        :param wait: The time to wait between retries in seconds.
         :param retries: The number of retries to attempt.
         :return:
             List[Future]: A list of futures representing the status of the operation.
@@ -210,7 +211,7 @@ class SessionManager:
         """
         Poll the status of an operation using the provided token.
         :param token: The token assigned to the operation to poll.
-        :param wait: The time to wait between retries.
+        :param wait: The time to wait between retries in seconds.
         :param retries: The number of retries to attempt.
         :return:
             dict: The status of the operation(s).
@@ -323,25 +324,30 @@ class SessionManager:
         del out["_dataclass"]
         return out
 
-    def register(self, new_record: RegistryRequest, immediate_resp: bool):
+    def register(self, req_obj: RegistryRequest, immediate_resp: bool):
         """
-        Register a new record with the EIDR API.
-        :param new_record: The new record to register.
-        :param immediate_resp:
+        Perform a registration operation in the EIDR Registry.
+        :param req_obj: The request object to be passed to the registration service.
+        :param immediate_resp: Enable the Immediate Response header in the request
         :return:
             Tuple[int, str]: A tuple containing the status code and details of the registration.
         """
-        if new_record.name != "register":
+        if req_obj.name != "register":
             raise ValueError("Must call register with register request")
         if immediate_resp:
             self.driver.config.set_header('Immediate-Response', 'true')
+            resp  = self.post(req_obj)
+            if resp.status[0] == 0:
+                if operation_status := resp.obj.request_status_results.operation_status[0]:
+                    return operation_status
+            return resp.status, resp.obj.status.details
         else:
             self.driver.config.remove_header('Immediate-Response')
-        resp  = self.post(new_record)
-        if resp.status[0] == 0:
-            if operation_status := resp.obj.request_status_results.operation_status[0]:
-                return operation_status
-        return resp.status, resp.obj.status.details
+            resp = self.post(req_obj)
+            ...
+
+    def register_batch(self, records):
+        ...
 
 def test_permissions():
     ses = SessionManager.from_default()
@@ -351,7 +357,7 @@ def test_permissions():
 def test_query():
     ses = SessionManager.from_default()
     exp = Query.base_obj_expression(
-        release_date="2005"
+        resource_name="Hilter Von StrongBerg's Golden Freddy"
     )
     q = Query(
         response_type=Query.QueryResponseType.ID,
@@ -376,5 +382,5 @@ def test_modification_base():
 if __name__ == "__main__":
     ...
     #test_permissions()
-    #test_query()
-    test_modification_base()
+    test_query()
+    # test_modification_base()
