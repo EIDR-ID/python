@@ -102,6 +102,19 @@ class ResponseReader:
         """
         return self.get_field(key)
 
+    def has_field(self, key: str, accept_empty: bool = False) -> bool:
+        """
+        Checks if a specific field exists in the response object.
+
+        Args:
+            key: The key of the field to check.
+            accept_empty: If True, considers empty fields (value of None) as existing.
+
+        Returns:
+            bool: True if the field exists, False otherwise.
+        """
+        return hasattr(self.obj, key) and (accept_empty or getattr(self.obj, key) is not None)
+
     def get_field(self, key: str):
         """
         Retrieves a specific field from the response object.

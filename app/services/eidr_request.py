@@ -1,13 +1,15 @@
 from enum import Enum
-from typing import List
+from typing import List, Generic, TypeVar
 
 from app.scheme.org.eidr.schema.request import Request
 from app.scheme.org.eidr.schema.request_type import OperationType
 from app.services import Query
 from app.services.interface import ServiceBase
 
+T = TypeVar('T', bound=ServiceBase)
 
-class RegistryRequest(ServiceBase):
+
+class RegistryRequest(Generic[T], ServiceBase):
     """
     A class representing a registry request that is one or many operations of the same type.
 
@@ -27,7 +29,7 @@ class RegistryRequest(ServiceBase):
     # Add any response types into the type below
     response_type: Query.QueryResponseType | Enum | str = None
 
-    def __init__(self, operations: List[ServiceBase]):
+    def __init__(self, operations: List[T]):
         """
         Initializes the RegistryRequest with a list of operations.
 

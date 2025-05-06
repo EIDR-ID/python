@@ -1,4 +1,5 @@
 from abc import ABC
+from enum import Enum
 from typing import Optional
 
 from app.services.interface import ServiceBase
@@ -7,7 +8,7 @@ from app.scheme.org.eidr.schema import operation_type, asset_doitype, expression
 from app.services.no_op import NoOperationRequest
 
 
-class PartyQuery(NoOperationRequest):
+class PartyQuery(NoOperationRequest["PartyQuery"]):
     """
     Represents a service for querying party information.
 
@@ -16,8 +17,14 @@ class PartyQuery(NoOperationRequest):
     base class.
     """
     name = "party/query"
+    response_type = "full"
 
-    def __init__(self, expression: Optional[str] = None, page_number: Optional[int] = 1, page_size: Optional[int] = 1, continuation_token: Optional[str] = None):
+    class PartyResponseType(Enum):
+        SIMPLE = "full"
+        ID = "ID"
+
+    def __init__(self, expression: Optional[str] = None, page_number: Optional[int] = 1, page_size: Optional[int] = 1, continuation_token: Optional[str] = None,
+                 response_type: PartyResponseType | str = PartyResponseType.SIMPLE):
         """
         Initializes the PartyQuery service with optional query parameters.
 
@@ -27,6 +34,10 @@ class PartyQuery(NoOperationRequest):
             page_size (Optional[int]): The number of results per page. Defaults to 1.
             continuation_token (Optional[str]): Token for continuing a previous query.
         """
+        if isinstance(response_type, Enum):
+            response_type = response_type.value
+
+        self.response_type = response_type
         super().__init__(
             expression=expression,
             page_number=page_number,

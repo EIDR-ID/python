@@ -1,10 +1,13 @@
 from pathlib import Path
 from typing import Union
-from app.services.interface import ServiceBase
+
+from app.scheme.org.eidr.schema import DedupModeType
+from app.services.registration.interface import RegistrationService
 
 from app.scheme.org.eidr.schema.create_edit_data_type import CreateEditDataType
 from app.scheme.org.eidr.schema.create_composite_data_type import CreateCompositeDataType
 from app.scheme.org.eidr.schema.create_type import CreateType
+from app.scheme.org.eidr.schema.creation_type import CreationType
 from app.scheme.org.eidr.schema.create_basic_data_type import CreateBasicDataType
 from app.scheme.org.eidr.schema.create_series_data_type import CreateSeriesDataType
 from app.scheme.org.eidr.schema.create_episode_data_type import CreateEpisodeDataType
@@ -14,15 +17,14 @@ from app.scheme.org.eidr.schema.create_compilation_data_type import CreateCompil
 from app.scheme.org.eidr.schema.create_season_data_type import CreateSeasonDataType
 from app.scheme.org.eidr.schema.create_interactive_data_type import CreateInteractiveDataType
 from app.scheme.org.eidr.schema.operation_type import OperationType
-from scheme.org.eidr.schema import DedupModeType
-from util import dict_to_instance, from_json
+from app.util import dict_to_instance, from_json
 
-class Create(ServiceBase):
 
+class Create(RegistrationService):
     """
-    This class represents the create operation request within the registration service.
+        Implements the creation operation of the registration service.
         Attributes:
-            record: The record to be created or matched
+            record: The record to be created - can be of any create_type.
     """
     name = 'register'
 
@@ -39,9 +41,8 @@ class Create(ServiceBase):
                 CreateCompositeDataType,
                 CreateEditDataType,
                 CreateCompilationDataType,
-                None
-            ] = None,
-            dedupe_mode: DedupModeType | None = None,
+            ],
+            dedupe_mode: DedupModeType | None = None
     ):
         self.record = record
         self.dedupe_mode = dedupe_mode
@@ -81,6 +82,6 @@ class Create(ServiceBase):
 
     def objectify(self) -> None:
         self.obj = OperationType(
-           create=self.type_mapping.get(type(self.record)),
+            create=self.type_mapping.get(type(self.record)),
             dedup_mode=self.dedupe_mode
         )

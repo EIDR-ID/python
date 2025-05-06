@@ -1,7 +1,6 @@
 from pathlib import Path
 from venv import create
 
-
 from app.scheme.org.eidr.schema import BaseObjectInfoType
 
 import json
@@ -35,7 +34,6 @@ from app.driver import API_Driver
 
 from app.scheme.org.eidr.schema import CreateBasicDataType, enum_mapping
 
-
 import inspect
 
 from app.scheme.org.eidr.schema import CreateEpisode, CreateEpisodeDataType
@@ -52,6 +50,7 @@ def attempt(func):
     except Exception as e:
         return None, e
 
+
 def is_optional_type(t) -> bool:
     # Check if the type is a Union (which Optional is)
     if get_origin(t) is Union:
@@ -60,12 +59,14 @@ def is_optional_type(t) -> bool:
         return type(None) in args
     return False
 
+
 def get_optional_inner_type(t):
     if is_optional_type(t):
         args = get_args(t)
         # Return the first non-None type (e.g., Optional[int] -> int)
         return next(a for a in args if a is not type(None))
     return None
+
 
 def get_type_name(t: type) -> str:
     if get_origin(t) is Union:
@@ -75,6 +76,7 @@ def get_type_name(t: type) -> str:
             return f"Optional[{get_type_name(inner)}]"
     return getattr(t, "__name__", str(t))
 
+
 allowed_types: Set[type] = {
     str, int, float, bool, type(None), Enum, Optional[str], Optional[int], Optional[float],
     Optional[bool], Union[XmlPeriod, XmlDate, NoneType], XmlPeriod, XmlDate, XmlDuration
@@ -82,14 +84,14 @@ allowed_types: Set[type] = {
 
 
 ## Deprecated, use instance to Dict using a default instance of a class
-def to_field_dict(cls, default_enums = True, include_xml = True) -> dict | str:
+def to_field_dict(cls, default_enums=True, include_xml=True) -> dict | str:
     hints = get_type_hints(cls)
     name = cls.__name__
 
     out = {}
     if is_dataclass(cls) and include_xml:
         out["_xml_"] = generate_xml(cls)
-    if issubclass(cls, Enum): # Handle enum case (only need a string out)
+    if issubclass(cls, Enum):  # Handle enum case (only need a string out)
         out = list(cls)[0].value if default_enums else ""
     elif cls in allowed_types:
         return generate_default(cls)
@@ -134,8 +136,9 @@ default_map: Dict[type, Any] = {
     NoneType: None,
 }
 
+
 ## Create an instance of a dataclass with default values, including for nested dataclasses
-def default_dataclass(cls, default_enums = True):
+def default_dataclass(cls, default_enums=True):
     """
     Create an instance of a dataclass with default values, including for nested dataclasses.
     :param cls: The dataclass to create an instance of.
@@ -159,7 +162,7 @@ def default_dataclass(cls, default_enums = True):
                 params[name] = list(_type)[0].value if default_enums else ""
             else:
                 params[name] = _type()
-        else: # Make a list containing a single default value
+        else:  # Make a list containing a single default value
             inner_type = get_args(_type)[0]
             val = None
             if inner_type in default_map:
@@ -174,14 +177,16 @@ def default_dataclass(cls, default_enums = True):
     out = cls(**params)
     return out
 
+
 def extract_union(t):
     if get_origin(t) is Union:
         args = get_args(t)
         if len(args) >= 2 and type(None) in args:
-            return next(a for a in args if a is not type(None)) # gets the first non-None type
+            return next(a for a in args if a is not type(None))  # gets the first non-None type
         return None
     else:
         return t
+
 
 def generate_default(cls):
     sig = inspect.signature(cls.__init__)
@@ -190,6 +195,7 @@ def generate_default(cls):
     if cls in default_map:
         return cls(default_map[cls])
     return cls("")
+
 
 serializer = XmlSerializer(config=SerializerConfig(indent="     ", xml_declaration=True))
 ns_map = {
@@ -200,6 +206,8 @@ composite_ns = {
     "EIDR": "http://www.eidr.org/schema",
     "MOVIELABS": "http://www.movielabs.com/schema/md/v2.8/md",
 }
+
+
 def generate_xml(cls):
     global serializer, ns_map, composite_ns
     if not is_dataclass(cls):
@@ -209,6 +217,7 @@ def generate_xml(cls):
     else:
         xml_str = serializer.render(cls, ns_map)
     return xml_str
+
 
 def filter_type_info(d: dict, substr: str = "_dataclass"):
     out = {}
@@ -227,7 +236,10 @@ def filter_type_info(d: dict, substr: str = "_dataclass"):
 
     return out
 
+
 non_serials = {XmlPeriod, XmlDate, XmlDuration}
+
+
 def repr_non_serials(d: dict):
     out = {}
     for key, value in d.items():
@@ -252,6 +264,7 @@ context = XmlContext()
 json_serializer = JsonSerializer(config=SerializerConfig(xml_declaration=True))
 json_parser = JsonParser(config=ParserConfig(base_url="http://www.eidr.org/schema", process_xinclude=True), context=())
 
+
 def instance_to_dict(obj, include_type: bool = False) -> Dict:
     """
     Convert a dataclass to a dict representation.
@@ -266,6 +279,7 @@ def instance_to_dict(obj, include_type: bool = False) -> Dict:
     if include_type:
         dict_out["_dataclass"] = type(obj)
     return dict_out
+
 
 def dict_to_instance(d: Dict, t: Type = None) -> Any:
     """
@@ -285,6 +299,7 @@ def dict_to_instance(d: Dict, t: Type = None) -> Any:
         copy = d.copy()
         del copy["_dataclass"]
         return json_parser.from_string(json.dumps(copy), d["_dataclass"])
+
 
 def generate_templates(directory: Path, class_types: List[Enum]):
     """
@@ -308,6 +323,7 @@ def generate_templates(directory: Path, class_types: List[Enum]):
             print(f"An unexpected error occurred while trying to generate a template"
                   f"file for dataclass {file_name}: {e}")
 
+
 def from_json(file_path: Path):
     """
     Read a json file and convert it to a dictionary.
@@ -327,11 +343,12 @@ def from_json(file_path: Path):
     except Exception as e:
         print(f"An unexpected error occurred while reading the file '{file_path}': {e}")
 
-if __name__ == "__main__": # TODO: Move to test file
+
+if __name__ == "__main__":  # TODO: Move to test file
     # Test the RegistryHandler
     # Example usage
     # indents = 4
-    #out = to_field_dict(QueryType)
+    # out = to_field_dict(QueryType)
     # out = default_dataclass(QueryType)
     # print(out)
 

@@ -1,9 +1,10 @@
 from app.scheme.org.eidr.schema import OperationType
-from app.services.interface import ServiceBase
+from app.services.registration.interface import RegistrationService
 from app.scheme.org.eidr.schema.delete_type import DeleteType
 from app.scheme.org.eidr.schema.asset_doitype import AssetDoitype
 
-class Delete(ServiceBase):
+
+class Delete(RegistrationService):
     name = "register"
 
     def __init__(self, id: str):
@@ -27,6 +28,5 @@ class Delete(ServiceBase):
         id: str = self.args.get("id")
         self.obj = OperationType(
             delete=DeleteType(
-            id= AssetDoitype(value=id)
-        ))
-
+                id=AssetDoitype(value=id)
+            ))

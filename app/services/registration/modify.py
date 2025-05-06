@@ -1,6 +1,6 @@
-from app.services import ServiceBase
+from app.services.registration.interface import RegistrationService
 
 
-class Modify(ServiceBase):
+class Modify(RegistrationService):
 
     name="register"

@@ -1,33 +1,189 @@
 import asyncio
 from asyncio import Future
 from enum import Enum
-from typing import List, Tuple
 from pathlib import Path
+from types import MappingProxyType
+from typing import List, Tuple, TypedDict, overload, Callable, Any, Dict, NamedTuple
+
 from requests import Session
+from xsdata.formats.dataclass.context import XmlContext
+from xsdata.formats.dataclass.parsers import XmlParser, JsonParser
 from xsdata.formats.dataclass.parsers.config import ParserConfig
 
-from app.scheme.org.eidr.schema import RegistrantType, PartyDoilistType, PartyIdlist, QueryResultsType
+from app.scheme.org.eidr.schema.resolution_set_type import KernelMetadata
+from app.scheme.org.eidr.schema import RegistrantType, PartyDoilistType, PartyIdlist, QueryResultsType, FullMetadata, \
+    SelfDefinedMetadata, InheritedMetadata, SimpleMetadata, ProvenanceMetadata, AlternateIds, LinkedAlternateIds
 from app.services import RegistryRequest, ServiceBase, ResponseReader, Query, StatusRequest, Delete
-from app.driver import API_Driver, ResolveMode, ACL_Type, ModifyType
+from app.driver import API_Driver, ResolveUserMode, ACL_Type, ModifyType, ResolveRecordMode, ResolvePartyMode, QueryMode
 from app.services.metadata import BaseObjectMeta, FullMeta, ServiceMeta, PartyMeta
 from app.services.party_query import PartyQuery
+from app.services.registration.interface import RegistrationService
 from app.services.service_query import NoOperationRequest, ServiceQuery
-from app.services.simple_metadata import SimpleMetadata
+from app.services.simple_metadata import SimpleMetadata as SimpleWrapper
 from app.services.response_reader import ResponseType
 from app.scheme.org.eidr.schema.base_object_info_type import BaseObjectInfoType
 from app.config.config import CONFIG_PATH
-from app.util import instance_to_dict
+from app.util import instance_to_dict, repr_non_serials
 from app import ConfigDict
 import json
-
 
 
 class AdminResponseError(Exception):
     ...
 
+
 def check_err(res: ResponseReader):
     if res.admin_response:
         raise AdminResponseError("\n\nAdmin Response Code {}: {}\n\t{}".format(*res.status, res.get_field("details")))
+
+
+parser = XmlParser(config=ParserConfig(), context=XmlContext())
+json_parser = JsonParser(config=ParserConfig(), context=XmlContext())  # TODO: See if this needed in manager
+
+
+# Status helpers
+
+def crash_on_status(code: int, details: str) -> None:
+    """
+    A default handler for status codes that raises an exception.
+    :param code:
+    :param details:
+    """
+    raise RuntimeError(f"Got bad status {code}: {details}")
+
+
+def ignore_status(code: int, details: str) -> None:
+    """
+    A default handler for ignoring status codes.
+    :param code:
+    :param details:
+    :return:
+    """
+    pass
+
+
+# Default responses for status codes (right now just accept 0)
+default_responses = MappingProxyType({  # MappingProxyType is a read-only view of the dict
+    0: lambda code, details: "Success"
+})
+
+
+class DuplicateDict(TypedDict):
+    id: str
+    details: str | None
+    score: str | None
+    low_threshold: str | None
+    high_threshold: str | None
+
+
+class StatusResult(TypedDict):
+    """
+    A dictionary to hold the status of an operation. Holds the token, status code, details, and extra information.
+    The key "is_batch" indicates if the status is for a batch operation.
+    """
+    token: str
+    status: Tuple[int, int]
+    details: Tuple[int, str]
+    extra: Any
+    id: str | None
+    dupes: List[DuplicateDict] | None
+    is_batch: bool
+
+
+class BatchStatusResult(TypedDict):
+    """
+    A dictionary to hold the status of a batch operation. Holds the token, status code, details, and extra information.
+    """
+    token: str | None
+    status: Tuple[int, int]
+    details: str
+    extra: Any
+    is_batch: bool
+
+
+# ______
+
+def handle_status_results(res: ResponseReader,
+                          status_handlers: Dict[int, Callable[[int, str], Any]] | None = default_responses,
+                          default_handler: Callable[[int, str], Any] | None = crash_on_status,
+                          batch_status_handlers: Dict[int, Callable[[int, str], Any]] = None,
+                          default_batch_handler: Callable[[int, str], Any] | None = crash_on_status) -> List[
+    StatusResult | BatchStatusResult]:
+    """
+    Handle the status results from a response.
+    :param res: The wrapped response from post()
+    :param status_handlers: A dictionary mapping status codes to response handlers (int, str) -> Any. Returned value stored in key "extra". Can be None to default on all status codes.
+    :param default_handler: The default handler for status codes not in the status_handlers. Defaults to crashing on unhandled status. Can be None to ignore unhandled status codes.
+    :param batch_status_handlers: Identical to status_handlers, but for batch operations. If there are no batch results in res, this will be ignored.
+    :param default_batch_handler: Identical to default_handler, but for batch operations. If there are no batch results in res, this will also be ignored.
+    :return: A list of dictionaries containing the status of each operation.
+    """
+
+    if not res.has_field("request_status_results"):
+        raise ValueError("Response does not contain status results")
+
+    status_res = res.get_field("request_status_results")
+
+    # "status" below is used to get the token in the case of a batch operation
+    status = None if not res.has_field("request_status") else res.get_field("request_status")
+    results = []
+
+    for op_res in status_res.operation_status:
+        code = op_res.status.code.value
+        stats = {
+            "token": op_res.token,
+            "status": (code, op_res.status.type_value.value),
+            "details": (op_res.status.details_code, op_res.status.details),
+            "extra": None,
+            "is_batch": False,
+            "id": None if not op_res.id else op_res.id.value,
+            "dupes": None if not hasattr(op_res, "duplicate") else [
+                {
+                    "id": dup.id.value,
+                    "details": dup.details,
+                    "score": dup.score,
+                    "low_threshold": dup.low_threshold,
+                    "high_threshold": dup.high_threshold
+                } for dup in op_res.duplicate
+            ]
+
+        }
+
+        if status_handlers and code in status_handlers:
+            stats["extra"] = status_handlers[code](op_res.status.code.value, op_res.status.details)
+        elif default_handler:
+            stats["extra"] = default_handler(op_res.status.code.value, op_res.status.details)
+        results.append(stats)
+    # Handle batch responses, very similar to above
+    batch_res = status_res.batch_status
+    if batch_res:
+        code = batch_res.code.value
+        stats = {
+            "token": "" if not status else status.token,
+            "status": (code, batch_res.type_value.value),
+            "details": batch_res.details,
+            "extra": None,
+            "is_batch": True
+        }
+
+        if batch_status_handlers and code in batch_status_handlers:
+            stats["extra"] = batch_status_handlers[code](code, batch_res.details)
+        elif default_batch_handler:
+            stats["extra"] = default_batch_handler(code, batch_res.details)
+        results.append(stats)
+    return results
+
+
+class RegisterResult(NamedTuple):
+    """
+    A named tuple to hold the result of a registration operation.
+    :param status: The status of the operation.
+    :param details: The details of the operation.
+    :param token: The token to track batch operations. None if not a batch operation.
+    """
+    status: Tuple[int, str]
+    details: str = ""
+    token: str | None = None
 
 
 class SessionManager:
@@ -37,7 +193,8 @@ class SessionManager:
     """
     driver: API_Driver = None
     tokens: List[str] = []
-    template_dir: Path = None
+    global parser
+    global json_parser
 
     def __init__(self, driver: API_Driver):
         self.driver = driver
@@ -76,20 +233,35 @@ class SessionManager:
             self.tokens.append(res.token)
         return res
 
-    def resolve(self, id: str, resolve_mode: str | ResolveMode = ResolveMode.FULL) -> FullMeta:
+    def resolve(self, id: str, resolve_mode: str | ResolveRecordMode = ResolveRecordMode.FULL, out_path: Path = None,
+                return_dataclass: bool = False) -> dict | FullMetadata | SelfDefinedMetadata | InheritedMetadata | SimpleMetadata | ProvenanceMetadata | KernelMetadata | AlternateIds | LinkedAlternateIds:
         """
         Resolve an ID to a FullMeta object (will be streamlined into file paradigm).
-        :param resolve_mode:
-        :param id:
-        :return:
-            FullMeta: The resolved FullMeta object. (for now)
-        """
-        res = self.driver.get_object(id)
-        info = FullMeta.from_string(res.decode("utf-8"))
-        # print(info.base_meta.resource_name)
-        return info
+        Resolution mode -> Return type (in the case return_dataclass is True)
+        ----
+        Full -> FullMetadata, SelfDefined -> SelfDefinedMetadata, Inherited -> InheritedMetadata,
+        Simple -> SimpleMetadata, Provenance -> ProvenanceMetadata, DOIKernel -> KernelMetadata,
+        AlternateId -> AlternateIds, LinkedAlternateId -> LinkedAlternateIds
 
-    def query(self, q: RegistryRequest, as_file: bool = False) -> Tuple[List[SimpleMetadata] | List[str], str]:
+
+        :param id: The ID to resolve.
+        :param resolve_mode: The type of response desired.
+        :param out_path: The path to save the resolved object to. (optional)
+        :param return_dataclass: Whether to return the dataclass or a dictionary representation.
+        :return:
+            Dict | Dataclass: A dictionary representation of the record, optionally may return a xsdata autogenerated class
+        """
+        if isinstance(resolve_mode, Enum):
+            resolve_mode = resolve_mode.value
+        res = self.driver.get_object(id, resolve_mode).decode("utf-8")
+        raw = parser.from_string(res)
+
+        info = instance_to_dict(raw)
+        if out_path:
+            ...
+        return raw if return_dataclass else info
+
+    def query(self, q: RegistryRequest[Query], as_file: bool = False) -> Tuple[List[SimpleWrapper] | List[str], str]:
         """
         Query the EIDR API with a query request.
         :param q: A RegistryRequest object containing the query. Must be of type Query.
@@ -108,7 +280,7 @@ class SessionManager:
 
         res = self.post(q, params={"type": res_type})
         if res.status[0] != 0:
-            #print(res.obj)
+            # print(res.obj)
             raise RuntimeError("Got bad status {}".format(res.status))
         check_err(res)
         q_res = res.get_field("query_results")
@@ -116,7 +288,7 @@ class SessionManager:
         if res_type == Query.QueryResponseType.ID.value:
             matched = [doi.value for doi in q_res.id]
         else:
-            matched = [SimpleMetadata(data, driver=self.driver) for data in q_res.simple_metadata]
+            matched = [SimpleWrapper(data, driver=self.driver) for data in q_res.simple_metadata]
         if as_file:
             with open("query_results.json", "w") as f:
                 out = instance_to_dict(res.obj, include_type=False)
@@ -124,32 +296,36 @@ class SessionManager:
                 json.dump(filtered, f, indent=4)
         return matched, q_res.continuation_token
 
-    def status(self, s: RegistryRequest) -> Tuple[List[dict], str]:
+    def status(self, s: RegistryRequest[StatusRequest],
+               response_map: Dict[int, Callable[[int, str], Any]] = default_responses,
+               default_handler: Callable[[int, str], Any] | None = crash_on_status
+               ) -> Tuple[List[dict], str]:
         """
         Get the status of an operation using the provided service.
         :param s: The status request to post.
+        :param response_map: A dictionary mapping status codes to response handlers (int, str) -> Any. Returned value stored in key "extra"
+        :param default_handler: A default handler for status codes not in the status_handlers. Defaults to crashing on unhandled status.
         :return:
             Tuple[List[dict], str]: A tuple containing a list of operation statuses and a continuation token.
         """
         if s.name != "status":
             raise ValueError("Must call status with status request")
-        #print(s.xml)
+        # print(s.xml)
         res = self.post(s)
-        #print(res.obj)
+        # print(res.obj)
         if res.status[0] != 0:
             raise RuntimeError("Got bad status {}".format(res.status))
         check_err(res)
+
+        operation_stats = handle_status_results(res, status_handlers=response_map, default_handler=default_handler)
+
+        # Append tokens that are not already in the list (making sure they're not empty strings)
+        self.tokens += [stat["token"] for stat in operation_stats if stat["token"] not in self.tokens and stat["token"]]
         status_res = res.get_field("request_status_results")
-        #print(status_res)
-        operation_stats = [{
-            "token": op_res.token,
-            "status": (op_res.status.code.value, op_res.status.type_value.value),
-            "details": (op_res.status.details_code, op_res.status.details)
-        } for op_res in status_res.operation_status] if status_res else []
 
         return operation_stats, status_res.continuation_token
 
-    def future_status(self, s: RegistryRequest, wait: float = 1, retries: int = 10) -> List[Future]:
+    def future_status(self, s: RegistryRequest[StatusRequest], wait: float = 1, retries: int = 10) -> List[Future]:
         """
         Get the status of an operation, for use in an async pipeline.
         :param s: The status request to post.
@@ -176,7 +352,8 @@ class SessionManager:
             futures.append(future)
         return futures
 
-    def service_resolve(self, id: str, service_doi: str | ResolveMode = ResolveMode.FULL, followAlias: bool = True):
+    def service_resolve(self, id: str, service_doi: str | ResolveUserMode = ResolveUserMode.FULL,
+                        followAlias: bool = True):
         """
         Resolve a service to a ServiceMeta object.
         :param id: ID of the service in the EIDR registry.
@@ -199,7 +376,7 @@ class SessionManager:
             raise ValueError("Must call service query with service query request")
         res = self.post(s, res_type=ResponseType.SERVICE)
         check_err(res)
-        #print(res)
+        # print(res)
         q_res = res.obj
         if q_res.continuation_token is not None:
             self.tokens.append(q_res.continuation_token)
@@ -227,18 +404,19 @@ class SessionManager:
         print("Failed to get status")
         return None
 
-    def party_resolve(self, party_id: str, resolve_mode: str | ResolveMode = ResolveMode.FULL):
+    def party_resolve(self, party_id: str,
+                      resolve_mode: str | ResolveUserMode | ResolvePartyMode = ResolvePartyMode.FULL):
         """
         Resolve a party to a PartyMeta object.
         :param party_id: The ID of the party to resolve.
-        :param resolve_mode: The type of response desired.
+        :param resolve_mode: The type of response desired. (doi | full)
         :return:
             PartyMeta: The resolved PartyMeta object.
         """
         res = self.driver.get_party(party_id, resolve_mode)
         return PartyMeta.from_string(res)
 
-    def user_resolve(self, user_doi: str, resolve_mode: str | ResolveMode = ResolveMode.FULL):
+    def user_resolve(self, user_doi: str, resolve_mode: str | ResolveUserMode = ResolveUserMode.FULL):
         """
         Resolve a user.
         :param user_doi: The ID of the user to resolve.
@@ -264,7 +442,7 @@ class SessionManager:
         return response
 
     # TODO: check
-    def party_query(self, p: NoOperationRequest, full: bool = True):
+    def party_query(self, p: NoOperationRequest[PartyQuery]) -> List[PartyMeta | str]:
         """
         Query the EIDR API with a party query request.
         :param p: The party query request to post.
@@ -274,17 +452,16 @@ class SessionManager:
         """
         if p.name != "party/query":
             raise ValueError("Must call party query with party query request")
-        res: ResponseReader
-        matches: List[PartyMeta | str] = []
 
-        if full:
-            res = self.post(p, res_type=ResponseType.PARTY, params={"type": "full"})
-            check_err(res)
-            matches = [PartyMeta(p) for p in res.get_field("party")]
-        else:
-            res = self.post(p, res_type=ResponseType.PARTY, params={"type": "ID"})
-            check_err(res)
-            matches = [PartyMeta(p) for p in res.get_field("party_id")]
+        res: ResponseReader = self.post(p, res_type=ResponseType.PARTY,
+                                        params={"type": p.response_type}) if p.response_type \
+            else self.post(p, res_type=ResponseType.PARTY)
+        check_err(res)
+
+        matches = [PartyMeta(match) for match in
+                   res.get_field("party_id")] if p.response_type == PartyQuery.PartyResponseType.ID.value else \
+            [PartyMeta(match) for match in res.get_field("party")]
+
         if res.continuation_token:
             self.tokens.append(res.continuation_token)
         return matches
@@ -303,7 +480,6 @@ class SessionManager:
             raise RuntimeError("Got bad status {}".format(res.status))
         out: List[str] = res.get_field("party_id")
         return out
-
 
     def modification_base(self, object_id: str, modification_type: str | ModifyType):
         """
@@ -324,35 +500,43 @@ class SessionManager:
         del out["_dataclass"]
         return out
 
-    def register(self, req_obj: RegistryRequest, immediate_resp: bool):
+    def register(self, req_obj: RegistryRequest[RegistrationService], immediate_resp: bool) -> RegisterResult:
         """
         Perform a registration operation in the EIDR Registry.
         :param req_obj: The request object to be passed to the registration service.
         :param immediate_resp: Enable the Immediate Response header in the request
         :return:
-            Tuple[int, str]: A tuple containing the status code and details of the registration.
+            Tuple[Tuple[int, str], str]: A tuple containing the status (code, details) and the token to track batch operations.
         """
         if req_obj.name != "register":
             raise ValueError("Must call register with register request")
         if immediate_resp:
             self.driver.config.set_header('Immediate-Response', 'true')
-            resp  = self.post(req_obj)
+            resp = self.post(req_obj)
+
             if resp.status[0] == 0:
-                if operation_status := resp.obj.request_status_results.operation_status[0]:
-                    return operation_status
-            return resp.status, resp.obj.status.details
+                result = handle_status_results(resp, default_handler=None, batch_status_handlers=None,
+                                               default_batch_handler=None, status_handlers=None)[0]
+                if len(result):
+                    return RegisterResult(result["status"], result["details"], result["token"])
+            return RegisterResult(resp.status, resp.obj.status.details, None)
         else:
             self.driver.config.remove_header('Immediate-Response')
             resp = self.post(req_obj)
-            ...
+            result = handle_status_results(resp, default_handler=None, status_handlers=None, batch_status_handlers={
+                1: lambda code, details: "I just batched all over myself",
+            }, default_batch_handler=None)[0]
+            return RegisterResult(result["status"], result["details"], result["token"])
 
     def register_batch(self, records):
         ...
+
 
 def test_permissions():
     ses = SessionManager.from_default()
     res = ses.permissions("10.5240/8B55-F9AA-007F-B18E-C000-6", acl_type=ACL_Type.MODIFY)
     print(res)
+
 
 def test_query():
     ses = SessionManager.from_default()
@@ -370,6 +554,7 @@ def test_query():
     ))
     print(res)
 
+
 def test_modification_base():
     ses = SessionManager.from_default()
     res = ses.modification_base("10.5240/8B55-F9AA-007F-B18E-C000-6", ModifyType.CREATE_EDIT)
@@ -379,8 +564,33 @@ def test_modification_base():
     print(out)
 
 
+def test_status_req():
+    ses = SessionManager.from_default()
+
+    d = ses.register(RegistryRequest[Delete](
+        operations=[Delete("10.5240/8B55-F9AA-007F-B18E-C000-6")],
+    ), immediate_resp=False)
+
+    s = StatusRequest(token=d.token)
+    res = ses.status(RegistryRequest(operations=[s]), default_handler=lambda code, details: "Testing",
+                     response_map={
+                         0: lambda code, details: "Success",
+                         3: lambda code, details: "Booyeah Booyeah Booyeah"
+                     })
+    print(res)
+
+
+def test_resolve():
+    ses = SessionManager.from_default()
+    # res = ses.resolve("10.5240/8B55-F9AA-007F-B18E-C000-6", ResolveRecordMode.SIMPLE, return_dataclass=True)
+    for option in ResolveRecordMode:
+        res = ses.resolve("10.5240/8B55-F9AA-007F-B18E-C000-6", option)
+        print(res)
+
+
 if __name__ == "__main__":
     ...
-    #test_permissions()
-    test_query()
+    # test_permissions()
+    # test_query()
     # test_modification_base()
+    test_status_req()
