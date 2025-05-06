@@ -555,25 +555,19 @@ __all__ = [
     "Uuid",
     "VirtualFieldsType",
     "WaitingOnDependenciesType",
-    "registration_classes"
+    "enum_mapping"
 ]
 
-registration_classes = {
-    "create_basic": CreateBasicDataType,
-    "create_series": CreateSeriesDataType,
-    "create_interactive": CreateInteractiveDataType,
-    "create_episode": CreateEpisodeDataType,
-    "create_season": CreateSeasonDataType,
-    "create_manifestation": CreateManifestationDataType,
-    "create_clip": CreateClipDataType,
-    "create_composite": CreateComposite,
-    "create_edit": CreateEdit,
-    "create_compilation": CreateCompilationDataType,
-    "delete": DeleteType,
-    "add_relationship": AddRelationshipType,
-    "replace_relationship": ReplaceRelationshipType,
-    "remove_relationship": RemoveRelationshipType,
-    "alias": AliasType,
-    "modify": ModifyType,
-    "promote": PromoteType,
+# accessible mapping for record types and other operations
+enum_mapping = {
+    CreationType.CREATE_BASIC: CreateBasicDataType,
+    CreationType.CREATE_SERIES: CreateSeriesDataType,
+    CreationType.CREATE_INTERACTIVE: CreateInteractiveDataType,
+    CreationType.CREATE_EPISODE: CreateEpisodeDataType,
+    CreationType.CREATE_SEASON: CreateSeasonDataType,
+    CreationType.CREATE_MANIFESTATION: CreateManifestationDataType,
+    CreationType.CREATE_CLIP: CreateClipDataType,
+    CreationType.CREATE_COMPOSITE: CreateCompositeDataType,
+    CreationType.CREATE_EDIT: CreateEditDataType,
+    CreationType.CREATE_COMPILATION: CreateCompilationDataType,
 }

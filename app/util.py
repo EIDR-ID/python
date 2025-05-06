@@ -1,10 +1,9 @@
+from pathlib import Path
 from venv import create
 
-from dacite import from_dict, Config
 
 from app.scheme.org.eidr.schema import BaseObjectInfoType
 
-from app.scheme.org.eidr.schema import registration_classes
 import json
 from enum import Enum, EnumType
 from optparse import Option
@@ -34,11 +33,12 @@ from dataclasses import make_dataclass, field, fields, is_dataclass
 from app.services import Query, ResponseReader
 from app.driver import API_Driver
 
-from app.scheme.org.eidr.schema import CreateBasicDataType
+from app.scheme.org.eidr.schema import CreateBasicDataType, enum_mapping
 
 
 import inspect
 
+from app.scheme.org.eidr.schema import CreateEpisode, CreateEpisodeDataType
 
 
 def attempt(func):
@@ -227,7 +227,6 @@ def filter_type_info(d: dict, substr: str = "_dataclass"):
 
     return out
 
-
 non_serials = {XmlPeriod, XmlDate, XmlDuration}
 def repr_non_serials(d: dict):
     out = {}
@@ -251,7 +250,7 @@ def repr_non_serials(d: dict):
 
 context = XmlContext()
 json_serializer = JsonSerializer(config=SerializerConfig(xml_declaration=True))
-json_parser = JsonParser(config=ParserConfig(base_url="http://www.eidr.org/schema", process_xinclude=True))
+json_parser = JsonParser(config=ParserConfig(base_url="http://www.eidr.org/schema", process_xinclude=True), context=())
 
 def instance_to_dict(obj, include_type: bool = False) -> Dict:
     """
@@ -287,41 +286,46 @@ def dict_to_instance(d: Dict, t: Type = None) -> Any:
         del copy["_dataclass"]
         return json_parser.from_string(json.dumps(copy), d["_dataclass"])
 
-def from_json(file_name: str) -> Any:
-    base_path= "./test/records/"
-    with open(base_path + file_name) as f:
-        return json.load(f)
-
-def create_reg_cls_config(file_name: str, cls: str):
+def generate_templates(directory: Path, class_types: List[Enum]):
     """
-    Create a new config file for any registration class:
-    :param file_name: name of the newly created file
-    :param cls: the registration service operation type
-    """
-    cls = cls.lower()
-    if cls not in registration_classes.keys():
-        raise ValueError(f'Invalid record type passed: {cls}')
-    record_dict = to_field_dict(registration_classes.get(cls), default_enums=True, include_xml=False)
-    with open(file_name, "w") as f:
-        f.write(json.dumps(repr_non_serials(filter_type_info(record_dict)), indent= 4))
-        print(f'{file_name} created.')
-
-def dict_to_dataclass(cls: str, data):
-    """
-    Convert a dictionary to a dataclass instance.
-    :param cls: the class name of the dataclass to convert to
-    :param data: the dictionary to convert
+    Generate json template files for record construction and other operations.
+    :param directory: the directory to generate the files in
+    :param class_types: Dataclass types intended to be generated.
     :return:
-        an instance of the dataclass
     """
-    hooks = {
-        XmlDate: lambda x: XmlDate.from_string(x),
-        XmlPeriod: lambda x: XmlPeriod(x),
-    }
-    if cls not in registration_classes:
-        raise KeyError(f"{cls} is not a valid class must be of the following: {registration_classes.keys()}")
-    ret = from_dict(data_class=registration_classes.get(cls),data=data,config=Config(cast=[Enum, XmlDuration], type_hooks=hooks))
-    return ret
+    if not directory.exists():
+        directory.mkdir(parents=True, exist_ok=True)
+    for clazz in class_types:
+        d = instance_to_dict(default_dataclass(enum_mapping.get(clazz, None)))
+        file_name = clazz.name.lower() + ".json"
+        file_path = directory / file_name
+        try:
+            with open(file_path, "x") as f:
+                f.write(json.dumps(d, indent=4))
+        except FileExistsError:
+            print(f"The file {file_name} already exists")
+        except Exception as e:
+            print(f"An unexpected error occurred while trying to generate a template"
+                  f"file for dataclass {file_name}: {e}")
+
+def from_json(file_path: Path):
+    """
+    Read a json file and convert it to a dictionary.
+    :param file_path: the path to the json file
+    :return:
+        dict: dict representation of the json file
+    """
+    if not isinstance(file_path, Path):
+        raise TypeError(f"{file_path} is not a Path")
+    elif not file_path.exists():
+        raise FileNotFoundError(f"{file_path} does not exist")
+    try:
+        with open(file_path, 'r') as f:
+            return json.load(f)
+    except FileNotFoundError:
+        print(f"The file you're trying to access '{file_path}', does not exist.")
+    except Exception as e:
+        print(f"An unexpected error occurred while reading the file '{file_path}': {e}")
 
 if __name__ == "__main__": # TODO: Move to test file
     # Test the RegistryHandler
@@ -331,8 +335,6 @@ if __name__ == "__main__": # TODO: Move to test file
     # out = default_dataclass(QueryType)
     # print(out)
 
-    create_reg_cls_config("test/records/modify.json", "modify")
-    create_reg_cls_config("test/records/remove_relationship.json", "remove_relationship")
     # testing default dataclass
     default = default_dataclass(CreateBasicDataType)
     out = instance_to_dict(default_dataclass(CreateBasicDataType))

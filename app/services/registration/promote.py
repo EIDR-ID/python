@@ -1,10 +1,25 @@
 from app.services import ServiceBase
+from app.scheme.org.eidr.schema import AssetDoitype, OperationType, PromoteType
+
 
 class Promote(ServiceBase):
-    def objectify(self):
-        pass
+    """
+    This class represents the promote operation within the registration service.
+    Promote operation updates the status field of a record from "in development" to "valid"
+    """
 
+    name = "register"
     def validate(self) -> bool:
-        pass
+        if not self.args:
+            return False
+        elif not isinstance(self.args.get("id"), str):
+            id = self.args.get("id")
+            raise TypeError(f"Expected 'id' to be of type str, but got {type(id)}")
+        return True
 
-    ...
+    def objectify(self):
+        self.obj = OperationType(
+            promote=PromoteType(
+                id=AssetDoitype(self.args.get("id"))
+            )
+        )
