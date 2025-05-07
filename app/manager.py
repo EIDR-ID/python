@@ -15,6 +15,7 @@ from app.scheme.org.eidr.schema import RegistrantType, PartyDoilistType, PartyId
     SelfDefinedMetadata, InheritedMetadata, SimpleMetadata, ProvenanceMetadata, AlternateIds, LinkedAlternateIds
 from app.services import RegistryRequest, ServiceBase, ResponseReader, Query, StatusRequest, Delete
 from app.driver import API_Driver, ResolveUserMode, ACL_Type, ModifyType, ResolveRecordMode, ResolvePartyMode, QueryMode
+from app.services.eidr_request import RegistryRequestSingle
 from app.services.metadata import BaseObjectMeta, FullMeta, ServiceMeta, PartyMeta
 from app.services.party_query import PartyQuery
 from app.services.registration.interface import RegistrationService
@@ -52,16 +53,6 @@ def crash_on_status(code: int, details: str) -> None:
     raise RuntimeError(f"Got bad status {code}: {details}")
 
 
-def ignore_status(code: int, details: str) -> None:
-    """
-    A default handler for ignoring status codes.
-    :param code:
-    :param details:
-    :return:
-    """
-    pass
-
-
 # Default responses for status codes (right now just accept 0)
 default_responses = MappingProxyType({  # MappingProxyType is a read-only view of the dict
     0: lambda code, details: "Success"
@@ -78,37 +69,63 @@ class DuplicateDict(TypedDict):
 
 class StatusResult(TypedDict):
     """
-    A dictionary to hold the status of an operation. Holds the token, status code, details, and extra information.
-    The key "is_batch" indicates if the status is for a batch operation.
+    A dictionary to hold the status of an operation. Holds the token, status code, and details.
+    The key "extra" is where user-provided status handlers return into.
     """
     token: str
-    status: Tuple[int, int]
+    status: Tuple[int, str]
     details: Tuple[int, str]
     extra: Any
     id: str | None
     dupes: List[DuplicateDict] | None
-    is_batch: bool
 
 
 class BatchStatusResult(TypedDict):
     """
     A dictionary to hold the status of a batch operation. Holds the token, status code, details, and extra information.
+    The key "extra" is where user-provided status handlers return into.
     """
     token: str | None
     status: Tuple[int, int]
     details: str
     extra: Any
-    is_batch: bool
 
 
 # ______
 
+
+def handle_batch_results(res: ResponseReader,
+                         status_handlers: Dict[int, Callable[[int, str], Any]] | None = default_responses,
+                         default_handler: Callable[[int, str], Any] | None = None) -> List[BatchStatusResult]:
+    if not res.has_field("request_status_results"):
+        raise ValueError("Response does not contain status results")
+
+    status_res = res.get_field("request_status_results")
+
+    # "status" below is used to get the token in the case of a batch operation
+    status = None if not res.has_field("request_status") else res.get_field("request_status")
+    results = []
+    batch_res = status_res.batch_status
+    if batch_res:
+        code = batch_res.code.value
+        stats = {
+            "token": "" if not status else status.token,
+            "status": (code, batch_res.type_value.value),
+            "details": batch_res.details,
+            "extra": None,
+        }
+
+        if status_handlers and code in status_handlers:
+            stats["extra"] = status_handlers[code](code, batch_res.details)
+        elif default_handler:
+            stats["extra"] = default_handler(code, batch_res.details)
+        results.append(stats)
+    return results
+
+
 def handle_status_results(res: ResponseReader,
                           status_handlers: Dict[int, Callable[[int, str], Any]] | None = default_responses,
-                          default_handler: Callable[[int, str], Any] | None = crash_on_status,
-                          batch_status_handlers: Dict[int, Callable[[int, str], Any]] = None,
-                          default_batch_handler: Callable[[int, str], Any] | None = crash_on_status) -> List[
-    StatusResult | BatchStatusResult]:
+                          default_handler: Callable[[int, str], Any] | None = crash_on_status) -> List[StatusResult]:
     """
     Handle the status results from a response.
     :param res: The wrapped response from post()
@@ -124,8 +141,6 @@ def handle_status_results(res: ResponseReader,
 
     status_res = res.get_field("request_status_results")
 
-    # "status" below is used to get the token in the case of a batch operation
-    status = None if not res.has_field("request_status") else res.get_field("request_status")
     results = []
 
     for op_res in status_res.operation_status:
@@ -135,7 +150,6 @@ def handle_status_results(res: ResponseReader,
             "status": (code, op_res.status.type_value.value),
             "details": (op_res.status.details_code, op_res.status.details),
             "extra": None,
-            "is_batch": False,
             "id": None if not op_res.id else op_res.id.value,
             "dupes": None if not hasattr(op_res, "duplicate") else [
                 {
@@ -154,23 +168,7 @@ def handle_status_results(res: ResponseReader,
         elif default_handler:
             stats["extra"] = default_handler(op_res.status.code.value, op_res.status.details)
         results.append(stats)
-    # Handle batch responses, very similar to above
-    batch_res = status_res.batch_status
-    if batch_res:
-        code = batch_res.code.value
-        stats = {
-            "token": "" if not status else status.token,
-            "status": (code, batch_res.type_value.value),
-            "details": batch_res.details,
-            "extra": None,
-            "is_batch": True
-        }
 
-        if batch_status_handlers and code in batch_status_handlers:
-            stats["extra"] = batch_status_handlers[code](code, batch_res.details)
-        elif default_batch_handler:
-            stats["extra"] = default_batch_handler(code, batch_res.details)
-        results.append(stats)
     return results
 
 
@@ -183,7 +181,7 @@ class RegisterResult(NamedTuple):
     """
     status: Tuple[int, str]
     details: str = ""
-    token: str | None = None
+    info: StatusResult | None = None
 
 
 class SessionManager:
@@ -500,7 +498,21 @@ class SessionManager:
         del out["_dataclass"]
         return out
 
-    def register(self, req_obj: RegistryRequest[RegistrationService], immediate_resp: bool) -> RegisterResult:
+    def register_immediate(self, req_obj: RegistryRequestSingle[RegistrationService]) -> StatusResult:
+        if req_obj.name != "register":
+            raise ValueError("Must call register with register request")
+        self.driver.config.set_header('Immediate-Response', 'true')
+        resp = self.post(req_obj)
+
+        if resp.status[0] == 0:
+            result = handle_status_results(resp, default_handler=None, status_handlers=None)[0]
+            if len(result):
+                return result
+            else:
+                raise ValueError("No results in register response, something is wrong with the SDK or the registry.")
+        raise BadStatusError(status=resp.status, details="")
+
+    def register(self, req_obj: RegistryRequestSingle[RegistrationService]) -> BatchStatusResult:
         """
         Perform a registration operation in the EIDR Registry.
         :param req_obj: The request object to be passed to the registration service.
@@ -510,27 +522,39 @@ class SessionManager:
         """
         if req_obj.name != "register":
             raise ValueError("Must call register with register request")
-        if immediate_resp:
-            self.driver.config.set_header('Immediate-Response', 'true')
-            resp = self.post(req_obj)
 
-            if resp.status[0] == 0:
-                result = handle_status_results(resp, default_handler=None, batch_status_handlers=None,
-                                               default_batch_handler=None, status_handlers=None)[0]
-                if len(result):
-                    return RegisterResult(result["status"], result["details"], result["token"])
-            return RegisterResult(resp.status, resp.obj.status.details, None)
-        else:
-            self.driver.config.remove_header('Immediate-Response')
-            resp = self.post(req_obj)
-            result = handle_status_results(resp, default_handler=None, status_handlers=None, batch_status_handlers={
-                1: lambda code, details: "I just batched all over myself",
-            }, default_batch_handler=None)[0]
-            return RegisterResult(result["status"], result["details"], result["token"])
+        self.driver.config.remove_header('Immediate-Response')
+        resp = self.post(req_obj)
+        result = handle_batch_results(resp, default_handler=None, status_handlers={
+            1: lambda code, details: "I just batched all over myself",
+        })[0]
+        return result
 
-    def register_batch(self, records):
-        ...
+    def register_batch(self, req_obj: RegistryRequest[RegistrationService]) -> BatchStatusResult:
+        self.driver.config.remove_header('Immediate-Response')
+        resp = self.post(req_obj)
+        results = handle_batch_results(resp, default_handler=None, status_handlers={
+            1: lambda code, details: "I just batched all over myself",
+        })
 
+        return results[0]
+
+
+class BadStatusError(Exception):
+    status: Tuple[int, str]
+    details: str
+
+    def __init__(self, msg: str = "Bad status", status: Tuple[int, str] = (-1, "Unknown"),
+                 details: str = "Developer did not provide details"):
+        super().__init__(msg + f"\n\tGot status: {status}")
+        self.status = status
+        self.details = details
+
+
+# token: str, status: Tuple(int, str)
+
+# token, status_result = register_batch(records)
+# ses.status(... token ...)
 
 def test_permissions():
     ses = SessionManager.from_default()
@@ -567,17 +591,17 @@ def test_modification_base():
 def test_status_req():
     ses = SessionManager.from_default()
 
-    d = ses.register(RegistryRequest[Delete](
-        operations=[Delete("10.5240/8B55-F9AA-007F-B18E-C000-6")],
-    ), immediate_resp=False)
+    stat = ses.register_immediate(RegistryRequestSingle(Delete("10.5240/8B55-F9AA-007F-B18E-C000-6")))
 
-    s = StatusRequest(token=d.token)
-    res = ses.status(RegistryRequest(operations=[s]), default_handler=lambda code, details: "Testing",
-                     response_map={
-                         0: lambda code, details: "Success",
-                         3: lambda code, details: "Booyeah Booyeah Booyeah"
-                     })
-    print(res)
+    # if stat:
+    #     s = StatusRequest(token=stat["token"])
+    #     res = ses.status(RegistryRequest(operations=[s]), default_handler=lambda code, details: "Testing",
+    #                      response_map={
+    #                          0: lambda code, details: "Success",
+    #                          3: lambda code, details: "Booyeah Booyeah Booyeah"
+    #                      })
+    #     print(res)
+    print(stat)
 
 
 def test_resolve():

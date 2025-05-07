@@ -45,6 +45,12 @@ class NameDict(TypedDict):
     moniker: Optional[str]
 
 
+
+
+
+
+
+
 class CreditsDict(TypedDict):
     director: List[NameDict]
     actor: List[NameDict]

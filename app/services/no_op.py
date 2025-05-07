@@ -3,7 +3,7 @@ from abc import ABC
 from app.services import ServiceBase
 from typing import Generic, TypeVar
 
-T = TypeVar('T', bound=ServiceBase)
+Service = TypeVar('Service', bound=ServiceBase)
 
 """
     Base class for no-operation requests in the EIDR API.
@@ -13,7 +13,7 @@ T = TypeVar('T', bound=ServiceBase)
 """
 
 
-class NoOperationRequest(Generic[T], ServiceBase, ABC):
+class NoOperationRequest(Generic[Service], ServiceBase, ABC):
     is_op = False
     response_type: str | None = None
 
