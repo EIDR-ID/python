@@ -1,13 +1,15 @@
 from enum import Enum
-from typing import List
+from typing import List, Generic, TypeVar
 
 from app.scheme.org.eidr.schema.request import Request
 from app.scheme.org.eidr.schema.request_type import OperationType
 from app.services import Query
 from app.services.interface import ServiceBase
 
+Service = TypeVar('Service', bound=ServiceBase)
 
-class RegistryRequest(ServiceBase):
+
+class RegistryRequest(Generic[Service], ServiceBase):
     """
     A class representing a registry request that is one or many operations of the same type.
 
@@ -27,7 +29,7 @@ class RegistryRequest(ServiceBase):
     # Add any response types into the type below
     response_type: Query.QueryResponseType | Enum | str = None
 
-    def __init__(self, operations: List[ServiceBase]):
+    def __init__(self, operations: List[Service]):
         """
         Initializes the RegistryRequest with a list of operations.
 
@@ -39,7 +41,7 @@ class RegistryRequest(ServiceBase):
         """
         self.response_type = operations[0].response_type
         first = operations[0]
-        if isinstance(first, RegistryRequest):
+        if isinstance(first, RegistryRequest) or isinstance(first, RegistryRequestSingle):
             raise ValueError("Request cannot hold other requests")
         ops = [op.obj for op in operations if isinstance(op, type(first))]
         # Above we ignore anything that doesn't match the first type, and extract the objects
@@ -77,3 +79,22 @@ class RegistryRequest(ServiceBase):
             bool: Always returns True.
         """
         return True
+
+
+class RegistryRequestSingle(RegistryRequest[Service]):
+    """
+    A class representing a single registry request.
+
+    Inherits from RegistryRequest and is used when only one operation is needed.
+    """
+
+    def __init__(self, operation: Service):
+        """
+        Initializes the RegistryRequestSingle with a single operation.
+
+        Parameters:
+            operation (Service): The operation to be included in the request.
+        """
+        if Service is RegistryRequest:
+            raise ValueError("Request cannot hold other requests")
+        super().__init__([operation])

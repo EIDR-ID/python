@@ -6,7 +6,6 @@ from app.services.interface import ServiceBase
 from app.scheme.org.eidr.schema import operation_type, query_type, asset_doitype, QueryResultsType
 
 
-
 class Query(ServiceBase):
     """
         Service for executing EIDR queries against the API.
@@ -21,13 +20,14 @@ class Query(ServiceBase):
     name = "query"
     response_type = "simple"
 
-
     class QueryResponseType(Enum):
         SIMPLE = "simple"
         ID = "ID"
 
-
-    def __init__(self, doi: Optional[str] = None, expression: Optional[str] = None, page_num: Optional[int] = None, page_size: Optional[int] = None, continuation_token: Optional[str] = None, extended_family: Optional[bool] = None, response_type: QueryResponseType | str = QueryResponseType.SIMPLE):
+    def __init__(self, doi: Optional[str] = None, expression: Optional[str] = None, page_num: Optional[int] = None,
+                 page_size: Optional[int] = None, continuation_token: Optional[str] = None,
+                 extended_family: Optional[bool] = None,
+                 response_type: QueryResponseType | str = QueryResponseType.SIMPLE):
         """
                 Initialize a Query service instance. Must be placed within a request, see RegistryRequest.
 
@@ -93,17 +93,17 @@ class Query(ServiceBase):
                 extended_family=extended_family
             )
         )
-# def test_query():
-#     driver = API_Driver.from_default()
-#     res = driver.post(Query(
-#         expression="(/FullMetadata/BaseObjectData/ResourceName \"Avengers: Endgame\") AND /FullMetadata/BaseObjectData/ReferentType "
-#                    "\"movie\"",
-#         page_num=1,
-#         page_size=1
-#     ))
-#     return to_pretty_xml(res.content)
-#
 
+    # def test_query():
+    #     driver = API_Driver.from_default()
+    #     res = driver.post(Query(
+    #         expression="(/FullMetadata/BaseObjectData/ResourceName \"Avengers: Endgame\") AND /FullMetadata/BaseObjectData/ReferentType "
+    #                    "\"movie\"",
+    #         page_num=1,
+    #         page_size=1
+    #     ))
+    #     return to_pretty_xml(res.content)
+    #
 
     @classmethod
     def base_obj_expression(cls,
@@ -186,6 +186,7 @@ class Query(ServiceBase):
         ]
 
         return " AND ".join(clauses) if clauses else ""
+
 
 def validate_param(value: str | None, allowed: list[str], param_name: str) -> None:
     if value is not None and value not in allowed:

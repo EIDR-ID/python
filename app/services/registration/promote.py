@@ -1,14 +1,13 @@
-from app.services import ServiceBase
-from app.scheme.org.eidr.schema import AssetDoitype, OperationType, PromoteType
+from app.services.registration.interface import RegistrationService
 
 
-class Promote(ServiceBase):
+
+class Promote(RegistrationService):
     """
     This class represents the promote operation within the registration service.
     Promote operation updates the status field of a record from "in development" to "valid"
     """
 
-    name = "register"
     def validate(self) -> bool:
         if not self.args:
             return False
