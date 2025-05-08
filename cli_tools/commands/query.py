@@ -1,4 +1,10 @@
+from typing import Dict
+
+from InquirerPy import inquirer
 from rich import print
+from argparse import ArgumentParser, Namespace, ArgumentTypeError
+from cli_tools.commands.common import *
+from cli_tools.commands.resolve import handle
 from app.manager import (
     SessionManager,
     Query,
@@ -6,138 +12,166 @@ from app.manager import (
     PartyQuery,
     RegistryRequest,
 )
-from argparse import ArgumentParser, Namespace
+
+results = []
 
 
-def register_service_query(parser: ArgumentParser):
+# Helper function to convert string arguments to boolean
+def str_to_bool(value):
+    """Converts a string representation of truth to true, and false to false.
+    Raises ArgumentTypeError if the value is not a recognized boolean string.
     """
-    Registers command-line arguments specific to querying Service objects.
-
-    This function defines optional arguments that correspond to the attributes
-    of a Service object, allowing users to filter service queries based on these criteria.
-
-    Args:
-        parser (ArgumentParser): The argparse parser to which the arguments will be added.
-            This is typically a subparser dedicated to service queries.
-    """
-    # Add arguments corresponding to Service object attributes
-    parser.add_argument('--id', help="Filter by service ID.")
-    parser.add_argument('--display_name', help="Filter by the service's display name.")
-    parser.add_argument('--alternate_service_name', help="Filter by an alternative name for the service.")
-    parser.add_argument('--description', help="Filter by text within the service description.")
-    parser.add_argument('--other_affiliation', help="Filter by other affiliations associated with the service.")
-    parser.add_argument('--active', help="Filter by the active status of the service (e.g., 'true' or 'false').") # Assuming boolean-like string
-    parser.add_argument('--primary_time_zone', help="Filter by the primary time zone of the service (e.g., 'UTC', 'America/New_York').")
-    parser.add_argument('--region', help="Filter by the geographical region of the service.")
-    parser.add_argument('--primary_audio_language', help="Filter by the primary audio language supported by the service (e.g., 'en', 'es').")
-    parser.add_argument('--delivery_model', help="Filter by the delivery model of the service (e.g., 'Streaming', 'Download').")
+    if isinstance(value, bool):
+        return value
+    if value.lower() in ('yes', 'true', 't', 'y', '1'):
+        return True
+    elif value.lower() in ('no', 'false', 'f', 'n', '0'):
+        return False
+    else:
+        raise ArgumentTypeError(f"Boolean value expected, got: {value}")
 
 
-def register_query(parser: ArgumentParser):
-    """
-    Registers command-line arguments specific to querying BaseObjectData objects.
+base_object_query_args = {
+    'structural_type': {
+        'help': "Filter by the structural type of the object.",
+        'choices': ["Abstraction", "Performance", "Digital", "Physical"]
+    },
+    'mode': {
+        'help': "Filter by the mode of the object (e.g., how it's experienced).",
+        'choices': ["Visual", "AudioVisual", "Audio", "Other"]
+    },
+    'referent_type': {
+        'help': "Filter by the type of the referent."
+    },
+    'resource_name': {
+        'help': "Filter by the primary resource name."
+    },
+    'alternate_resource_name': {
+        'help': "Filter by an alternative resource name."
+    },
+    'original_language': {
+        'help': "Filter by the original language of the resource."
+    },
+    'dubbed_language': {
+        'help': "Filter by a language the resource is dubbed into."
+    },
+    'associated_org': {
+        'help': "Filter by an associated organization (e.g., by ORG ID)."
+    },
+    'release_date': {
+        'help': "Filter by the release date (e.g., 'YYYY-MM-DD')."
+    },
+    'country_of_origin': {
+        'help': "Filter by the country of origin (e.g., 'US', 'GB')."
+    },
+    'status': {
+        'help': "Filter by the status of the resource (e.g., 'Active', 'Deprecated')."
+    },
+    'approximate_length': {
+        'help': "Filter by the approximate length or duration."
+    },
+    'alternate_id': {
+        'help': "Filter by an alternative identifier (e.g., ISAN, EIDR)."
+    },
+    'display_name': {
+        'help': "Filter by the display name."
+    },
+    'credits': {
+        'help': "Filter based on credits information."
+    },
+    'registrant_extra': {
+        'help': "Filter based on extra information provided by the registrant."
+    },
+    'description': {
+        'help': "Filter by text within the object's description."
+    }
+}
 
-    This function defines optional arguments corresponding to the attributes
-    of a generic BaseObjectData (or similar core object), allowing users to
-    filter queries based on these criteria.
+party_query_args = {
+    'id': {
+        'help': "Filter by the party's unique identifier."
+    },
+    'display_name': {
+        'help': "Filter by the party's display name."
+    },
+    'sort_name': {
+        'help': "Filter by the party's sortable name."
+    },
+    'organization_id': {
+        'help': "Filter by the associated organization's ID (if applicable)."
+    },
+    'id_type': {
+        'help': "Filter by the type of identifier used (e.g., 'EIDRPartyID', 'ORCID')."
+    },
+    'alternate_party_name': {
+        'help': "Filter by an alternative name for the party."
+    },
+    'contact_name': {
+        'help': "Filter by the name of the contact person."
+    },
+    'primary_email': {
+        'help': "Filter by the primary email address."
+    },
+    'alternate_email': {
+        'help': "Filter by an alternative email address."
+    },
+    'contact_address': {
+        'help': "Filter by the contact address information."
+    },
+    'contact_phone': {
+        'help': "Filter by the contact phone number."
+    },
+    'active': {
+        'help': "Filter by the active status of the party (e.g., 'true', 'false', 'yes', 'no').",
+        'type': str_to_bool,  # Use the custom boolean type converter
+        'metavar': 'BOOLEAN'  # Shows <BOOLEAN> in help instead of the function name
+    },
+    'party_account_name': {
+        'help': "Filter by the party's account name within a system."
+    },
+    'allowed_roles': {
+        'help': "Filter by roles the party is allowed to have."
+    }
+}
 
-    Args:
-        parser (ArgumentParser): The argparse parser to which the arguments will be added.
-            This is typically a subparser dedicated to base object queries.
-    """
-    # Add arguments corresponding to BaseObjectData attributes
-    parser.add_argument('--structural_type', choices=["Abstraction", "Performance", "Digital", "Physical"], help="Filter by the structural type of the object.")
-    parser.add_argument('--mode', choices=["Visual", "AudioVisual", "Audio", "Other"], help="Filter by the mode of the object (e.g., how it's experienced).")
-    parser.add_argument('--referent_type', help="Filter by the type of the referent.")
-    parser.add_argument('--resource_name', help="Filter by the primary resource name.")
-    parser.add_argument('--alternate_resource_name', help="Filter by an alternative resource name.")
-    parser.add_argument('--original_language', help="Filter by the original language of the resource.")
-    parser.add_argument('--dubbed_language', help="Filter by a language the resource is dubbed into.")
-    parser.add_argument('--associated_org', help="Filter by an associated organization (e.g., by ORG ID).")
-    parser.add_argument('--release_date', help="Filter by the release date (e.g., 'YYYY-MM-DD').")
-    parser.add_argument('--country_of_origin', help="Filter by the country of origin (e.g., 'US', 'GB').")
-    parser.add_argument('--status', help="Filter by the status of the resource (e.g., 'Active', 'Deprecated').")
-    parser.add_argument('--approximate_length', help="Filter by the approximate length or duration.")
-    parser.add_argument('--alternate_id', help="Filter by an alternative identifier (e.g., ISAN, EIDR).")
-    parser.add_argument('--display_name', help="Filter by the display name.") # Note: Duplicated in other register functions, potentially context-specific
-    parser.add_argument('--credits', help="Filter based on credits information.")
-    parser.add_argument('--registrant_extra', help="Filter based on extra information provided by the registrant.")
-    parser.add_argument('--description', help="Filter by text within the object's description.")
-
-
-def register_party_query(parser: ArgumentParser):
-    """
-    Registers command-line arguments specific to querying Party objects.
-
-    This function defines optional arguments corresponding to the attributes
-    of a Party object (representing individuals or organizations), allowing
-    users to filter party queries based on these criteria.
-
-    Args:
-        parser (ArgumentParser): The argparse parser to which the arguments will be added.
-            This is typically a subparser dedicated to party queries.
-    """
-    # Add arguments corresponding to Party object attributes
-    parser.add_argument('--id', help="Filter by the party's unique identifier.")
-    parser.add_argument('--display_name', help="Filter by the party's display name.")
-    parser.add_argument('--sort_name', help="Filter by the party's sortable name.")
-    parser.add_argument('--organization_id', help="Filter by the associated organization's ID (if applicable).")
-    parser.add_argument('--id_type', help="Filter by the type of identifier used (e.g., 'EIDRPartyID', 'ORCID').")
-    parser.add_argument('--alternate_party_name', help="Filter by an alternative name for the party.")
-    parser.add_argument('--contact_name', help="Filter by the name of the contact person.")
-    parser.add_argument('--primary_email', help="Filter by the primary email address.")
-    parser.add_argument('--alternate_email', help="Filter by an alternative email address.")
-    parser.add_argument('--contact_address', help="Filter by the contact address information.")
-    parser.add_argument('--contact_phone', help="Filter by the contact phone number.")
-    # Use type=bool for boolean flags is often tricky with argparse.
-    # Consider using action='store_true'/'store_false' or a choices approach ('true', 'false').
-    # Here, we keep the original type=bool but note it might need adjustment depending on desired CLI behavior.
-    parser.add_argument('--active', type=bool, help="Filter by the active status of the party (e.g., True/False).")
-    parser.add_argument('--party_account_name', help="Filter by the party's account name within a system.")
-    parser.add_argument('--allowed_roles', help="Filter by roles the party is allowed to have.")
-
-
-def add_common_options(parser: ArgumentParser):
-    """
-    Adds common command-line options used across different query types.
-
-    These options typically control output formatting, destination, and pagination.
-
-    Args:
-        parser (ArgumentParser): The argparse parser (or subparser) to which
-            the common options will be added.
-    """
-    # Option to specify the output format
-    parser.add_argument(
-        "--format",
-        help="Format for displaying the query results.",
-        choices=["json", "xml", "std_out"],  # Available output formats
-        default="std_out",  # Default format is standard output text
-        required=False,     # This option is not mandatory
-    )
-    # Option to specify an output file path
-    parser.add_argument(
-        "--output",
-        required=False,     # This option is not mandatory
-        help="Path to a file where the query results should be saved. If omitted, results go to standard output (respecting --format).",
-    )
-    # Option to control the number of results per page (pagination)
-    parser.add_argument(
-        "--page_size",
-        help="Maximum number of results to retrieve per page.",
-        default=5,          # Default page size
-        type=int,           # Expect an integer value
-    )
-    # Option to specify the desired page number (pagination)
-    parser.add_argument(
-        "--page_num",
-        help="The specific page number of results to retrieve (1-based index).",
-        default=1,          # Default to the first page
-        type=int,           # Expect an integer value
-    )
+service_query_args = {
+    'id': {
+        'help': "Filter by service ID."
+    },
+    'display_name': {
+        'help': "Filter by the service's display name."
+    },
+    'alternate_service_name': {
+        'help': "Filter by an alternative name for the service."
+    },
+    'description': {
+        'help': "Filter by text within the service description."
+    },
+    'other_affiliation': {
+        'help': "Filter by other affiliations associated with the service."
+    },
+    'active': {
+        'help': "Filter by the active status of the service (e.g., 'true', 'false', 'yes', 'no').",
+        'type': str_to_bool,
+        'metavar': 'BOOLEAN'
+    },
+    'primary_time_zone': {
+        'help': "Filter by the primary time zone of the service (e.g., 'UTC', 'America/New_York')."
+    },
+    'region': {
+        'help': "Filter by the geographical region of the service."
+    },
+    'primary_audio_language': {
+        'help': "Filter by the primary audio language supported by the service (e.g., 'en', 'es')."
+    },
+    'delivery_model': {
+        'help': "Filter by the delivery model of the service (e.g., 'Streaming', 'Download')."
+    }
+}
 
 
-def handle_query(args: Namespace, session_manager: SessionManager):
+
+def handle_query(args: Namespace, session_manager: SessionManager, interactive=False):
     """
     Handles the execution of a BaseObjectData query.
 
@@ -155,48 +189,33 @@ def handle_query(args: Namespace, session_manager: SessionManager):
         None: This function typically triggers output via `output_query` rather
               than returning data directly.
     """
+    #  If running interactively, prompt for missing values
+    interactive_check(interactive,args=args,query_args=base_object_query_args)
+    filtered_args = filter_args(args, Query.base_obj_expression)
+    print(args, filtered_args)
     # Construct the specific query expression using provided arguments
-    query_expression = Query.base_obj_expression(
-        structural_type=args.structural_type,
-        mode=args.mode,
-        referent_type=args.referent_type,
-        resource_name=args.resource_name,
-        alternate_resource_name=args.alternate_resource_name,
-        original_language=args.original_language,
-        dubbed_language=args.dubbed_language,
-        associated_org=args.associated_org,
-        release_date=args.release_date,
-        country_of_origin=args.country_of_origin,
-        status=args.status,
-        approximate_length=args.approximate_length,
-        alternate_id=args.alternate_id,
-        display_name=args.display_name,
-        credits=args.credits,
-        registrant_extra=args.registrant_extra,
-        description=args.description,
-    )
-
+    query_expression = Query.base_obj_expression(**filtered_args)
     # Create the main Query object, including the expression and pagination settings
     q = Query(
         expression=query_expression,
         page_num=args.page_num,
         page_size=args.page_size,
     )
-
     # Package the query into a RegistryRequest (assuming this structure is required)
-    request = RegistryRequest(
-        operations=[q] # Embed the query within the request operations list
-    )
-
+    request = RegistryRequest(operations=[q])
     # Execute the query using the session manager
     # The `_` suggests the second return value (e.g., status code, metadata) is ignored here.
     result, _ = session_manager.query(request)
 
     # Pass the results and arguments to the output handler
+
+    results.extend(query.as_dict() for query in result)
     output_query(args, result)
+    new_page(args, session_manager)
+    return result
 
 
-def handle_service_query(args: Namespace, session_manager: SessionManager):
+def handle_service_query(args: Namespace, session_manager: SessionManager, interactive=False):
     """
     Handles the execution of a Service query.
 
@@ -211,35 +230,26 @@ def handle_service_query(args: Namespace, session_manager: SessionManager):
     Returns:
         None: Outputs results via `output_query`.
     """
+    interactive_check(interactive,args=args,query_args=service_query_args)
+    filtered_args = filter_args(args, ServiceQuery.service_expression)
+    print(args, filtered_args)
     # Construct the specific service query expression
-    query_expression = ServiceQuery.service_expression(
-        id=args.id,
-        display_name=args.display_name,
-        alternate_service_name=args.alternate_service_name,
-        description=args.description,
-        other_affiliation=args.other_affiliation,
-        active=args.active,
-        primary_time_zone=args.primary_time_zone,
-        region=args.region,
-        primary_audio_language=args.primary_audio_language,
-        delivery_model=args.delivery_model,
-    )
-
+    query_expression = ServiceQuery.service_expression(**filtered_args)
     # Create the ServiceQuery object with expression and pagination
     query = ServiceQuery(
-        page_number=args.page_num, # Note: Parameter name might differ (page_number vs page_num)
+        page_number=args.page_num,  # Note: Parameter name might differ (page_number vs page_num)
         page_size=args.page_size,
         expression=query_expression
     )
-
     # Execute the service-specific query using the session manager
     result = session_manager.service_query(query)
 
     # Output the results
     output_query(args, result)
+    return result
 
 
-def handle_party_query(args: Namespace, session_manager: SessionManager):
+def handle_party_query(args: Namespace, session_manager: SessionManager, interactive=False):
     """
     Handles the execution of a Party query.
 
@@ -254,29 +264,18 @@ def handle_party_query(args: Namespace, session_manager: SessionManager):
     Returns:
         None: Outputs results via `output_query`.
     """
+    #  If running interactively, prompt for missing values
+    interactive_check(interactive,args=args,query_args=party_query_args)
+    expression_args = filter_args(args, PartyQuery.party_expression)
+    print(args,expression_args)
     # Construct the specific party query expression
-    query_expression = PartyQuery.party_expression(
-        id=args.id,
-        display_name=args.display_name,
-        sort_name=args.sort_name,
-        organization_id=args.organization_id,
-        id_type=args.id_type,
-        alternate_party_name=args.alternate_party_name,
-        contact_name=args.contact_name,
-        primary_email=args.primary_email,
-        alternate_email=args.alternate_email,
-        contact_address=args.contact_address,
-        contact_phone=args.contact_phone,
-        active=args.active,
-        party_account_name=args.party_account_name,
-        allowed_roles=args.allowed_roles,
-    )
+    query_expression = PartyQuery.party_expression(**expression_args)
 
     # Create the PartyQuery object with expression and pagination
     query = PartyQuery(
         expression=query_expression,
         page_size=args.page_size,
-        page_number=args.page_num # Note: Parameter name might differ (page_number vs page_num)
+        page_number=args.page_num  # Note: Parameter name might differ (page_number vs page_num)
     )
 
     # Execute the party-specific query using the session manager
@@ -284,9 +283,10 @@ def handle_party_query(args: Namespace, session_manager: SessionManager):
 
     # Output the results
     output_query(args, result)
+    return result
 
 
-def register(subparsers):
+def register(subparsers, interactive=False):
     """
     Registers the main query commands and their respective subcommands/arguments.
 
@@ -303,44 +303,89 @@ def register(subparsers):
     """
     # --- Base Object Query Subcommand ---
     # Create a subparser for the 'query' command
+
     query_parser = subparsers.add_parser(
         'query',
-        help="Construct and execute a query for BaseObjectData." # More descriptive help
+        help="Construct and execute a query for BaseObjectData."  # More descriptive help
     )
+
     # Register arguments specific to BaseObjectData queries
-    register_query(query_parser)
+    register_args(query_parser, base_object_query_args)
     # Add the common options (format, output, pagination) to this subparser
     add_common_options(query_parser)
     # Set the function to call when the 'query' command is used
     query_parser.set_defaults(func=handle_query)
 
     # --- Service Query Subcommand ---
-    # Create a subparser for the 'service_query' command
     service_parser = subparsers.add_parser(
         'service_query',
         help="Construct and execute a query for Service objects."
     )
+    # Create a subparser for the 'service_query' command
     # Register arguments specific to Service queries
-    register_service_query(service_parser)
+    register_args(service_parser, service_query_args)
     # Add the common options to this subparser
     add_common_options(service_parser)
     # Set the function to call when the 'service_query' command is used
     service_parser.set_defaults(func=handle_service_query)
 
     # --- Party Query Subcommand ---
-    # Create a subparser for the 'party_query' command
     party_parser = subparsers.add_parser(
         'party_query',
         help="Construct and execute a query for Party objects."
     )
+    # Create a subparser for the 'party_query' command
     # Register arguments specific to Party queries
-    register_party_query(party_parser)
+    register_args(party_parser, party_query_args)
     # Add the common options to this subparser
     add_common_options(party_parser)
     # Set the function to call when the 'party_query' command is used
     party_parser.set_defaults(func=handle_party_query)
 
 
-def output_query(args, result):
+def output_query(args,result):
     if args.format == "std_out":
-        print(f"[blue]Generated Query:[/blue]\n{result}")
+        for query_index, query in enumerate(results):
+            page_offset = args.page_size * (args.page_num - 1)
+            print(f"""[cyan]\nQuery Result {(query_index + 1) + page_offset}:[/cyan]""")
+            for key, value in query.items():
+                print(f"[green]{key}:[/green] {value}")
+
+
+
+def new_page(args, session_manager: SessionManager):
+    """
+    Prompts the user to choose between 'Next Page' and 'Resolve', then enter a number.
+    Updates args.page_num and re-calls the selected function with updated args.
+    """
+    while True:
+        try:
+            action = inquirer.select(
+                message="Choose action:",
+                choices=["Page", "Resolve"],
+            ).execute()
+
+            user_input = inquirer.number(
+                message=f"Enter number for {action}:",
+            ).execute()
+
+            if not user_input or int(user_input) <= 0:
+                print("Please enter a number greater than 0.")
+                continue
+
+            user_input = int(user_input)
+            print(results)
+            if action == "Page":
+                args.func(args, session_manager)
+            elif action == "Resolve":
+                query = results[user_input - 1]
+                args.id = query['id']
+                handle(args, session_manager)
+
+            break  # Exit after successful run
+
+        except ValueError:
+            print("Invalid input. Please enter a valid number.")
+        except Exception as e:
+            print(f"Error: {e}")
+            raise e

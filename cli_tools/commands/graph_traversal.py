@@ -31,7 +31,7 @@ Optional filters (only apply to 'find_ancestors' and 'find_descendants'):
 """
 
 
-def register(subparsers):
+def register(subparsers, interactive: bool = False):
     """
     Registers the 'traverse' subcommand for performing graph traversals on EIDR IDs.
 
@@ -147,22 +147,10 @@ def handle(args: Namespace, session_manager: SessionManager):
     if not method_to_call:
         rprint(f"[red]Error: Unknown traversal type '{args.traversal_type}'[/red]")
         return  # Or raise appropriate error
-
+    # Attach filters to traversal_args if applicable
+    attach_filter(args, traversal_args)
     # Add filters only if they are provided and relevant for the selected method
     # (Simplistic check: assumes only find_ancestors/descendants use filters)
-    if args.traversal_type in ['find_ancestors', 'find_descendants']:
-        if args.referent_type_filter:
-            traversal_args['referent_type_filter'] = args.referent_type_filter
-        if args.relationship_type_filter:
-            traversal_args['relationship_type_filter'] = args.relationship_type_filter
-        if args.structural_type_filter:
-            traversal_args['structural_type_filter'] = args.structural_type_filter
-        if args.traversal_type == 'find_descendants' and args.extended_family:
-            traversal_args['extended_family'] = True  # Add boolean flag if set
-    elif args.referent_type_filter or args.relationship_type_filter or args.structural_type_filter or args.extended_family:
-        rprint(
-            f"[yellow]Warning:[/yellow] Filter arguments provided but may not be applicable for traversal type '{args.traversal_type}'.")
-
     # Call the selected traversal method
     try:
         rprint(f"[blue]Executing traversal:[/blue] {args.traversal_type} for ID {args.id}...")
@@ -177,3 +165,19 @@ def handle(args: Namespace, session_manager: SessionManager):
             rprint(results[i])
     except Exception as e:
         rprint(f"[red]An unexpected error occurred during traversal execution: {e}[/red]")
+
+
+def attach_filter(args, traversal_args):
+    if args.traversal_type in ['find_ancestors', 'find_descendants']:
+        if args.referent_type_filter:
+            traversal_args['referent_type_filter'] = args.referent_type_filter
+        if args.relationship_type_filter:
+            traversal_args['relationship_type_filter'] = args.relationship_type_filter
+        if args.structural_type_filter:
+            traversal_args['structural_type_filter'] = args.structural_type_filter
+        if args.traversal_type == 'find_descendants' and args.extended_family:
+            traversal_args['extended_family'] = True  # Add boolean flag if set
+
+    elif args.referent_type_filter or args.relationship_type_filter or args.structural_type_filter or args.extended_family:
+        rprint(
+            f"[yellow]Warning:[/yellow] Filter arguments provided but may not be applicable for traversal type '{args.traversal_type}'.")

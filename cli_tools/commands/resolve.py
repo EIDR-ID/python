@@ -6,7 +6,7 @@ from rich import print  # Using rich for potentially colored output
 from app.manager import SessionManager
 
 
-def register(subparsers):
+def register(subparsers, interactive: bool = False):
     """
     Registers the 'resolve' subcommand and its associated arguments.
 
@@ -19,6 +19,8 @@ def register(subparsers):
 
     Returns:
         None: Modifies the parser structure in place.
+        :param subparsers:
+        :param interactive:
     """
     # Create a subparser for the 'resolve' command
     resolve_parser = subparsers.add_parser(
@@ -77,6 +79,7 @@ def handle(args: Namespace, session_manager: SessionManager):
     # Use the session manager to perform the resolution
     # It's assumed session_manager.resolve returns the resolved data structure/object
     # The exact format of 'result' depends on the SessionManager implementation
+    print(args)
     result = session_manager.resolve(eidr_id_to_resolve)
 
     # --- Output Handling ---
