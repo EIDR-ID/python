@@ -1,6 +1,8 @@
 from pathlib import Path
 from venv import create
 
+from xsdata.utils.text import snake_case, pascal_case
+
 from app.scheme.org.eidr.schema import BaseObjectInfoType, CreationType
 
 import json
@@ -263,7 +265,9 @@ def repr_non_serials(d: dict):
 
 context = XmlContext()
 json_serializer = JsonSerializer(config=SerializerConfig(xml_declaration=True))
-json_parser = JsonParser(config=ParserConfig(base_url="http://www.eidr.org/schema", process_xinclude=True), context=())
+json_parser = JsonParser(config=ParserConfig(base_url="http://www.eidr.org/schema", process_xinclude=True), context=XmlContext(
+    element_name_generator=snake_case), )
+
 
 
 def instance_to_dict(obj, include_type: bool = False) -> Dict:
@@ -304,6 +308,8 @@ def dict_to_instance(d: Dict, t: Type = None) -> Any:
 
 TemplateType = CreationType
 
+
+creation_mapping = enum_mapping
 
 def _get_creation_name(t: TemplateType) -> str:
     """
@@ -447,12 +453,12 @@ def _deep_merge(original: Any, diff: Any) -> Any:
         # replace / recurse for shared indices
         for i in range(common_len):
             # Only extra_info if both elements are dictionaries
-            if isinstance(original[i], dict) and isinstance(diff[i], dict):
-                # Merge dicts but only keep keys from original
-                merged_list.append(_deep_merge(original[i], {k: diff[i][k] for k in original[i] if k in diff[i]}))
-            else:
-                # Otherwise, replace element with diff's element
-                merged_list.append(diff[i])
+            # if isinstance(original[i], dict) and isinstance(diff[i], dict):
+            #     # Merge dicts but only keep keys from original
+            #     #merged_list.append(_deep_merge(original[i], {k: diff[i][k] for k in original[i] if k in diff[i]}))
+            # else:
+            # Otherwise, replace element with diff's element
+            merged_list.append(diff[i])
 
         # keep any leftover items from original if diff is shorter
         if len(original) > common_len:

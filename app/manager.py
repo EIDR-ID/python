@@ -22,6 +22,7 @@ from app.services.registration.interface import RegistrationService
 from app.services.service_query import NoOperationRequest, ServiceQuery
 from app.services.simple_metadata import SimpleMetadata as SimpleWrapper
 from app.services.response_reader import ResponseType
+from app.services.cancellation import TokenCancellation
 from app.scheme.org.eidr.schema.base_object_info_type import BaseObjectInfoType
 from app.config.config import CONFIG_PATH
 from app.util import instance_to_dict, repr_non_serials
@@ -44,7 +45,7 @@ json_parser = JsonParser(config=ParserConfig(), context=XmlContext())  # TODO: S
 
 # Status helpers
 
-def crash_on_status(code: int, details: str) -> None:
+def crash_on_status(code: int, details: dict) -> None:
     """
     A default handler for status codes that raises an exception.
     :param code:
@@ -118,7 +119,7 @@ def handle_batch_results(res: ResponseReader,
         if status_handlers and code in status_handlers:
             stats["extra"] = status_handlers[code](code, batch_res.details)
         elif default_handler:
-            stats["extra"] = default_handler(code, batch_res.details)
+            stats["extra"] = default_handler(code, batch_res.details + "\t" + str(stats))
         results.append(stats)
     return results
 
@@ -166,7 +167,7 @@ def handle_status_results(res: ResponseReader,
         if status_handlers and code in status_handlers:
             stats["extra"] = status_handlers[code](op_res.status.code.value, op_res.status.details)
         elif default_handler:
-            stats["extra"] = default_handler(op_res.status.code.value, op_res.status.type_value.value + " | " + str(op_res.status.details))
+            stats["extra"] = default_handler(op_res.status.code.value, op_res.status.type_value.value + "\t" + str(op_res.status.details) + "\t" + str(stats))
         results.append(stats)
 
     return results
@@ -296,7 +297,7 @@ class SessionManager:
 
     def status(self, s: RegistryRequest[StatusRequest],
                response_map: Dict[int, Callable[[int, str], Any]] = default_responses,
-               default_handler: Callable[[int, str], Any] | None = crash_on_status
+               default_handler: Callable[[int, dict], Any] | None = crash_on_status
                ) -> Tuple[List[dict], str]:
         """
         Get the status of an operation using the provided service.
@@ -532,7 +533,7 @@ class SessionManager:
         self.driver.config.remove_header('Immediate-Response')
         resp = self.post(req_obj)
         result = handle_batch_results(resp, default_handler=None, status_handlers={
-            1: lambda code, details: "I just batched all over myself",
+            1: lambda code, details: "Successful",
         })[0]
         return result
 
@@ -540,10 +541,24 @@ class SessionManager:
         self.driver.config.remove_header('Immediate-Response')
         resp = self.post(req_obj)
         results = handle_batch_results(resp, default_handler=None, status_handlers={
-            1: lambda code, details: "I just batched all over myself",
+            1: lambda code, details: "Success",
         })
 
         return results[0]
+
+    def cancel_token(self, t: RegistryRequest[TokenCancellation]) -> List[str]:  # TODO: test
+        """
+        Cancel a token in the EIDR Registry.
+        :param t: A request containing the tokens to cancel.
+        :return:
+            List[str]: A list of cancelled tokens.
+        """
+        if t.name != "status":
+            raise ValueError("Must call cancel with cancel request (endpoint = status)")
+        resp = self.post(t)
+        check_err(resp)
+        result = resp.get_field("token_cancellation_results").cancelled_token.copy()
+        return result
 
 
 class BadStatusError(Exception):

@@ -19,7 +19,7 @@ from app.scheme.org.eidr.schema.create_interactive_data_type import CreateIntera
 from app.scheme.org.eidr.schema.operation_type import OperationType
 from app.util import dict_to_instance, from_json
 
-
+DedupeMode = DedupModeType
 class Create(RegistrationService):
     """
         Implements the creation operation of the registration service.
@@ -27,6 +27,7 @@ class Create(RegistrationService):
             record: The record to be created - can be of any create_type.
     """
     name = 'register'
+    obj: OperationType
 
     def __init__(
             self,
@@ -74,7 +75,9 @@ class Create(RegistrationService):
             raise TypeError(f"Expected 'file_path' to be of type Path, but got {type(file_path)}")
         elif not file_path.exists():
             raise FileNotFoundError(f"File not found: {file_path}")
-        return cls(record=dict_to_instance(from_json(file_path), clazz_type), dedupe_mode=dedupe_mode)
+        d = from_json(file_path)
+        # print(d)
+        return cls(record=dict_to_instance(d, clazz_type), dedupe_mode=dedupe_mode)
 
     def validate(self) -> bool:
 
