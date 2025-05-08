@@ -67,11 +67,11 @@ class EIDR_Config:
 
     @classmethod
     def from_dict(cls, config: ConfigDict):
-        return EIDR_Config(
-            url=config.get('url'),
-            party=config.get('party'),
-            user=config.get('user'),
-            password=config.get('password'),
+           return EIDR_Config(
+            url= config.get('url'),
+            party= config.get('party'),
+            user= config.get('user'),
+            password= config.get('password'),
         )
 
     def set_header(self, header: str, value: str):
@@ -139,29 +139,14 @@ class EIDR_Config:
 
 
 # This is the main class that initiates a connection to EIDR and makes HTTP requests
-class ResolveUserMode(Enum):
+class ResolveMode(Enum):
     FULL = "full"
     DOI = "doi"
-
-
-ResolvePartyMode = ResolveUserMode  # Just an alias for ResolveUserMode
-
-
-class ResolveRecordMode(Enum):
-    FULL = "Full"
-    SELF_DEFINED = "SelfDefined"
-    INHERITED = "Inherited"
-    SIMPLE = "Simple"
-    PROVENANCE = "Provenance"
-    DOI_KERNEL = "DOIKernel"
-    ALTERNATE_ID = "AlternateID"
-    LINKED_ALTERNATE_ID = "LinkedAlternateID"
 
 
 class QueryMode(Enum):
     ID = "ID"
     FULL = "full"
-
 
 class ACL_Type(Enum):
     MODIFY = "Modify"
@@ -169,7 +154,6 @@ class ACL_Type(Enum):
     READ_ACL = "ReadACL"
     WRITE_ACL = "WriteACL"
     READ_PROV = "ReadProvenance"
-
 
 class ModifyType(Enum):
     CREATE_BASIC = "CreateBasic"
@@ -180,8 +164,6 @@ class ModifyType(Enum):
     CREATE_COMPILATION = "CreateCompilation"
     CREATE_EDIT = "CreateEdit"
     CREATE_MANIFESTATION = "CreateManifestation"
-
-
 class API_Driver:
 
     def __init__(self, config: EIDR_Config):
@@ -197,17 +179,17 @@ class API_Driver:
     def from_dict(cls, config: ConfigDict):
         return API_Driver(EIDR_Config.from_dict(config))
 
-    def get_object(self, object_id, resolution_mode: str | ResolveUserMode = ResolveUserMode.FULL):
-        # print(self.config.headers)
+    def get_object(self, object_id, service_doi: str | ResolveMode = ResolveMode.FULL):
+        print(self.config.headers)
 
-        req = self.config.url + 'object/' + object_id + f'?type={resolution_mode}&followAlias=true'
+        req = self.config.url + 'object/' + object_id + '?type=Full&followAlias=true'
         resp = requests.get(req, headers=self.config.headers)
         # print(resp.content)
         return resp.content
 
-    def get_video_service(self, service_id: str, service_doi: str | ResolveUserMode, followAlias: bool = True) -> str:
+    def get_video_service(self, service_id: str, service_doi: str | ResolveMode, followAlias: bool = True) -> str:
         doi_mode = service_doi
-        if isinstance(doi_mode, ResolveUserMode):
+        if isinstance(doi_mode, ResolveMode):
             doi_mode = service_doi.value
         if doi_mode.lower() not in ["doi", "full"]:
             raise ValueError("Resolution mode must be either 'doi' or 'full'")
@@ -229,12 +211,12 @@ class API_Driver:
     def get_party(
             self,
             party_id: str = None,
-            resolve_mode: str | ResolveUserMode = None,
+            resolve_mode: str | ResolveMode = None,
             _user_doi: str = None
     ) -> str:
-        doi_mode = resolve_mode
+        doi_mode =resolve_mode
 
-        if isinstance(doi_mode, ResolveUserMode):
+        if isinstance(doi_mode, ResolveMode):
             doi_mode = resolve_mode.value
         if doi_mode.lower() not in ["doi", "full"]:
             raise ValueError("Resolution mode must be either 'doi' or 'full'")
@@ -253,8 +235,8 @@ class API_Driver:
 
     # https://registry1.eidr.org/EIDR/permissions/read/%7BassetID%7D?aclType={aclType
     # returns: An instance of the
-    # eidr:AdminResponse or
-    # eidr:PartyIDList
+        # eidr:AdminResponse or
+        # eidr:PartyIDList
 
     def get_permissions(self, object_id: str, acl_type: str | ACL_Type):
         if isinstance(acl_type, ACL_Type):
@@ -289,7 +271,7 @@ class API_Driver:
         # print(self.config.headers)
         # print(data)
         extra = ""
-        if params is not None and len(params) > 0:
+        if params is not None:
             for key, value in params.items():
                 extra += "?{}={}".format(key, value)
         resp = requests.post(
@@ -369,15 +351,13 @@ def test_delete():
 
 def test_video_service_get():
     driver = API_Driver.from_default()
-    res = driver.get_video_service("10.5239/170B-1D36", ResolveUserMode.FULL)
+    res = driver.get_video_service("10.5239/170B-1D36", ResolveMode.FULL)
     print(res)
-
 
 def test_permissions():
     driver = API_Driver.from_default()
     res = driver.get_permissions("10.5240/8B55-F9AA-007F-B18E-C000-6", ACL_Type.MODIFY)
     print(res)
-
 
 if __name__ == "__main__":
     # test_post_file()
