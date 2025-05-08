@@ -1,7 +1,7 @@
 from pathlib import Path
 from venv import create
 
-from app.scheme.org.eidr.schema import BaseObjectInfoType
+from app.scheme.org.eidr.schema import BaseObjectInfoType, CreationType
 
 import json
 from enum import Enum, EnumType
@@ -22,7 +22,7 @@ from urllib.parse import uses_params
 
 from xsdata.formats.dataclass.serializers import XmlSerializer
 from xsdata.formats.dataclass.serializers.config import SerializerConfig
-from xsdata.models.datatype import XmlDate, XmlPeriod, XmlDuration
+from xsdata.models.datatype import XmlDate, XmlPeriod, XmlDuration, XmlTime
 
 import app.scheme.org.eidr.schema
 from app.scheme.org.eidr.schema import SimpleInfo, ExtraObjectMetadataType, QueryType
@@ -132,6 +132,7 @@ default_map: Dict[type, Any] = {
     XmlPeriod: "1999-10+03:30",
     XmlDate: "1970-01-01",
     XmlDuration: "P2Y6M5DT12H",
+    XmlTime: "12:00:00",
     int: 0,
     NoneType: None,
 }
@@ -301,19 +302,89 @@ def dict_to_instance(d: Dict, t: Type = None) -> Any:
         return json_parser.from_string(json.dumps(copy), d["_dataclass"])
 
 
-def generate_templates(directory: Path, class_types: List[Enum]):
+TemplateType = CreationType
+
+
+def _get_creation_name(t: TemplateType) -> str:
+    """
+    Get the name of the creation type from the object. Quick and dirty helper function.
+    :param t: The type to get the name from.
+    :return: The name of the creation type.
+    """
+    return t.name.replace("CREATE_", "").title()
+
+
+def split_list(arr: list, i: int) -> (list, list):
+    return arr[:i], arr[i:]
+
+
+def fill_dict(d: dict, fill: dict) -> dict:
+    """
+    Fill a dictionary with values from another dictionary. Keep the structure and unvistied values of the first dictionary.
+    :param d: The dictionary to fill.
+    :param fill: The dictionary with values to fill in.
+    :return: The filled dictionary.
+    """
+    out = d.copy()
+    for key, value in out.items():
+        if key not in fill:
+            continue
+        if isinstance(value, dict):
+            out[key] = fill_dict(value, fill[key])
+        elif isinstance(value, list):
+            if len(fill[key]) == 0:
+                out[key] = []
+                continue
+
+            original = value.copy()
+            modified, new = split_list(fill[key], len(original))
+            for i in range(len(original)):
+                item, change = original[i], modified[i]
+                if isinstance(item, dict):
+                    original[i] = fill_dict(item, change)
+                else:
+                    out[key].append(change)
+
+            # if key in fill and len(fill[key]) == 0:
+            #     d[key] = []
+            #     continue
+            # for i in range(len(vals)):
+            #     if isinstance(vals[i], dict):
+            #         if key in fill and i < len(fill[key]):
+            #             value[i] = fill_dict(value[i], fill[key][i])
+            #         else:
+            #             value[i] = fill_dict(value[i], {})
+        elif key in fill:
+            d[key] = fill[key]
+    return d
+
+
+def generate_template_fill(t: TemplateType, merges: List[Dict[str, Any]]) -> Dict[str, Any]:
+    d = instance_to_dict(default_dataclass(enum_mapping.get(t, None)))
+    d["BaseObjectData"]["ReferentType"] = _get_creation_name(t)
+    for merge in merges:
+        d = merge_dicts(d, merge)
+    return d
+def generate_templates(directory: Path, class_types: List[TemplateType | Enum],
+                       fill: List[Dict[str, Any] | None] = None):
     """
     Generate json template files for record construction and other operations.
+    :param fill:
     :param directory: the directory to generate the files in
     :param class_types: Dataclass types intended to be generated.
     :return:
     """
     if not directory.exists():
         directory.mkdir(parents=True, exist_ok=True)
-    for clazz in class_types:
+
+    for i, clazz in enumerate(class_types):
         d = instance_to_dict(default_dataclass(enum_mapping.get(clazz, None)))
         file_name = clazz.name.lower() + ".json"
         file_path = directory / file_name
+
+        if fill and len(fill) - 1 >= i and fill[i]:
+            d = remove_nulls(merge_dicts(d, fill[i]))
+        d["BaseObjectData"]["ReferentType"] = _get_creation_name(clazz)
         try:
             with open(file_path, "x") as f:
                 f.write(json.dumps(d, indent=4))
@@ -344,6 +415,99 @@ def from_json(file_path: Path):
         print(f"An unexpected error occurred while reading the file '{file_path}': {e}")
 
 
+def _deep_merge(original: Any, diff: Any) -> Any:
+    """
+    Merge *diff* into *original* according to custom rules:
+
+    • Keys that appear only in *diff* are ignored.
+    • Scalars or mismatched types → replace original with diff.
+    • Dict ∩ Dict           → recurse key-by-key (only on keys present in *original*).
+    • List ∩ List           → walk indices:
+        – if both values are dicts → recurse extra_info, only with keys that exist in original
+        – otherwise replace element with diff’s element
+        – append any extra tail elements from diff
+    """
+    # --- both dictionaries --------------------------------------------------
+    if isinstance(original, dict) and isinstance(diff, dict):
+        merged: Dict[str, Any] = {}
+        for k, ov in original.items():  # only iterate original keys
+            if k in diff:  # key exists in both → extra_info
+                merged[k] = _deep_merge(ov, diff[k])
+            else:  # key only in original → keep
+                merged[k] = ov
+        return merged
+
+    # --- both lists ----------------------------------------------------------
+    if isinstance(original, list) and isinstance(diff, list):
+        if len(diff) == 0:
+            return []
+        merged_list: List[Any] = []
+        common_len = min(len(original), len(diff))
+
+        # replace / recurse for shared indices
+        for i in range(common_len):
+            # Only extra_info if both elements are dictionaries
+            if isinstance(original[i], dict) and isinstance(diff[i], dict):
+                # Merge dicts but only keep keys from original
+                merged_list.append(_deep_merge(original[i], {k: diff[i][k] for k in original[i] if k in diff[i]}))
+            else:
+                # Otherwise, replace element with diff's element
+                merged_list.append(diff[i])
+
+        # keep any leftover items from original if diff is shorter
+        if len(original) > common_len:
+            merged_list.extend(original[common_len:])
+
+        # append any excess items from diff if diff is longer
+        if len(diff) > common_len:
+            merged_list.extend(diff[common_len:])
+
+        return merged_list
+
+    # --- scalar or mismatched types -----------------------------------------
+    if isinstance(original, type(diff)):
+        return diff  # replace outright if types match
+    elif original is not None and diff is None:
+        return None  # allow removal
+    else:
+        return original  # keep original if diff has the wrong type
+
+
+def merge_dicts(original: Dict[str, Any], diff: Dict[str, Any]) -> Dict[str, Any]:
+    """Public helper that enforces top-level dict types."""
+    if not (isinstance(original, dict) and isinstance(diff, dict)):
+        raise TypeError("Both arguments must be dictionaries")
+    out = _deep_merge(original, diff)
+
+    return _deep_merge(original, diff)
+
+
+def _remove_null(o: any):
+    if isinstance(o, dict):
+        for key, value in list(o.items()):
+            if value is None:
+                del o[key]
+            else:
+                _remove_null(value)
+    elif isinstance(o, list):
+        new_list = [item for item in o if item is not None]
+        for item in new_list:
+            if isinstance(item, dict):
+                _remove_null(item)
+        return new_list
+    return o
+
+
+def remove_nulls(d: dict) -> dict:
+    """
+    Remove all None values from a dictionary.
+    :param d: The dictionary to remove None values from.
+    :return: The dictionary without None values.
+    """
+    return _remove_null(d)
+
+
+
 if __name__ == "__main__":  # TODO: Move to test file
     # Test the RegistryHandler
     # Example usage
@@ -353,7 +517,8 @@ if __name__ == "__main__":  # TODO: Move to test file
     # print(out)
 
     # testing default dataclass
-    default = default_dataclass(CreateBasicDataType)
-    out = instance_to_dict(default_dataclass(CreateBasicDataType))
-    reverse = dict_to_instance(out)
-    print(reverse)
+    # default = default_dataclass(CreateBasicDataType)
+    # out = instance_to_dict(default_dataclass(CreateBasicDataType))
+    # reverse = dict_to_instance(out)
+    # print(reverse)
+    print(merge_dicts({"a": 1, "b": {"c": [{"d": 21}]}}, {"b": {"c": [{"d": 21}, {"e": 22}]}}))

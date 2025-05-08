@@ -29,9 +29,9 @@ from app import ConfigDict
 import json
 
 
+
 class AdminResponseError(Exception):
     ...
-
 
 def check_err(res: ResponseReader):
     if res.admin_response:
@@ -166,7 +166,7 @@ def handle_status_results(res: ResponseReader,
         if status_handlers and code in status_handlers:
             stats["extra"] = status_handlers[code](op_res.status.code.value, op_res.status.details)
         elif default_handler:
-            stats["extra"] = default_handler(op_res.status.code.value, op_res.status.details)
+            stats["extra"] = default_handler(op_res.status.code.value, op_res.status.type_value.value + " | " + str(op_res.status.details))
         results.append(stats)
 
     return results
@@ -278,7 +278,7 @@ class SessionManager:
 
         res = self.post(q, params={"type": res_type})
         if res.status[0] != 0:
-            # print(res.obj)
+            #print(res.obj)
             raise RuntimeError("Got bad status {}".format(res.status))
         check_err(res)
         q_res = res.get_field("query_results")
@@ -308,9 +308,9 @@ class SessionManager:
         """
         if s.name != "status":
             raise ValueError("Must call status with status request")
-        # print(s.xml)
+        #print(s.xml)
         res = self.post(s)
-        # print(res.obj)
+        #print(res.obj)
         if res.status[0] != 0:
             raise RuntimeError("Got bad status {}".format(res.status))
         check_err(res)
@@ -320,6 +320,12 @@ class SessionManager:
         # Append tokens that are not already in the list (making sure they're not empty strings)
         self.tokens += [stat["token"] for stat in operation_stats if stat["token"] not in self.tokens and stat["token"]]
         status_res = res.get_field("request_status_results")
+        #print(status_res)
+        operation_stats = [{
+            "token": op_res.token,
+            "status": (op_res.status.code.value, op_res.status.type_value.value),
+            "details": (op_res.status.details_code, op_res.status.details)
+        } for op_res in status_res.operation_status] if status_res else []
 
         return operation_stats, status_res.continuation_token
 

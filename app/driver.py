@@ -97,16 +97,6 @@ class EIDR_Config:
         if self.use_gzip:
             self.set_header('gzip', '')
 
-    # TODO: This is GPT'd, either remove or fix
-    def to_xml(self):
-        print("You've been GPT'd!")
-        root = etree.Element('EIDR_Config')
-        for key, value in self.__dict__.items():
-            if value:
-                etree.SubElement(root, key).text = str(value)
-        return etree.tostring(root, pretty_print=True)
-
-
 # <!> The enum below has been swapped out with an interface/classes gimmick in the services module.
 #     I'm keeping this here just for the TODOs
 #
@@ -205,9 +195,9 @@ class API_Driver:
         # print(resp.content)
         return resp.content
 
-    def get_video_service(self, service_id: str, service_doi: str | ResolveUserMode, followAlias: bool = True) -> str:
+    def get_video_service(self, service_id: str, service_doi: str | ResolveRecordMode, followAlias: bool = True) -> str:
         doi_mode = service_doi
-        if isinstance(doi_mode, ResolveUserMode):
+        if isinstance(doi_mode, ResolveRecordMode):
             doi_mode = service_doi.value
         if doi_mode.lower() not in ["doi", "full"]:
             raise ValueError("Resolution mode must be either 'doi' or 'full'")
@@ -229,12 +219,12 @@ class API_Driver:
     def get_party(
             self,
             party_id: str = None,
-            resolve_mode: str | ResolveUserMode = None,
+            resolve_mode: str | ResolveRecordMode = None,
             _user_doi: str = None
     ) -> str:
         doi_mode = resolve_mode
 
-        if isinstance(doi_mode, ResolveUserMode):
+        if isinstance(doi_mode, ResolveRecordMode):
             doi_mode = resolve_mode.value
         if doi_mode.lower() not in ["doi", "full"]:
             raise ValueError("Resolution mode must be either 'doi' or 'full'")
@@ -369,7 +359,7 @@ def test_delete():
 
 def test_video_service_get():
     driver = API_Driver.from_default()
-    res = driver.get_video_service("10.5239/170B-1D36", ResolveUserMode.FULL)
+    res = driver.get_video_service("10.5239/170B-1D36", ResolveRecordMode.FULL)
     print(res)
 
 
