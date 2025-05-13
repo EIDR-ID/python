@@ -15,19 +15,18 @@ Ensure you have the following installed:
    
    On macOS/Linux:
    ```sh
-   python3 -m venv venv
-   source venv/bin/activate
+   python3 -m venv .venv
+   source .venv/bin/activate
    ```
   
    On Windows:
    ```sh
-   python3 -m venv venv
-   venv\Scripts\activate
+   python3 -m venv .venv
+   .venv\Scripts\activate
    ```
 3. **Install dependencies:**
    ```sh
    pip install -r requirements.txt
-
    pip install .
    ```
 
