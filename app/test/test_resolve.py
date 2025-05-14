@@ -47,6 +47,7 @@ class TestResolve(unittest.TestCase):
         user: User = res.obj
         self.assertEqual(user.parent_party, parent_party)
 
+
     def test_change_password(self):
         res = self.ses.change_user_password(self.config.user, "34343")
         self.assertNotEqual(res.status[0], 0)

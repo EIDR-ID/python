@@ -65,7 +65,6 @@ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
         response_reader, err = self.traversal.get_leaf_descendants(doi)
         if err is not None:
             self.fail(err)
-
         _, status_value = response_reader.status
         self.assertEqual(StatusTypeType.SUCCESS.value, status_value, "Unsuccessful Request")
 
