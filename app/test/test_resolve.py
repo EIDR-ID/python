@@ -42,16 +42,13 @@ class TestResolve(unittest.TestCase):
 
     def test_user_resolve(self):
         parent_party = "10.5237/A6C4-9B41"
-        res = self.ses.user_resolve(self.config.user)
+        #doi mode unimplemented in eidr for resolve
+        res = self.ses.user_resolve(self.config.user, resolve_mode="full")
         user: User = res.obj
         self.assertEqual(user.parent_party, parent_party)
-        #doi unimplemented in eidr
-        res = self.ses.user_resolve(self.config.user, resolve_mode="full")
-        print(res.obj)
 
     def test_change_password(self):
         res = self.ses.change_user_password(self.config.user, "34343")
-        print(res.obj)
         self.assertNotEqual(res.status[0], 0)
 
 

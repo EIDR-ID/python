@@ -26,12 +26,10 @@ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 </Operation>
 </Request>
             """
-        print(xml)
         res = self.driver.post_raw(
             xml, "object/graph"
         )
         result_string = to_pretty_xml(res.content)
-        print(result_string)
         self.assertEqual(True, result_string is not None)
 
     def test_find_descendents(self):
@@ -113,6 +111,34 @@ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
             self.fail(err)
         _, status_value = response_reader.status
         self.assertEqual(StatusTypeType.SUCCESS.value, status_value, "Unsuccessful Request")
+
+    def test_find_descendants_with_extended_family(self):
+        doi = "10.5240/8B55-F9AA-007F-B18E-C000-6"
+        response_reader, err = self.traversal.find_descendants(doi, extended_family=True)
+        if err is not None:
+            self.fail(err)
+        _, status_value = response_reader.status
+        self.assertEqual(StatusTypeType.SUCCESS.value, status_value, "Unsuccessful Request with extended_family")
+
+    def test_find_ancestors_with_filters(self):
+        from app.scheme.org.eidr.schema import ReferentType
+        doi = "10.5240/8B55-F9AA-007F-B18E-C000-6"
+        response_reader, err = self.traversal.find_ancestors(
+            doi,
+            referent_type_filter=[ReferentType.MOVIE]
+        )
+        if err is not None:
+            self.fail(err)
+        _, status_value = response_reader.status
+        self.assertEqual(StatusTypeType.SUCCESS.value, status_value,"unsuccessful Request with referent type filter")
+
+    def test_find_descendants_with_invalid_doi(self):
+        with self.assertRaises(ValueError):
+            self.traversal.find_descendants("")
+
+
+
+
 
     #TODO:Find video service ids to use
 
