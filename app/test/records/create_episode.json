@@ -1,45 +1,57 @@
 {
-    "base_object_data": {
-        "structural_type": "Abstraction",
-        "mode": "Audio",
-        "referent_type": "TV",
-        "resource_name": {
-            "value": "Bite of WWII",
-            "lang": "en"
+    "BaseObjectData": {
+        "StructuralType": "Abstraction",
+        "Mode": "Audio",
+        "ReferentType": "TV",
+        "ResourceName": {
+            "value": "runner man video sensational tester",
+            "titleClass": "release",
+            "lang": "en",
+            "systemGenerated": null
         },
-        "original_language": [
-            {
-                "value": "EN",
-                "mode": "Audio",
-                "type_value": "commentary"
-            }
-        ],
-        "release_date": "2014-01-29",
-        "country_of_origin": [
-            "US"
-        ],
-        "status": "valid",
-        "administrators": {
-            "registrant": {
-                "value": ""
-            }
+        "AlternateResourceName": [],
+        "OriginalLanguage": [],
+        "VersionLanguage": [],
+        "AssociatedOrg": [],
+        "ReleaseDate": "2025-10-16",
+        "CountryOfOrigin": [],
+        "Status": "valid",
+        "ApproximateLength": null,
+        "AlternateID": [],
+        "Administrators": {
+            "Registrant": {
+                "value": "10.5237/A6C4-9B41"
+            },
+            "MetadataAuthority": []
         },
-        "credits": {
-            "director": [
+        "Credits": {
+            "Director": [
                 {
-                    "display_name": {
-                        "value": "Mr Test Director",
+                    "DisplayName": {
+                        "value": "Mr 49er",
                         "language": "en"
-                    }
+                    },
+                    "SortName": null,
+                    "FirstGivenName": null,
+                    "SecondGivenName": null,
+                    "FamilyName": null,
+                    "Suffix": null,
+                    "Moniker": null
                 }
-            ]
-        }
+            ],
+            "Actor": []
+        },
+        "RegistrantExtra": null,
+        "Description": null
     },
-    "extra_object_metadata": {
-        "episode_info": {
-            "parent": {
-                "value": "10.5240/11AF-1DBB-E445-25CC-2268-N"
-            }
+    "ExtraObjectMetadata": {
+        "EpisodeInfo": {
+            "Parent": {
+                "value": "10.5240/4764-6E6F-5DD0-E31A-A74C-6"
+            },
+            "SequenceInfo": null,
+            "EpisodeClass": [],
+            "TimeSlot": null
         }
     }
 }

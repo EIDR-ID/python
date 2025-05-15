@@ -1,40 +1,55 @@
 {
-    "base_object_data": {
-        "structural_type": "Abstraction",
-        "mode": "Audio",
-        "referent_type": "Movie",
-        "resource_name": {
-            "value": "ua test #2",
-            "title_class": "release",
-            "lang": "en"
+    "BaseObjectData": {
+        "StructuralType": "Abstraction",
+        "Mode": "Audio",
+        "ReferentType": "Web",
+        "ResourceName": {
+            "value": "wacky test adventures py",
+            "titleClass": "release",
+            "lang": "en",
+            "systemGenerated": null
         },
-        "original_language": [
+        "AlternateResourceName": [],
+        "OriginalLanguage": [
             {
                 "value": "en",
                 "mode": "Audio",
-                "type_value": "commentary"
+                "type": "commentary"
             }
         ],
-        "release_date": "2001-03-11",
-        "country_of_origin": [
+        "VersionLanguage": [],
+        "AssociatedOrg": [],
+        "ReleaseDate": "2025-05-14",
+        "CountryOfOrigin": [
             "US"
         ],
-        "status": "valid",
-        "approximate_length": "P2Y6M5DT12H",
-        "administrators": {
-            "registrant": {
-                "value": ""
-            }
+        "Status": "valid",
+        "ApproximateLength": "PT1H30M",
+        "AlternateID": [],
+        "Administrators": {
+            "Registrant": {
+                "value": "10.5237/A6C4-9B41"
+            },
+            "MetadataAuthority": []
         },
-        "credits": {
-            "director": [
+        "Credits": {
+            "Director": [
                 {
-                    "display_name": {
-                        "value": "Hilter Von StrongBerg",
-                        "language": "jp"
-                    }
+                    "DisplayName": {
+                        "value": "Mr Test Director 496",
+                        "language": "en"
+                    },
+                    "SortName": null,
+                    "FirstGivenName": null,
+                    "SecondGivenName": null,
+                    "FamilyName": null,
+                    "Suffix": null,
+                    "Moniker": null
                 }
-            ]
-        }
+            ],
+            "Actor": []
+        },
+        "RegistrantExtra": null,
+        "Description": null
     }
 }

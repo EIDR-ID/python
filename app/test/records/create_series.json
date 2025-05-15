@@ -1,46 +1,64 @@
 {
-    "base_object_data": {
-        "structural_type": "Abstraction",
-        "mode": "Audio",
-        "referent_type": "Series",
-        "resource_name": {
-            "value": "Hilter Von StrongBerg's Golden Freddy",
-            "lang": "en"
+    "BaseObjectData": {
+        "StructuralType": "Abstraction",
+        "Mode": "Audio",
+        "ReferentType": "Series",
+        "ResourceName": {
+            "value": "Super Wacky Test Adventures",
+            "titleClass": "release",
+            "lang": "en",
+            "systemGenerated": null
         },
-        "original_language": [
+        "AlternateResourceName": [],
+        "OriginalLanguage": [
             {
                 "value": "en",
-                "mode": "Audio"
+                "mode": "Audio",
+                "type": "commentary"
             }
         ],
-        "release_date": "2011-01-23",
-        "country_of_origin": [
-            "US"
+        "VersionLanguage": [],
+        "AssociatedOrg": [],
+        "ReleaseDate": "2024-03-24",
+        "CountryOfOrigin": [
+            "JP"
         ],
-        "status": "valid",
-        "approximate_length": "P2Y6M5DT12H",
-        "administrators": {
-            "registrant": {
-                "value": ""
-            }
+        "Status": "valid",
+        "ApproximateLength": "PT38M",
+        "AlternateID": [],
+        "Administrators": {
+            "Registrant": {
+                "value": "10.5237/A6C4-9B41"
+            },
+            "MetadataAuthority": []
         },
-        "credits": {
-            "director": [
+        "Credits": {
+            "Director": [
                 {
-                    "display_name": {
-                        "value": "Mr Test Directory",
+                    "DisplayName": {
+                        "value": "zoomba testerniner",
                         "language": "en"
-                    }
+                    },
+                    "SortName": null,
+                    "FirstGivenName": null,
+                    "SecondGivenName": null,
+                    "FamilyName": null,
+                    "Suffix": null,
+                    "Moniker": null
                 }
-            ]
-        }
+            ],
+            "Actor": []
+        },
+        "RegistrantExtra": null,
+        "Description": null
     },
-    "extra_object_metadata": {
-        "series_info": {
-            "series_class": "Episodic",
-            "number_required": false,
-            "date_required": false,
-            "original_title_required": false
+    "ExtraObjectMetadata": {
+        "SeriesInfo": {
+            "EndDate": null,
+            "SeriesClass": "Episodic",
+            "NumberRequired": false,
+            "DateRequired": false,
+            "OriginalTitleRequired": false
         }
     }
 }
