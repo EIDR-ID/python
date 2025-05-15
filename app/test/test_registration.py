@@ -1,141 +1,95 @@
 import unittest
-
+from pathlib import Path
 from pprint import pprint
 
 from app.manager import SessionManager
-import app.driver as driver
+
 from app.services import RegistryRequest
 from app.services.registration.add_relationship import AddRelationship
 from app.services.registration.alias import Alias
-
 from app.services.registration.create import Create
 from app.services.registration.modify import Modify
 from app.services.registration.promote import Promote
 from app.services.registration.replace_relationship import ReplaceRelationship
+from app.services.registration.remove_relationship import RemoveRelationship
 
-from app.util import from_json, dict_to_dataclass
+from app.scheme.org.eidr.schema import AddRelationshipType, CreateCompositeDataType, CreateEditDataType, \
+    ModifyType, CreateBasicDataType, ReplaceRelationshipType, CreateEpisodeDataType, CreateClipDataType, \
+    CreateSeriesDataType, CreateSeasonDataType, TargetRelationshipType
+from services import Delete
+from services.eidr_request import RegistryRequestSingle
 
 
-class RegistrationTest(unittest.TestCase):
-    """
-    Example Request:
-    <?xml version="1.0"?>
-        <Request xmlns="http://www.eidr.org/schema" xmlns:md="http://www.movielabs.com/md" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-          <Operation>
-            <Create type="CreateSeries">
-              <Series>
-                <BaseObjectData>
-                  <StructuralType>Abstraction</StructuralType>
-                  <Mode>AudioVisual</Mode>
-                  <ReferentType>Series</ReferentType>
-                  <ResourceName lang="en">Solo Leveling</ResourceName>
-                  <OriginalLanguage mode="Audio">ko</OriginalLanguage>
-                  <ReleaseDate>2024-11-2003</ReleaseDate>
-                  <CountryOfOrigin>JP</CountryOfOrigin>
-                  <Status>valid</Status>
-                  <ApproximateLength>PT10H11M22S</ApproximateLength>
-                  <Administrators>
-                    <Registrant>10.5237/xxxxxx</Registrant>
-                  </Administrators>
-                  <Credits>
-                    <Director>
-                      <md:DisplayName>Kishimoto</md:DisplayName>
-                    </Director>
-                  </Credits>
-                </BaseObjectData>
-                <ExtraObjectMetadata>
-                  <SeriesInfo>
-                    <SeriesClass>Episodic</SeriesClass>
-                    <NumberRequired>false</NumberRequired>
-                    <DateRequired>false</DateRequired>
-                    <OriginalTitleRequired>false</OriginalTitleRequired>
-                  </SeriesInfo>
-                </ExtraObjectMetadata>
-              </Series>
-            </Create>
-          </Operation>
-        </Request>
-    """
-
+class TestRegistration(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.manager = SessionManager.from_default()
+        cls.record_dir = Path(__file__).parent / "records"
 
-    def test_register_basic(self):
-        data = from_json("create_basic.json")
-        r =  dict_to_dataclass(cls="create_basic", data=data)
-        r.base_object_data.administrators.registrant.value = self.manager.driver.config.party
-        basic = Create(record=r)
-        req = RegistryRequest([basic])
-        resp = self.manager.register(req, True)
+    def __delete_record(self, id: str):
+        """
+        Helper method to delete a record given an ID.
+        :param id: The ID of the record to delete.
+        """
+        delete = Delete(id)
+        req = RegistryRequestSingle(delete)
+        self.manager.register_immediate(req)
+
+    def test_register_basic_immediate(self):
+        path: Path = self.record_dir / "create_basic.json"
+        basic: Create = Create.from_json(path, CreateBasicDataType)
+        req = RegistryRequestSingle(basic)
+        resp = self.manager.register_immediate(req)
         print("Basic Record Response:")
         pprint(resp)
+        self.assertEqual(0, resp.get("status")[0])
+        self.__delete_record(resp.get("id"))
 
-    def test_register_series(self):
-        data = from_json("create_series.json")
-        r =  dict_to_dataclass(cls="create_series", data=data)
-        r.base_object_data.administrators.registrant.value = self.manager.driver.config.party
-        series = Create(record=r)
-        req = RegistryRequest([series])
-        resp = self.manager.register(req, True)
+    def test_register_series_immediate(self):
+        path = self.record_dir / "create_series.json"
+        series = Create.from_json(path, CreateSeriesDataType)
+        req = RegistryRequestSingle(series)
+        resp = self.manager.register_immediate(req)
         print("Series Record Response:")
         pprint(resp)
+        self.assertEqual(0, resp.get("status")[0])
+        self.__delete_record(resp.get("id"))
 
-    def test_register_season(self):
-        data = from_json("create_season.json")
-        r =  dict_to_dataclass(cls="create_season", data=data)
-        r.base_object_data.administrators.registrant.value = self.manager.driver.config.party
-        season = Create(record=r)
-        req = RegistryRequest([season])
-        resp = self.manager.register(req, True)
-        print("Season Record Response:")
-        pprint(resp)
-
-    def test_register_episode(self):
-        data = from_json("create_episode.json")
-        r =  dict_to_dataclass(cls="create_episode", data=data)
-        r.base_object_data.administrators.registrant.value = self.manager.driver.config.party
-        episode = Create(record=r)
-        req = RegistryRequest([episode])
-        resp = self.manager.register(req, True)
-        print("Episode Record Response:")
-        pprint(resp)
-
-    # def test_register_clip(self):
-    #     data = from_json("create_clip.json")
-    #     r =  dict_to_dataclass(cls="create_clip", data=data)
-    #     r.base_object_data.administrators.registrant.value = self.manager.driver.config.party
-    #     clip = Create(record=r)
-    #     req = RegistryRequest([clip])
-    #     resp = self.manager.register(req, True)
-    #     print("Clip Record Response:")
+    # def test_register_season_immediate(self):
+    #     path = self.record_dir / "create_season.json"
+    #     season = Create.from_json(path, CreateSeasonDataType)
+    #     req = RegistryRequest([season])
+    #     resp = self.manager.register_immediate(req)
     #     pprint(resp)
+    #     self.assertEqual(0, resp.get("status")[0])
+    #     self.__delete_record(resp.get("id"))
+    #
+    # def test_register_episode_immediate(self):
+    #     path = self.record_dir / "create_episode.json"
+    #     episode = Create.from_json(path, CreateEpisodeDataType)
+    #     req = RegistryRequestSingle(episode)
+    #     resp = self.manager.register_immediate(req)
+    #     pprint(resp)
+    #
+    # def test_register_clip_immediate(self):
+    #     clip = Create.from_json(self.record_dir / "create_clip.json", CreateClipDataType)
+    #     req = RegistryRequestSingle(clip)
+    #     resp = self.manager.register_immediate(req)
+    #     pprint(resp)
+    #     self.assertEqual(0, resp.get("status")[0])
+    #     self.__delete_record(resp.get("id"))
 
-    def test_register_compilation(self):
-        data = from_json("create_compilation.json")
-        r =  dict_to_dataclass(cls="create_compilation", data=data)
-        r.base_object_data.administrators.registrant.value = self.manager.driver.config.party
-        compilation = Create(record=r)
-        req = RegistryRequest([compilation])
-        resp = self.manager.register(req, True)
-        print("Compilation Record Response:")
-        pprint(resp)
-
-    # TODO: Debug registry syntax error: "Cannot resolve 'CreateEdit' to a type definition for element 'Edit'
-    # def test_register_edit(self):
-    #     data = from_json("create_edit.json")
-    #     r =  dict_to_dataclass(cls="create_edit", data=data)
-    #     r.base_object_data.administrators.registrant.value = self.manager.driver.config.party
-    #     edit = Create(record=r)
-    #     req = RegistryRequest([edit])
-    #     resp = self.manager.register_create(req, True)
+    # def test_register_edit_immediate(self):
+    #     edit = Create.from_json(self.record_dir / "create_edit.json", CreateEditDataType)
+    #     req = RegistryRequestSingle(edit)
+    #     resp = self.manager.register_immediate(req)
     #     print("Edit Record Response:")
     #     pprint(resp)
 
     # TODO: configure valid manifestation record
-    # def test_register_manifestation(self):
+    # def test_register_manifestation_immediate(self):
     #     data = from_json("create_manifestation.json")
-    #     r =  dict_to_dataclass(cls="create_manifestation", data=data)
+    #     r =  dict_to_instance(cls="create_manifestation", data=data)
     #     r.base_object_data.administrators.registrant.value = self.manager.driver.config.party
     #     season_record = Create(record=r)
     #     req = RegistryRequest([season_record])
@@ -143,66 +97,64 @@ class RegistrationTest(unittest.TestCase):
     #     print("Series Record Response:")
     #     pprint(resp)
 
-    # TODO: Debug registry syntax error: "Cannot resolve 'Composite' to a type definition for element 'Composite'
-    # def test_register_composite(self):
-    #     data = from_json("create_composite.json")
-    #     r =  dict_to_dataclass(cls="create_composite", data=data)
-    #     r.base_object_data.administrators.registrant.value = self.manager.driver.config.party
-    #     composite = Create(record=r)
+    # TODO: configure valid interactive record
+    # def test_register_interactive_immediate(self):
+    #     interactive =  Create.from_json()
+
+    # def test_register_composite_immediate(self):
+    #     composite = Create(record=CreateCompositeDataType())
     #     req = RegistryRequest([composite])
     #     resp = self.manager.register(req, True)
     #     print("Composite Record Response:")
     #     pprint(resp)
 
-    # TODO: Debug serialization errors for all of the following tests
-    # def test_add_relationship(self):
-    #     data = from_json("add_relationship.json")
-    #     r =  dict_to_dataclass(cls="add_relationship", data=data)
-    #     add_relation = AddRelationship(relationship=r)
-    #     req = RegistryRequest([add_relation])
-    #     resp = self.manager.register(req, True)
+    # def test_add_relationship_immediate(self):
+    #     add_relation = AddRelationship(relationship=AddRelationshipType())
+    #     req = RegistryRequestSingle(add_relation)
+    #     resp = self.manager.register_immediate(req)
     #     print("Add Relationship Operation Response:")
     #     pprint(resp)
-    #
-    # def test_remove_relationship(self):
-    #     data = from_json("remove_relationship.json")
-    #     r =  dict_to_dataclass(cls="remove_relationship", data=data)
-    #     r.base_object_data.administrators.registrant.value = self.manager.driver.config.party
-    #     season_record = Create(record=r)
-    #     req = RegistryRequest([season_record])
+
+    # def test_remove_relationship_immediate(self):
+    #     remove_r = RemoveRelationship(
+    #         id="10.5240/B203-F72D-7BFB-9961-2E5A-O",
+    #         target_id="10.5240/0EF8-1553-2487-35CD-AF50-5",
+    #         type_value=TargetRelationshipType.PROMOTIONAL_RELATIONSHIP
+    #     )
+    #     req = RegistryRequest([remove_r])
     #     resp = self.manager.register(req, True)
     #     print("Remove Relationship Operation Response:")
     #     pprint(resp)
     #
-    # def test_replace_relationship(self):
-    #     data = from_json("replace_relationship.json")
-    #     r =  dict_to_dataclass(cls="replace_relationship", data=data)
-    #     season_record = ReplaceRelationship(record=r)
-    #     req = RegistryRequest([season_record])
+    # def test_replace_relationship_immediate(self):
+    #     replace_r = ReplaceRelationship(relationship=ReplaceRelationshipType())
+    #     req = RegistryRequest([replace_r])
     #     resp = self.manager.register(req, True)
     #     print("Replace Relationship Operation Response:")
     #     pprint(resp)
-    #
-    # def test_modify(self):
-    #     data = from_json("modify.json")
-    #     r =  dict_to_dataclass(cls="modify", data=data)
-    #     r.basic.base_object_data.administrators.registrant.value = self.manager.driver.config.party
-    #     modify = Modify(record=r)
+
+    # TODO: call modification base request and configure a valid modify response
+    # def test_modify_immediate(self):
+    #     # call request with modify operation
+    #     modify = Modify(record=None)
     #     req = RegistryRequest([modify])
     #     resp = self.manager.register(req, True)
     #     print("Modify Record Response:")
     #     pprint(resp)
 
-    # def test_alias(self):
+    # def test_alias_immediate(self):
     #     alias = Alias(target_id="10.5240/0B9A-1A71-BBF3-219E-F3C7-E", id="10.5240/1B23-9602-95A2-EE0A-4090-W")
-    #     req = RegistryRequest([alias])
-    #     resp = self.manager.register(req, True)
+    #     req = RegistryRequestSingle(alias)
+    #     resp = self.manager.register_immediate(req)
     #     print("Alias Operation Response:")
     #     pprint(resp)
+    #     # expects an error code of 3: authorization error because the target_id is alr aliased
+    #     self.assertEqual(3, resp.get("status")[0])
 
-    # def test_promote(self):
-    #     promote = Promote(id="10.5240/0B9A-1A71-BBF3-219E-F3C7-E")
-    #     req = RegistryRequest([promote])
-    #     resp = self.manager.register(req, True)
+    # def test_promote_immediate(self):
+    #     promote = Promote(id="10.5240/7031-28FD-3DA7-7B61-D73D-O")
+    #     req = RegistryRequestSingle(promote)
+    #     resp = self.manager.register_immediate(req)
     #     print("Promote Operation Response:")
     #     pprint(resp)
+    #     self.assertTrue(resp.id) or self.assertTrue(resp.duplicate)

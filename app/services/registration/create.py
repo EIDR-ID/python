@@ -7,7 +7,6 @@ from app.services.registration.interface import RegistrationService
 from app.scheme.org.eidr.schema.create_edit_data_type import CreateEditDataType
 from app.scheme.org.eidr.schema.create_composite_data_type import CreateCompositeDataType
 from app.scheme.org.eidr.schema.create_type import CreateType
-from app.scheme.org.eidr.schema.creation_type import CreationType
 from app.scheme.org.eidr.schema.create_basic_data_type import CreateBasicDataType
 from app.scheme.org.eidr.schema.create_series_data_type import CreateSeriesDataType
 from app.scheme.org.eidr.schema.create_episode_data_type import CreateEpisodeDataType
@@ -26,7 +25,6 @@ class Create(RegistrationService):
         Attributes:
             record: The record to be created - can be of any create_type.
     """
-    name = 'register'
 
     def __init__(
             self,
@@ -63,8 +61,8 @@ class Create(RegistrationService):
     @classmethod
     def from_json(cls, file_path: Path, clazz_type, dedupe_mode: DedupModeType | None = None) -> 'Create':
         """
-        Initialize this class from a json file
-        :param file_path: The path to the json file
+        Initialize this class from a JSON file
+        :param file_path: The path to the JSON file
         :type clazz_type: dataclass type
         :param dedupe_mode: deduplication mode, only applicable for create and modify operations
         :return:
@@ -74,10 +72,11 @@ class Create(RegistrationService):
             raise TypeError(f"Expected 'file_path' to be of type Path, but got {type(file_path)}")
         elif not file_path.exists():
             raise FileNotFoundError(f"File not found: {file_path}")
-        return cls(record=dict_to_instance(from_json(file_path), clazz_type), dedupe_mode=dedupe_mode)
+        rec_dict: dict = from_json(file_path)
+        record_instance = dict_to_instance(rec_dict, clazz_type)
+        return cls(record=record_instance, dedupe_mode=dedupe_mode)
 
     def validate(self) -> bool:
-
         return type(self.record) in self.type_mapping.keys()
 
     def objectify(self) -> None:

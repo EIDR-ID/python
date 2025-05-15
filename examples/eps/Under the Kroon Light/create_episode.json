@@ -1,0 +1,46 @@
+{
+    "BaseObjectData": {
+        "StructuralType": "Abstraction",
+        "ReferentType": "Web",
+        "Mode": "Visual",
+        "ResourceName": {
+            "Value": "Under the Kroon Light",
+            "titleClass": "release",
+            "lang": "en",
+            "systemGenerated": false
+        },
+        "ReleaseDate": "2026-07-28",
+        "Status": "valid",
+        "ApproximateLength": "PT44M",
+        "OriginalLanguage": [{
+            "Value": "en",
+            "mode": "Visual"
+        }],
+        "Administrators": {
+            "Registrant": {
+                "Value": "10.5237/A6C4-9B41"
+            },
+            "MetadataAuthority": []
+        },
+        "Description": {
+            "Value": "The Kroons are sent on a mission to the moon, and hijinks ensue",
+            "lang": "en"
+        }
+    },
+    "ExtraObjectMetadata": {
+        "EpisodeInfo": {
+            "Parent": {
+                "Value": "10.5240/6179-7071-6C07-F9C9-B9D8-3"
+            },
+            "SequenceInfo": {
+                "DistributionNumber": {
+                    "Value": "3",
+                    "domain": "MEM.com"
+                }
+            },
+            "EpisodeClass": [
+                "Main"
+            ]
+        }
+    }
+}

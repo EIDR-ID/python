@@ -1,0 +1,47 @@
+{
+    "BaseObjectData": {
+        "StructuralType": "Abstraction",
+        "ReferentType": "Short",
+        "Mode": "Visual",
+        "ResourceName": {
+            "Value": "If There's a Kroon, There's a Way",
+            "titleClass": "release",
+            "lang": "en",
+            "systemGenerated": false
+        },
+        "ReleaseDate": "2026-05-17",
+        "Status": "valid",
+        "ApproximateLength": "PT0H40M",
+        "OriginalLanguage": [{
+            "Value": "en",
+            "mode": "Visual"
+        }],
+        "Administrators": {
+            "Registrant": {
+                "Value": "10.5237/A6C4-9B41"
+            },
+            "MetadataAuthority": []
+        },
+        "Description": {
+            "Value": "The Kroons go on an adventure through time, as the seasons being passing in a matter of seconds",
+            "lang": "en"
+        }
+    },
+    "ExtraObjectMetadata": {
+        "EpisodeInfo": {
+            "Parent": {
+                "Value": "10.5240/6179-7071-6C07-F9C9-B9D8-3"
+            },
+            "SequenceInfo": {
+                "DistributionNumber": {
+                    "Value": "2",
+                    "domain": "MEM.com"
+                }
+            },
+            "EpisodeClass": [
+                "Standalone"
+            ],
+            "TimeSlot": "15:00:00"
+        }
+    }
+}
