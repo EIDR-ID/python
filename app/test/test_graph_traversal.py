@@ -2,29 +2,30 @@ import unittest
 
 import app.services.graph_traversal as graph
 from app.driver import API_Driver, to_pretty_xml
+from app.manager import SessionManager, ResolveRecordMode
 from app.scheme.org.eidr.schema.asset_doitype import AssetDoitype
 from app.scheme.org.eidr.schema.status_type_type import StatusTypeType
 
 
 class GraphTraversal(unittest.TestCase):
-    driver = None
 
     @classmethod
     def setUpClass(cls):
-        cls.driver = API_Driver.from_default()
+        cls.session = SessionManager.from_default()
+        cls.driver = cls.session.driver
         cls.traversal = graph.GraphTraversal(driver=cls.driver)
 
     def test_example_return(self):
         ## Found sol no empty chars befrore this line -> <?xml version="1.0" encoding="UTF-8"?>
         xml = """<?xml version='1.0' encoding='UTF-8'?>
-<Request xmlns="http://www.eidr.org/schema"
-xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-<Operation>
-<GetRemotestAncestor>
-<ID>10.5240/8B55-F9AA-007F-B18E-C000-6</ID>
-</GetRemotestAncestor>
-</Operation>
-</Request>
+                    <Request xmlns="http://www.eidr.org/schema"
+                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                    <Operation>
+                    <GetRemotestAncestor>
+                    <ID>10.5240/8B55-F9AA-007F-B18E-C000-6</ID>
+                    </GetRemotestAncestor>
+                    </Operation>
+                    </Request>
             """
         res = self.driver.post_raw(
             xml, "object/graph"
@@ -129,17 +130,13 @@ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
         if err is not None:
             self.fail(err)
         _, status_value = response_reader.status
-        self.assertEqual(StatusTypeType.SUCCESS.value, status_value,"unsuccessful Request with referent type filter")
+        self.assertEqual(StatusTypeType.SUCCESS.value, status_value, "unsuccessful Request with referent type filter")
 
     def test_find_descendants_with_invalid_doi(self):
         with self.assertRaises(ValueError):
             self.traversal.find_descendants("")
 
-
-
-
-
-    #TODO:Find video service ids to use
+    # TODO:Find video service ids to use
 
     # def test_video_service_get_parent(self):
     #     doi = "10.5239/170B-1D36"
@@ -158,5 +155,7 @@ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     #     _, status_value = response_reader.status
     #     self.assertEqual(StatusTypeType.SUCCESS.value, status_value, "Unsuccessful Request")
     #
+
+
 if __name__ == '__main__':
     unittest.main()

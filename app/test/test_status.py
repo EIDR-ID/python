@@ -12,6 +12,8 @@ class TestStatus(unittest.TestCase):
         cls.ses = SessionManager(API_Driver.from_default())
 
     def test_status(self):
+        if self.ses.driver.config.url.__contains__("sandbox"):
+            self.skipTest("Skipping test in sandbox environment")
         token = "1741054324732003662"
         s = RegistryRequest(
             operations=[StatusRequest(
@@ -20,7 +22,6 @@ class TestStatus(unittest.TestCase):
                 page_size=10
             )]
         )
-
         res, _ = self.ses.status(s)
         self.assertNotEqual(res, None)
         for item in res:
