@@ -1,115 +1,117 @@
 {
-    "base_object_data": {
-        "structural_type": "Abstraction",
-        "mode": "Audio",
-        "referent_type": "Series",
-        "resource_name": {
+    "BaseObjectData": {
+        "StructuralType": "Abstraction",
+        "Mode": "Audio",
+        "ReferentType": "Interactive",
+        "ResourceName": {
             "value": "",
-            "title_class": "release",
+            "titleClass": "release",
             "lang": "",
-            "system_generated": false
+            "systemGenerated": false
         },
-        "alternate_resource_name": [
+        "AlternateResourceName": [
             {
                 "value": "",
-                "title_class": "release",
+                "titleClass": "release",
                 "lang": "",
-                "system_generated": false
+                "systemGenerated": false
             }
         ],
-        "original_language": [
+        "OriginalLanguage": [
             {
                 "value": "",
                 "mode": "Audio",
-                "type_value": "commentary"
+                "type": "commentary"
             }
         ],
-        "version_language": [
+        "VersionLanguage": [
             {
                 "value": "",
                 "mode": "Audio",
-                "type_value": "commentary"
+                "type": "commentary"
             }
         ],
-        "associated_org": [
+        "AssociatedOrg": [
             {
-                "display_name": "",
-                "sort_name": "",
-                "alternate_name": [],
-                "organization_id": "",
-                "id_type": "EIDRPartyID",
+                "DisplayName": "",
+                "SortName": "",
+                "AlternateName": [
+                    []
+                ],
+                "organizationID": "",
+                "idType": "EIDRPartyID",
                 "role": "producer"
             }
         ],
-        "release_date": "1999-10+03:30",
-        "country_of_origin": [
+        "ReleaseDate": "1999-10+03:30",
+        "CountryOfOrigin": [
             "AD"
         ],
-        "status": "valid",
-        "approximate_length": "P2Y6M5DT12H",
-        "alternate_id": [
+        "Status": "valid",
+        "ApproximateLength": "P2Y6M5DT12H",
+        "AlternateID": [
             {
                 "value": "",
                 "relation": "ContainsAllOf"
             }
         ],
-        "administrators": {
-            "registrant": {
+        "Administrators": {
+            "Registrant": {
                 "value": ""
             },
-            "metadata_authority": [
+            "MetadataAuthority": [
                 {
                     "value": ""
                 }
             ]
         },
-        "credits": {
-            "director": [
+        "Credits": {
+            "Director": [
                 {
-                    "display_name": {
+                    "DisplayName": {
                         "value": "",
                         "language": ""
                     },
-                    "sort_name": {
+                    "SortName": {
                         "value": "",
                         "language": ""
                     },
-                    "first_given_name": "",
-                    "second_given_name": "",
-                    "family_name": "",
-                    "suffix": "",
-                    "moniker": ""
+                    "FirstGivenName": "",
+                    "SecondGivenName": "",
+                    "FamilyName": "",
+                    "Suffix": "",
+                    "Moniker": ""
                 }
             ],
-            "actor": [
+            "Actor": [
                 {
-                    "display_name": {
+                    "DisplayName": {
                         "value": "",
                         "language": ""
                     },
-                    "sort_name": {
+                    "SortName": {
                         "value": "",
                         "language": ""
                     },
-                    "first_given_name": "",
-                    "second_given_name": "",
-                    "family_name": "",
-                    "suffix": "",
-                    "moniker": ""
+                    "FirstGivenName": "",
+                    "SecondGivenName": "",
+                    "FamilyName": "",
+                    "Suffix": "",
+                    "Moniker": ""
                 }
             ]
         },
-        "registrant_extra": "",
-        "description": {
+        "RegistrantExtra": "",
+        "Description": {
             "value": "",
             "lang": ""
         }
     },
-    "extra_object_metadata": {
-        "interactive_material_info": {
-            "type_value": "360",
-            "format_type": "Text",
-            "language": ""
+    "ExtraObjectMetadata": {
+        "InteractiveMaterialInfo": {
+            "Type": "360",
+            "FormatType": "Text",
+            "Language": ""
         }
     }
 }

@@ -1,65 +1,132 @@
 {
-    "base_object_data": {
-        "structural_type": "Abstraction",
-        "mode": "Audio",
-        "referent_type": "Movie",
-        "resource_name": {
-            "value": "ua test #2",
-            "title_class": "fan-based",
+    "BaseObjectData": {
+        "StructuralType": "Abstraction",
+        "Mode": "Audio",
+        "ReferentType": "Edit",
+        "ResourceName": {
+            "value": "",
+            "titleClass": "release",
             "lang": "",
-            "system_generated": false
+            "systemGenerated": false
         },
-        "alternate_resource_name": [
+        "AlternateResourceName": [
             {
-                "value": "ua test #2 alt ending",
-                "title_class": "release",
-                "lang": "en",
-                "system_generated": false
+                "value": "",
+                "titleClass": "release",
+                "lang": "",
+                "systemGenerated": false
             }
         ],
-        "original_language": [
+        "OriginalLanguage": [
             {
-                "value": "en",
+                "value": "",
                 "mode": "Audio",
-                "type_value": "commentary"
+                "type": "commentary"
             }
         ],
-        "release_date": "2001-03-11",
-        "country_of_origin": [
-            "US"
+        "VersionLanguage": [
+            {
+                "value": "",
+                "mode": "Audio",
+                "type": "commentary"
+            }
         ],
-        "status": "valid",
-        "approximate_length": "P2Y6M5DT12H",
-        "administrators": {
-            "registrant": {
+        "AssociatedOrg": [
+            {
+                "DisplayName": "",
+                "SortName": "",
+                "AlternateName": [
+                    []
+                ],
+                "organizationID": "",
+                "idType": "EIDRPartyID",
+                "role": "producer"
+            }
+        ],
+        "ReleaseDate": "1999-10+03:30",
+        "CountryOfOrigin": [
+            "AD"
+        ],
+        "Status": "valid",
+        "ApproximateLength": "P2Y6M5DT12H",
+        "AlternateID": [
+            {
+                "value": "",
+                "relation": "ContainsAllOf"
+            }
+        ],
+        "Administrators": {
+            "Registrant": {
                 "value": ""
-            }
-        },
-        "credits": {
-            "director": [
+            },
+            "MetadataAuthority": [
                 {
-                    "display_name": {
-                        "value": "Hilter Von StrongBerg",
-                        "language": "en"
-                    }
+                    "value": ""
                 }
             ]
+        },
+        "Credits": {
+            "Director": [
+                {
+                    "DisplayName": {
+                        "value": "",
+                        "language": ""
+                    },
+                    "SortName": {
+                        "value": "",
+                        "language": ""
+                    },
+                    "FirstGivenName": "",
+                    "SecondGivenName": "",
+                    "FamilyName": "",
+                    "Suffix": "",
+                    "Moniker": ""
+                }
+            ],
+            "Actor": [
+                {
+                    "DisplayName": {
+                        "value": "",
+                        "language": ""
+                    },
+                    "SortName": {
+                        "value": "",
+                        "language": ""
+                    },
+                    "FirstGivenName": "",
+                    "SecondGivenName": "",
+                    "FamilyName": "",
+                    "Suffix": "",
+                    "Moniker": ""
+                }
+            ]
+        },
+        "RegistrantExtra": "",
+        "Description": {
+            "value": "",
+            "lang": ""
         }
     },
-    "extra_object_metadata": {
-        "edit_info": {
-            "parent": {
-                "value": "10.5240/5751-89D9-27AD-0ACB-BDED-1"
+    "ExtraObjectMetadata": {
+        "EditInfo": {
+            "Parent": {
+                "value": ""
             },
-            "edit_use": "Web",
-            "edit_class": [
+            "EditUse": "Airline",
+            "EditClass": [
                 "Alternate Ending"
             ],
-            "made_for_region": [
+            "MadeForRegion": [
                 "Domestic"
             ],
-            "color_type": "color",
-            "three_d": false
+            "EditDetails": [
+                {
+                    "value": "",
+                    "domain": ""
+                }
+            ],
+            "ColorType": "color",
+            "ThreeD": false
         }
     }
 }

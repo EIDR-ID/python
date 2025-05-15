@@ -1,0 +1,64 @@
+{
+    "BaseObjectData": {
+        "StructuralType": "Abstraction",
+        "ReferentType": "Supplemental",
+        "Mode": "Visual",
+        "ResourceName": {
+            "Value": "A Kroon for Every Season",
+            "titleClass": "release",
+            "lang": "en",
+            "systemGenerated": false
+        },
+        "AlternateResourceName": [
+            {
+                "Value": "S2E1",
+                "titleClass": "internal",
+                "lang": "en"
+            },
+            {
+                "Value": "Peak Media a la Kroon",
+                "titleClass": "fan-based",
+                "lang": "en"
+            },
+            {
+                "Value": "S2 Introduction",
+                "titleClass": "working",
+                "lang": "en"
+            }
+        ],
+        "ReleaseDate": "2025-07-11",
+        "Status": "valid",
+        "ApproximateLength": "PT24M",
+        "OriginalLanguage": [{
+            "Value": "en",
+            "mode": "Visual"
+        }],
+        "Administrators": {
+            "Registrant": {
+                "Value": "10.5237/A6C4-9B41"
+            },
+            "MetadataAuthority": []
+        },
+        "Description": {
+            "Value": "Following the suspenseful end of season 1, the Kroons prove that through anything they always have each-others back",
+            "lang": "en"
+        }
+    },
+    "ExtraObjectMetadata": {
+        "EpisodeInfo": {
+            "Parent": {
+                "Value": "10.5240/6179-7071-6C07-F9C9-B9D8-3"
+            },
+            "SequenceInfo": {
+                "DistributionNumber": {
+                    "Value": "1",
+                    "domain": "MEM.com"
+                }
+            },
+            "EpisodeClass": [
+                "Pilot"
+            ],
+            "TimeSlot": "21:00:00"
+        }
+    }
+}

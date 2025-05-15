@@ -1,56 +1,130 @@
 {
-    "base_object_data": {
-        "structural_type": "Physical",
-        "mode": "Audio",
-        "referent_type": "Movie",
-        "resource_name": {
-            "value": "ua test #2 excerpt",
-            "title_class": "release",
+    "BaseObjectData": {
+        "StructuralType": "Abstraction",
+        "Mode": "Audio",
+        "ReferentType": "Composite",
+        "ResourceName": {
+            "value": "",
+            "titleClass": "release",
             "lang": "",
-            "system_generated": false
+            "systemGenerated": false
         },
-        "original_language": [
+        "AlternateResourceName": [
             {
-                "value": "en",
+                "value": "",
+                "titleClass": "release",
+                "lang": "",
+                "systemGenerated": false
+            }
+        ],
+        "OriginalLanguage": [
+            {
+                "value": "",
                 "mode": "Audio",
-                "type_value": "commentary"
+                "type": "commentary"
             }
         ],
-        "release_date": "2001-03-11",
-        "country_of_origin": [
-            "US"
+        "VersionLanguage": [
+            {
+                "value": "",
+                "mode": "Audio",
+                "type": "commentary"
+            }
         ],
-        "status": "valid",
-        "approximate_length": "P2Y6M5DT12H",
-        "administrators": {
-            "registrant": {
+        "AssociatedOrg": [
+            {
+                "DisplayName": "",
+                "SortName": "",
+                "AlternateName": [
+                    []
+                ],
+                "organizationID": "",
+                "idType": "EIDRPartyID",
+                "role": "producer"
+            }
+        ],
+        "ReleaseDate": "1999-10+03:30",
+        "CountryOfOrigin": [
+            "AD"
+        ],
+        "Status": "valid",
+        "ApproximateLength": "P2Y6M5DT12H",
+        "AlternateID": [
+            {
+                "value": "",
+                "relation": "ContainsAllOf"
+            }
+        ],
+        "Administrators": {
+            "Registrant": {
                 "value": ""
-            }
-        },
-        "credits": {
-            "director": [
+            },
+            "MetadataAuthority": [
                 {
-                    "display_name": {
-                        "value": "Mr Test Director",
-                        "language": "en"
-                    }
+                    "value": ""
                 }
             ]
+        },
+        "Credits": {
+            "Director": [
+                {
+                    "DisplayName": {
+                        "value": "",
+                        "language": ""
+                    },
+                    "SortName": {
+                        "value": "",
+                        "language": ""
+                    },
+                    "FirstGivenName": "",
+                    "SecondGivenName": "",
+                    "FamilyName": "",
+                    "Suffix": "",
+                    "Moniker": ""
+                }
+            ],
+            "Actor": [
+                {
+                    "DisplayName": {
+                        "value": "",
+                        "language": ""
+                    },
+                    "SortName": {
+                        "value": "",
+                        "language": ""
+                    },
+                    "FirstGivenName": "",
+                    "SecondGivenName": "",
+                    "FamilyName": "",
+                    "Suffix": "",
+                    "Moniker": ""
+                }
+            ]
+        },
+        "RegistrantExtra": "",
+        "Description": {
+            "value": "",
+            "lang": ""
         }
     },
-    "extra_object_metadata": {
-        "composite_info": {
-            "composite_class": "Excerpt",
-            "element": [
+    "ExtraObjectMetadata": {
+        "CompositeInfo": {
+            "CompositeClass": "Mashup",
+            "Element": [
                 {
-                    "id": {
-                        "value": "10.5240/5751-89D9-27AD-0ACB-BDED-1"
+                    "ID": {
+                        "value": ""
                     },
-                    "source_start": "P2Y6M5DT12H",
-                    "source_duration": "P2Y6M5DT12H",
-                    "components_mode": "Audio",
-                    "dest_start": "P2Y6M5DT12H",
-                    "dest_duration": "P2Y6M5DT12H"
+                    "OtherID": {
+                        "value": "",
+                        "relation": "ContainsAllOf"
+                    },
+                    "SourceStart": "P2Y6M5DT12H",
+                    "SourceDuration": "P2Y6M5DT12H",
+                    "ComponentsMode": "Audio",
+                    "DestStart": "P2Y6M5DT12H",
+                    "DestDuration": "P2Y6M5DT12H",
+                    "Description": ""
                 }
             ]
         }

@@ -1,42 +1,57 @@
 {
-    "base_object_data": {
-        "structural_type": "Performance",
-        "mode": "Audio",
-        "referent_type": "Supplemental",
-        "resource_name": {
-            "value": "Goku Solos the Universe",
+    "BaseObjectData": {
+        "StructuralType": "Performance",
+        "Mode": "Audio",
+        "ReferentType": "TV",
+        "ResourceName": {
+            "value": "epsiodic runescaper dancer",
+            "titleClass": "release",
             "lang": "en",
-            "title_class": "release",
-            "system_generated": false
+            "systemGenerated": null
         },
-        "release_date": "2014-01-29",
-        "country_of_origin": [
-            "US"
-        ],
-        "status": "valid",
-        "approximate_length": "P2Y6M5DT12H",
-        "administrators": {
-            "registrant": {
-                "value": ""
-            }
-        },
-        "credits": {
-            "director": [
-                {
-                    "display_name": {
-                        "value": "Mr Test Director",
-                        "language": "en"
-                    }
-                }
-            ]
-        }
-    },
-    "extra_object_metadata": {
-        "clip_info": {
-            "parent": {
-                "value": "10.5240/46EE-CADE-F397-58F4-594B-N"
+        "AlternateResourceName": [],
+        "OriginalLanguage": [],
+        "VersionLanguage": [],
+        "AssociatedOrg": [],
+        "ReleaseDate": "2025-05-16",
+        "CountryOfOrigin": [],
+        "Status": "valid",
+        "ApproximateLength": "PT5M",
+        "AlternateID": [],
+        "Administrators": {
+            "Registrant": {
+                "value": "10.5237/A6C4-9B41"
             },
-            "components_mode": "AudioVisual"
+            "MetadataAuthority": []
+        },
+        "Credits": {
+            "Director": [
+                {
+                    "DisplayName": {
+                        "value": "Mr Test Director 496",
+                        "language": "en"
+                    },
+                    "SortName": null,
+                    "FirstGivenName": null,
+                    "SecondGivenName": null,
+                    "FamilyName": null,
+                    "Suffix": null,
+                    "Moniker": null
+                }
+            ],
+            "Actor": []
+        },
+        "RegistrantExtra": null,
+        "Description": null
+        },
+    "ExtraObjectMetadata": {
+        "ClipInfo": {
+            "Parent": {
+                "value": "10.5240/4764-6E6F-5DD0-E31A-A74C-6"
+            },
+            "ComponentsMode": "AudioVisual",
+            "Start": null,
+            "Duration": []
         }
     }
 }

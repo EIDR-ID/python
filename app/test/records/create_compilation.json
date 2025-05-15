@@ -1,58 +1,128 @@
 {
-    "base_object_data": {
-        "structural_type": "Abstraction",
-        "mode": "AudioVisual",
-        "referent_type": "Compilation",
-        "resource_name": {
-            "value": "freddy's masion series test",
-            "title_class": "release",
-            "lang": "en"
+    "BaseObjectData": {
+        "StructuralType": "Abstraction",
+        "Mode": "Audio",
+        "ReferentType": "Compilation",
+        "ResourceName": {
+            "value": "",
+            "titleClass": "release",
+            "lang": "",
+            "systemGenerated": false
         },
-        "original_language": [
+        "AlternateResourceName": [
             {
-                "value": "en",
+                "value": "",
+                "titleClass": "release",
+                "lang": "",
+                "systemGenerated": false
+            }
+        ],
+        "OriginalLanguage": [
+            {
+                "value": "",
                 "mode": "Audio",
-                "type_value": "commentary"
+                "type": "commentary"
             }
         ],
-        "release_date": "2014-10-31",
-        "country_of_origin": [
-            "US"
+        "VersionLanguage": [
+            {
+                "value": "",
+                "mode": "Audio",
+                "type": "commentary"
+            }
         ],
-        "status": "valid",
-        "approximate_length": "P2Y6M5DT12H",
-        "administrators": {
-            "registrant": {
+        "AssociatedOrg": [
+            {
+                "DisplayName": "",
+                "SortName": "",
+                "AlternateName": [
+                    []
+                ],
+                "organizationID": "",
+                "idType": "EIDRPartyID",
+                "role": "producer"
+            }
+        ],
+        "ReleaseDate": "1999-10+03:30",
+        "CountryOfOrigin": [
+            "AD"
+        ],
+        "Status": "valid",
+        "ApproximateLength": "P2Y6M5DT12H",
+        "AlternateID": [
+            {
+                "value": "",
+                "relation": "ContainsAllOf"
+            }
+        ],
+        "Administrators": {
+            "Registrant": {
                 "value": ""
-            }
-        },
-        "credits": {
-            "director": [
+            },
+            "MetadataAuthority": [
                 {
-                    "display_name": {
-                        "value": "Mr Test Director",
-                        "language": "en"
-                    }
+                    "value": ""
                 }
             ]
-        }
-    },
-    "extra_object_metadata": {
-        "compilation_info": {
-            "entry": [
+        },
+        "Credits": {
+            "Director": [
                 {
-                    "display_name": {
-                        "value": "freddy's masion house extended edition",
-                        "language": "en"
+                    "DisplayName": {
+                        "value": "",
+                        "language": ""
                     },
-                    "entry_number": "1",
-                    "entry_class": "Episode",
-                    "content_id": "10.5240/5751-89D9-27AD-0ACB-BDED-1"
+                    "SortName": {
+                        "value": "",
+                        "language": ""
+                    },
+                    "FirstGivenName": "",
+                    "SecondGivenName": "",
+                    "FamilyName": "",
+                    "Suffix": "",
+                    "Moniker": ""
                 }
             ],
-            "compilation_class": {
+            "Actor": [
+                {
+                    "DisplayName": {
+                        "value": "",
+                        "language": ""
+                    },
+                    "SortName": {
+                        "value": "",
+                        "language": ""
+                    },
+                    "FirstGivenName": "",
+                    "SecondGivenName": "",
+                    "FamilyName": "",
+                    "Suffix": "",
+                    "Moniker": ""
+                }
+            ]
+        },
+        "RegistrantExtra": "",
+        "Description": {
+            "value": "",
+            "lang": ""
+        }
+    },
+    "ExtraObjectMetadata": {
+        "CompilationInfo": {
+            "Entry": [
+                {
+                    "DisplayName": {
+                        "value": "",
+                        "language": ""
+                    },
+                    "EntryNumber": "",
+                    "EntryClass": "Episode",
+                    "ContentID": ""
+                }
+            ],
+            "CompilationClass": {
                 "value": "Blu-ray",
-                "has_other_inclusions": false
+                "hasOtherInclusions": false
             }
         }
     }

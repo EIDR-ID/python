@@ -516,13 +516,12 @@ class SessionManager:
                 return result
             else:
                 raise ValueError("No results in register response, something is wrong with the SDK or the registry.")
-        raise BadStatusError(status=resp.status, details="")
+        raise BadStatusError(status=resp.status, details=resp.obj.status.details)
 
     def register(self, req_obj: RegistryRequestSingle[RegistrationService]) -> BatchStatusResult:
         """
         Perform a registration operation in the EIDR Registry.
         :param req_obj: The request object to be passed to the registration service.
-        :param immediate_resp: Enable the Immediate Response header in the request
         :return:
             Tuple[Tuple[int, str], str]: A tuple containing the status (code, details) and the token to track batch operations.
         """
@@ -532,7 +531,7 @@ class SessionManager:
         self.driver.config.remove_header('Immediate-Response')
         resp = self.post(req_obj)
         result = handle_batch_results(resp, default_handler=None, status_handlers={
-            1: lambda code, details: "I just batched all over myself",
+            1: lambda code, details: "Duplicate exists",
         })[0]
         return result
 
@@ -545,14 +544,13 @@ class SessionManager:
 
         return results[0]
 
-
 class BadStatusError(Exception):
     status: Tuple[int, str]
     details: str
 
     def __init__(self, msg: str = "Bad status", status: Tuple[int, str] = (-1, "Unknown"),
                  details: str = "Developer did not provide details"):
-        super().__init__(msg + f"\n\tGot status: {status}")
+        super().__init__(msg + f"\n\tGot status: {status}\n\tDetails: {details}")
         self.status = status
         self.details = details
 
