@@ -1,132 +1,59 @@
 {
     "BaseObjectData": {
-        "StructuralType": "Abstraction",
+        "StructuralType": "Performance",
         "Mode": "Audio",
-        "ReferentType": "Edit",
         "ResourceName": {
-            "value": "",
+            "value": "this is the mcbomber edit of 49ers",
             "titleClass": "release",
-            "lang": "",
-            "systemGenerated": false
+            "lang": "en",
+            "systemGenerated": null
         },
-        "AlternateResourceName": [
-            {
-                "value": "",
-                "titleClass": "release",
-                "lang": "",
-                "systemGenerated": false
-            }
-        ],
-        "OriginalLanguage": [
-            {
-                "value": "",
-                "mode": "Audio",
-                "type": "commentary"
-            }
-        ],
-        "VersionLanguage": [
-            {
-                "value": "",
-                "mode": "Audio",
-                "type": "commentary"
-            }
-        ],
-        "AssociatedOrg": [
-            {
-                "DisplayName": "",
-                "SortName": "",
-                "AlternateName": [
-                    []
-                ],
-                "organizationID": "",
-                "idType": "EIDRPartyID",
-                "role": "producer"
-            }
-        ],
-        "ReleaseDate": "1999-10+03:30",
+        "AlternateResourceName": [],
+        "OriginalLanguage": [],
+        "VersionLanguage": [],
+        "AssociatedOrg": [],
+        "ReleaseDate": "2024-10-24",
         "CountryOfOrigin": [
-            "AD"
+            "US"
         ],
         "Status": "valid",
         "ApproximateLength": "P2Y6M5DT12H",
-        "AlternateID": [
-            {
-                "value": "",
-                "relation": "ContainsAllOf"
-            }
-        ],
+        "AlternateID": [],
         "Administrators": {
             "Registrant": {
-                "value": ""
+                "value": "10.5237/A6C4-9B41"
             },
-            "MetadataAuthority": [
-                {
-                    "value": ""
-                }
-            ]
+            "MetadataAuthority": []
         },
         "Credits": {
             "Director": [
                 {
                     "DisplayName": {
-                        "value": "",
-                        "language": ""
+                        "value": "Movers Testerson",
+                        "language": "en"
                     },
-                    "SortName": {
-                        "value": "",
-                        "language": ""
-                    },
-                    "FirstGivenName": "",
-                    "SecondGivenName": "",
-                    "FamilyName": "",
-                    "Suffix": "",
-                    "Moniker": ""
+                    "SortName": null,
+                    "FirstGivenName": null,
+                    "SecondGivenName": null,
+                    "FamilyName": null,
+                    "Suffix": null,
+                    "Moniker": null
                 }
             ],
-            "Actor": [
-                {
-                    "DisplayName": {
-                        "value": "",
-                        "language": ""
-                    },
-                    "SortName": {
-                        "value": "",
-                        "language": ""
-                    },
-                    "FirstGivenName": "",
-                    "SecondGivenName": "",
-                    "FamilyName": "",
-                    "Suffix": "",
-                    "Moniker": ""
-                }
-            ]
-        },
-        "RegistrantExtra": "",
-        "Description": {
-            "value": "",
-            "lang": ""
+            "Actor": []
         }
     },
     "ExtraObjectMetadata": {
         "EditInfo": {
             "Parent": {
-                "value": ""
+                "value": "10.5240/DA05-6606-8B68-77B2-BD3E-7"
             },
-            "EditUse": "Airline",
-            "EditClass": [
-                "Alternate Ending"
-            ],
-            "MadeForRegion": [
-                "Domestic"
-            ],
-            "EditDetails": [
-                {
-                    "value": "",
-                    "domain": ""
-                }
-            ],
+            "EditUse": "Home Video",
+            "EditClass": [],
+            "MadeForRegion": [],
+            "EditDetails": [],
             "ColorType": "color",
-            "ThreeD": false
+            "ThreeD": true
         }
     }
 }

@@ -2,56 +2,41 @@
     "BaseObjectData": {
         "StructuralType": "Performance",
         "Mode": "Audio",
-        "ReferentType": "TV",
+        "ReferentType": "Supplemental",
         "ResourceName": {
-            "value": "epsiodic runescaper dancer",
-            "titleClass": "release",
+            "value": "Goku Solos the Universe",
             "lang": "en",
+            "titleClass": "release",
             "systemGenerated": null
         },
-        "AlternateResourceName": [],
-        "OriginalLanguage": [],
-        "VersionLanguage": [],
-        "AssociatedOrg": [],
-        "ReleaseDate": "2025-05-16",
-        "CountryOfOrigin": [],
+        "ReleaseDate": "2014-01-29",
+        "CountryOfOrigin": [
+            "US"
+        ],
         "Status": "valid",
-        "ApproximateLength": "PT5M",
-        "AlternateID": [],
+        "ApproximateLength": "P2Y6M5DT12H",
         "Administrators": {
             "Registrant": {
                 "value": "10.5237/A6C4-9B41"
-            },
-            "MetadataAuthority": []
+            }
         },
         "Credits": {
             "Director": [
                 {
                     "DisplayName": {
-                        "value": "Mr Test Director 496",
+                        "value": "Mr Test Director",
                         "language": "en"
-                    },
-                    "SortName": null,
-                    "FirstGivenName": null,
-                    "SecondGivenName": null,
-                    "FamilyName": null,
-                    "Suffix": null,
-                    "Moniker": null
+                    }
                 }
-            ],
-            "Actor": []
-        },
-        "RegistrantExtra": null,
-        "Description": null
-        },
+            ]
+        }
+    },
     "ExtraObjectMetadata": {
         "ClipInfo": {
             "Parent": {
-                "value": "10.5240/4764-6E6F-5DD0-E31A-A74C-6"
+                "value": "10.5240/46EE-CADE-F397-58F4-594B-N"
             },
-            "ComponentsMode": "AudioVisual",
-            "Start": null,
-            "Duration": []
+            "ComponentsMode": "AudioVisual"
         }
     }
 }

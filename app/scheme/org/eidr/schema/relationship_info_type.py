@@ -8,7 +8,7 @@ __NAMESPACE__ = "http://www.eidr.org/schema"
 
 
 @dataclass
-class RelationshipInfoType(AssetDoitype):
+class RelationshipInfoType:
     """a relationship is described with "<Relationship xmlns="" type="{http://www.eidr.org/schema}isSeasonOf">assetDOI</Relationship>" isCompositeOf and isCompilation
     of can occur multiple times in a relationship list (see SimpleMetadata), once for
     each item in the composite. The lightweight relationships ca occur multiple times.
@@ -16,6 +16,16 @@ class RelationshipInfoType(AssetDoitype):
 
     class Meta:
         name = "relationshipInfoType"
+
+    id: Optional[AssetDoitype] = field(
+        default=None,
+        metadata={
+            "name": "ID",
+            "type": "Element",
+            "namespace": "http://www.eidr.org/schema",
+            "required": True,
+        },
+    )
 
     type_value: Optional[RelationshipType] = field(
         default=None,

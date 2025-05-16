@@ -2,9 +2,9 @@
     "BaseObjectData": {
         "StructuralType": "Abstraction",
         "Mode": "Audio",
-        "ReferentType": "TV",
+        "ReferentType": "Web",
         "ResourceName": {
-            "value": "runner man video sensational tester",
+            "value": "who's the tester coker",
             "titleClass": "release",
             "lang": "en",
             "systemGenerated": null
@@ -13,7 +13,7 @@
         "OriginalLanguage": [],
         "VersionLanguage": [],
         "AssociatedOrg": [],
-        "ReleaseDate": "2025-10-16",
+        "ReleaseDate": "2025-12-11",
         "CountryOfOrigin": [],
         "Status": "valid",
         "ApproximateLength": null,
@@ -28,8 +28,8 @@
             "Director": [
                 {
                     "DisplayName": {
-                        "value": "Mr 49er",
-                        "language": "en"
+                        "value": "ChisterNolger Testerson",
+                        "language": "jp"
                     },
                     "SortName": null,
                     "FirstGivenName": null,

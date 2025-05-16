@@ -55,36 +55,40 @@ class TestRegistration(unittest.TestCase):
         self.assertEqual(0, resp.get("status")[0])
         self.__delete_record(resp.get("id"))
 
-    # def test_register_season_immediate(self):
-    #     path = self.record_dir / "create_season.json"
-    #     season = Create.from_json(path, CreateSeasonDataType)
-    #     req = RegistryRequest([season])
-    #     resp = self.manager.register_immediate(req)
-    #     pprint(resp)
-    #     self.assertEqual(0, resp.get("status")[0])
-    #     self.__delete_record(resp.get("id"))
-    #
-    # def test_register_episode_immediate(self):
-    #     path = self.record_dir / "create_episode.json"
-    #     episode = Create.from_json(path, CreateEpisodeDataType)
-    #     req = RegistryRequestSingle(episode)
-    #     resp = self.manager.register_immediate(req)
-    #     pprint(resp)
-    #
-    # def test_register_clip_immediate(self):
-    #     clip = Create.from_json(self.record_dir / "create_clip.json", CreateClipDataType)
-    #     req = RegistryRequestSingle(clip)
-    #     resp = self.manager.register_immediate(req)
-    #     pprint(resp)
-    #     self.assertEqual(0, resp.get("status")[0])
-    #     self.__delete_record(resp.get("id"))
+    def test_register_season_immediate(self):
+        path = self.record_dir / "create_season.json"
+        season = Create.from_json(path, CreateSeasonDataType)
+        req = RegistryRequest([season])
+        resp = self.manager.register_immediate(req)
+        pprint(resp)
+        self.assertEqual(0, resp.get("status")[0])
+        self.__delete_record(resp.get("id"))
 
-    # def test_register_edit_immediate(self):
-    #     edit = Create.from_json(self.record_dir / "create_edit.json", CreateEditDataType)
-    #     req = RegistryRequestSingle(edit)
-    #     resp = self.manager.register_immediate(req)
-    #     print("Edit Record Response:")
-    #     pprint(resp)
+    def test_register_episode_immediate(self):
+        path = self.record_dir / "create_episode.json"
+        episode = Create.from_json(path, CreateEpisodeDataType)
+        req = RegistryRequestSingle(episode)
+        resp = self.manager.register_immediate(req)
+        pprint(resp)
+        self.assertEqual(0, resp.get("status")[0])
+        self.__delete_record(resp.get("id"))
+
+    def test_register_clip_immediate(self):
+        clip = Create.from_json(self.record_dir / "create_clip.json", CreateClipDataType)
+        req = RegistryRequestSingle(clip)
+        resp = self.manager.register_immediate(req)
+        pprint(resp)
+        self.assertEqual(0, resp.get("status")[0])
+        self.__delete_record(resp.get("id"))
+
+    def test_register_edit_immediate(self):
+        edit = Create.from_json(self.record_dir / "create_edit.json", CreateEditDataType)
+        req = RegistryRequestSingle(edit)
+        resp = self.manager.register_immediate(req)
+        print("Edit Record Response:")
+        pprint(resp)
+        self.assertEqual(0, resp.get("status")[0])
+        self.__delete_record(resp.get("id"))
 
     # TODO: configure valid manifestation record
     # def test_register_manifestation_immediate(self):
